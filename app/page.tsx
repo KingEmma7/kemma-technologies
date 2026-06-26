@@ -1,0 +1,20 @@
+import { Hero } from "@/components/hero/Hero";
+import { ServicesSummary } from "@/components/sections/ServicesSummary";
+import { FeaturedWork } from "@/components/sections/FeaturedWork";
+import { Testimonials } from "@/components/sections/Testimonials";
+import { CtaBand } from "@/components/sections/CtaBand";
+import { getAllProjects } from "@/lib/projects";
+
+export default function HomePage() {
+  const projects = getAllProjects();
+
+  return (
+    <>
+      <Hero />
+      <ServicesSummary />
+      <FeaturedWork projects={projects} />
+      <Testimonials />
+      <CtaBand />
+    </>
+  );
+}
