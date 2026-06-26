@@ -100,31 +100,31 @@ export function Navigation() {
             ))}
           </nav>
 
-          {/* Single hamburger — mobile only; desktop uses inline links */}
+          {/* Hamburger — triggers full-screen overlay on all breakpoints */}
           <button
             onClick={toggle}
-            className="z-[60] flex flex-col justify-center items-center w-10 h-10 gap-[6px] md:hidden"
+            className="z-[60] flex flex-col justify-center items-center w-10 h-10 gap-[6px]"
             aria-expanded={open}
-            aria-controls="mobile-menu"
+            aria-controls="nav-overlay"
             aria-label={open ? "Close menu" : "Open menu"}
           >
-            <motion.span animate={open ? { rotate: 45, y: 9 } : { rotate: 0, y: 0 }} className="block w-7 h-px bg-[var(--gold)] origin-center" />
-            <motion.span animate={open ? { opacity: 0 } : { opacity: 1 }} className="block w-7 h-px bg-[var(--gold)]" />
-            <motion.span animate={open ? { rotate: -45, y: -9 } : { rotate: 0, y: 0 }} className="block w-7 h-px bg-[var(--gold)] origin-center" />
+            <motion.span animate={open ? { rotate: 45, y: 9 } : { rotate: 0, y: 0 }} className="block w-6 h-px bg-[var(--gold)] origin-center" />
+            <motion.span animate={open ? { opacity: 0 } : { opacity: 1 }} className="block w-6 h-px bg-[var(--gold)]" />
+            <motion.span animate={open ? { rotate: -45, y: -9 } : { rotate: 0, y: 0 }} className="block w-6 h-px bg-[var(--gold)] origin-center" />
           </button>
         </div>
       </header>
 
-      {/* Mobile full-screen overlay menu */}
+      {/* Full-screen overlay menu — all breakpoints */}
       <AnimatePresence>
         {open && (
           <motion.div
-            id="mobile-menu"
+            id="nav-overlay"
             variants={overlayVariants}
             initial="closed"
             animate="open"
             exit="closed"
-            className="fixed inset-0 z-40 bg-[#040406] flex flex-col items-center justify-center md:hidden"
+            className="fixed inset-0 z-40 bg-[#040406] flex flex-col items-center justify-center"
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
@@ -143,7 +143,7 @@ export function Navigation() {
                     href={href}
                     onClick={close}
                     className={[
-                      "text-5xl font-heading font-bold uppercase tracking-tight",
+                      "text-5xl md:text-7xl font-heading font-bold uppercase tracking-tight",
                       "transition-colors duration-200",
                       pathname === href
                         ? "text-gold-gradient"

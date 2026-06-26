@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Section } from "@/components/ui/Section";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
-import { ButtonLink } from "@/components/ui/ButtonLink";
 import { SERVICES } from "@/lib/services";
 
 export function ServicesSummary() {
@@ -22,8 +22,8 @@ export function ServicesSummary() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {SERVICES.map((s, i) => (
           <Reveal key={s.id} delay={i * 0.12}>
-            <ButtonLink href={s.href} className="block h-full group no-underline hover:scale-100 active:scale-100 p-0">
-              <Card glow className="h-full group-hover:border-[var(--gold)] transition-colors duration-300 w-full">
+            <Link href={s.href} className="block h-full group">
+              <Card glow className="h-full group-hover:border-[var(--gold)] transition-colors duration-300">
                 <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300 inline-block">
                   {s.icon}
                 </div>
@@ -33,7 +33,7 @@ export function ServicesSummary() {
                   Learn more →
                 </span>
               </Card>
-            </ButtonLink>
+            </Link>
           </Reveal>
         ))}
       </div>
