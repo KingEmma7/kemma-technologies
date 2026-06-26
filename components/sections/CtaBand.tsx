@@ -1,20 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function CtaBand() {
   return (
     <section className="relative py-32 overflow-hidden bg-[var(--dark-bg)]">
-      {/* Gold glow background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(200,155,60,0.1)_0%,transparent_60%)] pointer-events-none" />
 
-      {/* Animated lines */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        {[...Array(3)].map((_, i) => (
+        {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
             className="absolute h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent"
@@ -35,12 +32,8 @@ export function CtaBand() {
             Tell us about your project and we&apos;ll get back to you within 24 hours.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
-              <Button size="lg">Start a Conversation</Button>
-            </Link>
-            <Link href="/work">
-              <Button variant="secondary" size="lg">See Our Work</Button>
-            </Link>
+            <ButtonLink href="/contact" size="lg">Start a Conversation</ButtonLink>
+            <ButtonLink href="/work" variant="secondary" size="lg">See Our Work</ButtonLink>
           </div>
         </Reveal>
       </Container>

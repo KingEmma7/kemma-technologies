@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProjects, getProjectBySlug } from "@/lib/projects";
-import { CaseStudyContent } from "@/components/sections/CaseStudyContent";
+import { CaseStudyHero, CaseStudyFooter } from "@/components/sections/CaseStudyContent";
+import { MdxSection } from "@/components/sections/MdxSection";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -27,5 +28,11 @@ export default async function CaseStudyPage({ params }: Props) {
   const project = getProjectBySlug(slug);
   if (!project) notFound();
 
-  return <CaseStudyContent meta={project.meta} content={project.content} />;
+  return (
+    <article>
+      <CaseStudyHero meta={project.meta} />
+      <MdxSection content={project.content} />
+      <CaseStudyFooter />
+    </article>
+  );
 }

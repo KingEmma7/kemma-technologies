@@ -3,18 +3,16 @@
 import { forwardRef } from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
 
-type Variant = "primary" | "secondary" | "ghost";
-type Size = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "ghost";
+export type ButtonSize = "sm" | "md" | "lg";
 
-interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
-  variant?: Variant;
-  size?: Size;
+export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   children: React.ReactNode;
-  href?: string;
-  as?: "a" | "button";
 }
 
-const variantClasses: Record<Variant, string> = {
+export const variantClasses: Record<ButtonVariant, string> = {
   primary:
     "bg-[var(--gold)] text-[#040406] font-semibold hover:brightness-110 shadow-[0_0_20px_rgba(200,155,60,0.3)]",
   secondary:
@@ -23,7 +21,7 @@ const variantClasses: Record<Variant, string> = {
     "text-[var(--gold)] hover:text-white underline-offset-4 hover:underline",
 };
 
-const sizeClasses: Record<Size, string> = {
+export const sizeClasses: Record<ButtonSize, string> = {
   sm: "px-4 py-2 text-sm",
   md: "px-6 py-3 text-base",
   lg: "px-8 py-4 text-lg",

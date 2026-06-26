@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { contactSchema } from "@/lib/validations/contact";
 
-const schema = z.object({
-  name:    z.string().min(2),
-  email:   z.string().email(),
-  company: z.string().optional(),
-  message: z.string().min(20),
-});
+/** Escape HTML special chars so user input cannot inject markup into emails. */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const parsed = schema.safeParse(body);
+    const parsed = contactSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -22,15 +25,24 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.RESEND_API_KEY;
 
     if (!apiKey) {
-      // Stub-safe: log to console in dev when key is missing
-      console.log("[Contact form submission — no RESEND_API_KEY set]", { name, email, company, message });
-      return NextResponse.json({ ok: true });
+      // Stub: log in dev when key is missing but return an error so misconfiguration
+      // is surfaced in non-production environments rather than silently succeeding.
+      console.warn("[contact] RESEND_API_KEY is not set — email not sent.", { name, email });
+      if (process.env.NODE_ENV === "development") {
+        return NextResponse.json({ ok: true }); // allow dev testing
+      }
+      return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
     }
 
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
 
-    await resend.emails.send({
+    const safeName    = escapeHtml(name);
+    const safeEmail   = escapeHtml(email);
+    const safeCompany = escapeHtml(company ?? "N/A");
+    const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>");
+
+    const { error } = await resend.emails.send({
       from:    "Kemma Website <noreply@kemmatech.com>",
       to:      ["hello@kemmatech.com"],
       replyTo: email,
@@ -38,18 +50,23 @@ export async function POST(req: NextRequest) {
       text:    `Name: ${name}\nEmail: ${email}\nCompany: ${company ?? "N/A"}\n\nMessage:\n${message}`,
       html: `
         <h2>New Contact Enquiry</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-        <p><strong>Company:</strong> ${company ?? "N/A"}</p>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
+        <p><strong>Company:</strong> ${safeCompany}</p>
         <hr />
         <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, "<br/>")}</p>
+        <p>${safeMessage}</p>
       `,
     });
 
+    if (error) {
+      console.error("[contact] Resend returned an error:", error);
+      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("Contact route error:", err);
+    console.error("[contact] Unexpected error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

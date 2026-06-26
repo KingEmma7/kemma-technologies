@@ -9,46 +9,48 @@ import { Reveal } from "@/components/ui/Reveal";
 gsap.registerPlugin(ScrollTrigger);
 
 const milestones = [
-  {
-    year: "2019",
-    title: "Founded in Accra",
-    desc: "Kemma Technologies is born from a shared vision to deliver world-class software solutions from the African continent.",
-  },
-  {
-    year: "2020",
-    title: "First Major Platform",
-    desc: "We deliver our first enterprise-grade web platform for a leading Ghanaian financial institution, serving 50,000+ users at launch.",
-  },
-  {
-    year: "2021",
-    title: "AI Practice Launched",
-    desc: "We establish a dedicated intelligent solutions practice, embedding machine learning and data science across our service portfolio.",
-  },
-  {
-    year: "2022",
-    title: "Pan-African Expansion",
-    desc: "Clients in Nigeria, Kenya and Senegal join our portfolio. We grow our team to 25 engineers and designers.",
-  },
-  {
-    year: "2023",
-    title: "Innovation Award",
-    desc: "RetailEdge AI Recommender wins the Ghana Innovation & Tech Summit Award for Best AI Product.",
-  },
-  {
-    year: "2024",
-    title: "50+ Projects Delivered",
-    desc: "We cross 50 delivered projects across fintech, agritech, health and retail — impacting over 100,000 end users.",
-  },
+  { year: "2019", title: "Founded in Accra",        desc: "Kemma Technologies is born from a shared vision to deliver world-class software solutions from the African continent." },
+  { year: "2020", title: "First Major Platform",     desc: "We deliver our first enterprise-grade web platform for a leading Ghanaian financial institution, serving 50,000+ users at launch." },
+  { year: "2021", title: "AI Practice Launched",     desc: "We establish a dedicated intelligent solutions practice, embedding machine learning and data science across our service portfolio." },
+  { year: "2022", title: "Pan-African Expansion",    desc: "Clients in Nigeria, Kenya and Senegal join our portfolio. We grow our team to 25 engineers and designers." },
+  { year: "2023", title: "Innovation Award",         desc: "RetailEdge AI Recommender wins the Ghana Innovation & Tech Summit Award for Best AI Product." },
+  { year: "2024", title: "50+ Projects Delivered",  desc: "We cross 50 delivered projects across fintech, agritech, health and retail — impacting over 100,000 end users." },
 ];
+
+function MilestoneItem({ m, i }: { m: typeof milestones[number]; i: number }) {
+  const isRight = i % 2 !== 0;
+  const content = (
+    <div>
+      <span className="text-2xl font-heading font-bold text-gold-gradient">{m.year}</span>
+      <h3 className="font-heading font-semibold text-xl text-white mt-1 mb-2">{m.title}</h3>
+      <p className="text-[var(--silver)] text-sm leading-relaxed">{m.desc}</p>
+    </div>
+  );
+
+  return (
+    <div
+      className={[
+        "timeline-item relative pl-16 md:pl-0",
+        "md:grid md:grid-cols-2 md:gap-12",
+        !isRight ? "md:text-right" : "",
+      ].join(" ")}
+    >
+      {/* Timeline dot */}
+      <div className="absolute top-1 left-4 md:left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-[var(--gold)] bg-[var(--dark-bg)] shadow-[0_0_12px_rgba(200,155,60,0.6)]" />
+
+      {isRight ? <div aria-hidden="true" /> : content}
+      {isRight ? content : <div aria-hidden="true" />}
+    </div>
+  );
+}
 
 export function MilestoneTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const prefersReduced =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced || !lineRef.current || !containerRef.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!lineRef.current || !containerRef.current) return;
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
@@ -75,10 +77,7 @@ export function MilestoneTimeline() {
             x: 0,
             duration: 0.6,
             ease: "power2.out",
-            scrollTrigger: {
-              trigger: item,
-              start: "top 80%",
-            },
+            scrollTrigger: { trigger: item, start: "top 80%" },
           }
         );
       });
@@ -98,54 +97,14 @@ export function MilestoneTimeline() {
         </Reveal>
 
         <div ref={containerRef} className="relative max-w-3xl mx-auto">
-          {/* Vertical line */}
+          {/* Static track + animated gold fill */}
           <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-[var(--border)]">
-            <div
-              ref={lineRef}
-              className="absolute inset-0 bg-gradient-to-b from-[var(--gold)] to-transparent"
-            />
+            <div ref={lineRef} className="absolute inset-0 bg-gradient-to-b from-[var(--gold)] to-transparent" />
           </div>
 
           <div className="flex flex-col gap-16">
             {milestones.map((m, i) => (
-              <div
-                key={m.year}
-                className={[
-                  "timeline-item relative pl-16 md:pl-0",
-                  "md:grid md:grid-cols-2 md:gap-12",
-                  i % 2 === 0 ? "md:text-right" : "",
-                ].join(" ")}
-              >
-                {/* Dot */}
-                <div
-                  className={[
-                    "absolute top-1 left-4 md:left-1/2 -translate-x-1/2",
-                    "w-4 h-4 rounded-full border-2 border-[var(--gold)] bg-[var(--dark-bg)]",
-                    "shadow-[0_0_12px_rgba(200,155,60,0.6)]",
-                  ].join(" ")}
-                />
-
-                {/* Content */}
-                {i % 2 === 0 ? (
-                  <>
-                    <div className="md:order-first">
-                      <span className="text-2xl font-heading font-bold text-gold-gradient">{m.year}</span>
-                      <h3 className="font-heading font-semibold text-xl text-white mt-1 mb-2">{m.title}</h3>
-                      <p className="text-[var(--silver)] text-sm leading-relaxed">{m.desc}</p>
-                    </div>
-                    <div />
-                  </>
-                ) : (
-                  <>
-                    <div />
-                    <div>
-                      <span className="text-2xl font-heading font-bold text-gold-gradient">{m.year}</span>
-                      <h3 className="font-heading font-semibold text-xl text-white mt-1 mb-2">{m.title}</h3>
-                      <p className="text-[var(--silver)] text-sm leading-relaxed">{m.desc}</p>
-                    </div>
-                  </>
-                )}
-              </div>
+              <MilestoneItem key={m.year} m={m} i={i} />
             ))}
           </div>
         </div>

@@ -1,30 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { Section } from "@/components/ui/Section";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
-
-const services = [
-  {
-    icon: "⚙️",
-    title: "Software Engineering",
-    desc: "Robust, scalable software built with modern architectures. From system design to deployment, we engineer solutions that stand the test of time.",
-    href: "/services#software",
-  },
-  {
-    icon: "🌐",
-    title: "Web Platforms",
-    desc: "High-performance web platforms that convert. We craft experiences visitors remember — from landing pages to complex SaaS dashboards.",
-    href: "/services#web",
-  },
-  {
-    icon: "🤖",
-    title: "Intelligent Digital Solutions",
-    desc: "AI-powered products and data-driven tools that automate, predict and personalise — transforming how your business operates.",
-    href: "/services#ai",
-  },
-];
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { SERVICES } from "@/lib/services";
 
 export function ServicesSummary() {
   return (
@@ -40,20 +20,20 @@ export function ServicesSummary() {
       </Reveal>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {services.map((s, i) => (
-          <Reveal key={s.title} delay={i * 0.12}>
-            <Link href={s.href} className="block h-full group">
-              <Card glow className="h-full group-hover:border-[var(--gold)] transition-colors duration-300">
+        {SERVICES.map((s, i) => (
+          <Reveal key={s.id} delay={i * 0.12}>
+            <ButtonLink href={s.href} className="block h-full group no-underline hover:scale-100 active:scale-100 p-0">
+              <Card glow className="h-full group-hover:border-[var(--gold)] transition-colors duration-300 w-full">
                 <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300 inline-block">
                   {s.icon}
                 </div>
                 <h3 className="font-heading font-semibold text-xl text-white mb-3">{s.title}</h3>
-                <p className="text-[var(--silver)] text-sm leading-relaxed">{s.desc}</p>
-                <span className="inline-block mt-6 text-xs uppercase tracking-widest text-[var(--gold)] group-hover:gap-2 transition-all">
+                <p className="text-[var(--silver)] text-sm leading-relaxed">{s.summary}</p>
+                <span className="inline-block mt-6 text-xs uppercase tracking-widest text-[var(--gold)]">
                   Learn more →
                 </span>
               </Card>
-            </Link>
+            </ButtonLink>
           </Reveal>
         ))}
       </div>

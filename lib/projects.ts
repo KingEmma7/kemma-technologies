@@ -1,18 +1,20 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { z } from "zod";
 
-export interface ProjectMeta {
-  slug: string;
-  title: string;
-  summary: string;
-  cover?: string;
-  tags?: string[];
-  role?: string;
-  year?: number;
-  client?: string;
-  featured?: boolean;
-}
+const projectSchema = z.object({
+  title:    z.string(),
+  summary:  z.string(),
+  cover:    z.string().optional(),
+  tags:     z.array(z.string()).optional(),
+  role:     z.string().optional(),
+  year:     z.number().optional(),
+  client:   z.string().optional(),
+  featured: z.boolean().optional(),
+});
+
+export type ProjectMeta = z.infer<typeof projectSchema> & { slug: string };
 
 const PROJECTS_DIR = path.join(process.cwd(), "content/projects");
 
@@ -26,8 +28,14 @@ export function getAllProjects(): ProjectMeta[] {
       const slug = file.replace(".mdx", "");
       const raw = fs.readFileSync(path.join(PROJECTS_DIR, file), "utf-8");
       const { data } = matter(raw);
-      return { slug, ...data } as ProjectMeta;
+      const parsed = projectSchema.safeParse(data);
+      if (!parsed.success) {
+        console.warn(`[projects] Invalid frontmatter in ${file}:`, parsed.error.flatten());
+        return null;
+      }
+      return { slug, ...parsed.data } satisfies ProjectMeta;
     })
+    .filter((p): p is ProjectMeta => p !== null)
     .sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
 }
 
@@ -37,10 +45,14 @@ export function getProjectBySlug(slug: string): { meta: ProjectMeta; content: st
 
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(raw);
-
-  return { meta: { slug, ...data } as ProjectMeta, content };
+  const parsed = projectSchema.safeParse(data);
+  if (!parsed.success) {
+    console.warn(`[projects] Invalid frontmatter in ${slug}.mdx:`, parsed.error.flatten());
+    return null;
+  }
+  return { meta: { slug, ...parsed.data }, content };
 }
 
 export function getFeaturedProjects(): ProjectMeta[] {
-  return getAllProjects().filter((p) => p.featured);
+  return getAllProjects().filter((p) => p.featured === true);
 }

@@ -3,20 +3,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { SITE } from "@/lib/site";
+import { contactSchema, type ContactFormData } from "@/lib/validations/contact";
 
-const schema = z.object({
-  name:    z.string().min(2, "Name must be at least 2 characters"),
-  email:   z.string().email("Please enter a valid email address"),
-  company: z.string().optional(),
-  message: z.string().min(20, "Message must be at least 20 characters"),
-});
-
-type FormData = z.infer<typeof schema>;
 type Status = "idle" | "loading" | "success" | "error";
 
 export function ContactForm() {
@@ -27,9 +20,9 @@ export function ContactForm() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: ContactFormData) => {
     setStatus("loading");
     try {
       const res = await fetch("/api/contact", {
@@ -57,6 +50,7 @@ export function ContactForm() {
                 <Input
                   label="Name *"
                   placeholder="Your name"
+                  autoComplete="name"
                   error={errors.name?.message}
                   {...register("name")}
                 />
@@ -64,6 +58,7 @@ export function ContactForm() {
                   label="Email *"
                   type="email"
                   placeholder="you@company.com"
+                  autoComplete="email"
                   error={errors.email?.message}
                   {...register("email")}
                 />
@@ -72,12 +67,13 @@ export function ContactForm() {
               <Input
                 label="Company"
                 placeholder="Your company (optional)"
+                autoComplete="organization"
                 {...register("company")}
               />
 
               <Textarea
                 label="Message *"
-                placeholder="Tell us about your project — what you're building, your timeline and budget range..."
+                placeholder="Tell us about your project — what you're building, your timeline and budget range…"
                 error={errors.message?.message}
                 {...register("message")}
               />
@@ -95,9 +91,11 @@ export function ContactForm() {
                 <AnimatePresence>
                   {status === "success" && (
                     <motion.p
+                      key="success"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
+                      role="status"
                       className="text-[var(--success)] text-sm"
                     >
                       ✓ Message sent! We&apos;ll be in touch within 24 hours.
@@ -105,12 +103,15 @@ export function ContactForm() {
                   )}
                   {status === "error" && (
                     <motion.p
+                      key="error"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
+                      role="alert"
                       className="text-[var(--error)] text-sm"
                     >
-                      Something went wrong. Please email us directly at hello@kemmatech.com
+                      Something went wrong. Please email us directly at{" "}
+                      <a href={`mailto:${SITE.email}`} className="underline">{SITE.email}</a>
                     </motion.p>
                   )}
                 </AnimatePresence>
@@ -125,21 +126,21 @@ export function ContactForm() {
               <div className="flex flex-col gap-6">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">Email</p>
-                  <a href="mailto:hello@kemmatech.com" className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors text-lg">
-                    hello@kemmatech.com
+                  <a href={`mailto:${SITE.email}`} className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors text-lg">
+                    {SITE.email}
                   </a>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">Location</p>
-                  <p className="text-[var(--silver)] text-lg">Accra, Ghana</p>
+                  <p className="text-[var(--silver)] text-lg">{SITE.location}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">Social</p>
                   <div className="flex gap-6">
-                    <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors">
+                    <a href={SITE.social.linkedin} target="_blank" rel="noreferrer" className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors">
                       LinkedIn
                     </a>
-                    <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors">
+                    <a href={SITE.social.twitter} target="_blank" rel="noreferrer" className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors">
                       Twitter
                     </a>
                   </div>
@@ -147,9 +148,8 @@ export function ContactForm() {
               </div>
             </div>
 
-            {/* Response promise */}
             <div className="border border-[var(--border)] rounded-sm p-8 bg-[rgba(255,255,255,0.02)]">
-              <div className="text-4xl mb-4">⏱</div>
+              <div className="text-4xl mb-4" aria-hidden="true">⏱</div>
               <h3 className="font-heading font-semibold text-white text-lg mb-2">24-hour response</h3>
               <p className="text-[var(--silver)] text-sm leading-relaxed">
                 We read every enquiry personally. You&apos;ll hear back from a senior team member — not an automated bot — within one business day.
