@@ -104,3 +104,55 @@ h1, h2, h3, h4, h5, h6 {
 .panel-light h2,
 .panel-light h3,
 .panel-light h4 { color: #111111; }
+
+/* ─── Hero-only effects (scoped; no global impact) ──────────────────────────── */
+.hero-grid-overlay {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.038) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.04));
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.04));
+}
+
+.hero-gold-glow {
+  background: radial-gradient(circle, rgba(200,155,60,0.24), transparent 62%);
+  filter: blur(52px);
+  animation: hero-gold-pulse 7s ease-in-out infinite;
+}
+
+@keyframes hero-gold-pulse {
+  0%, 100% { opacity: 0.42; transform: scale(0.96); }
+  50%       { opacity: 0.80; transform: scale(1.05); }
+}
+
+.hero-signal-sweep {
+  width: 36%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,155,60,0.65), transparent);
+  transform: rotate(-18deg);
+  animation: hero-signal-move 6.5s ease-in-out infinite;
+}
+
+@keyframes hero-signal-move {
+  0%   { opacity: 0;   transform: translateX(-50%) translateY(60px)  rotate(-18deg); }
+  18%  { opacity: 0.9; }
+  65%  { opacity: 0.9; transform: translateX(210%) translateY(-90px) rotate(-18deg); }
+  100% { opacity: 0;   transform: translateX(210%) translateY(-90px) rotate(-18deg); }
+}
+
+.hero-status-card {
+  background: rgba(5, 6, 8, 0.76);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(200, 155, 60, 0.20);
+  padding: 1.25rem 1.5rem;
+  min-width: 176px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gold-glow,
+  .hero-signal-sweep {
+    animation: none !important;
+  }
+}
