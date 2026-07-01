@@ -5,6 +5,7 @@ import { Navigation } from "@/components/layout/Navigation";
 import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { SITE } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,6 +21,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
   title: {
     default: "Kemma Technologies",
     template: "%s | Kemma Technologies",
@@ -53,7 +55,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
-      <body>
+      {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla, Grammarly)
+          inject attributes onto <body> before React hydrates. This is a benign,
+          well-documented mismatch — see https://react.dev/link/hydration-mismatch */}
+      <body suppressHydrationWarning>
         <SmoothScroll>
           <Navigation />
           <PageTransition>

@@ -2,6 +2,7 @@
 export const SITE = {
   name: "Kemma Technologies",
   tagline: "Engineering software, web platforms, and intelligent digital solutions for modern businesses.",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://kemmatech.com",
   email: "hello@kemmatech.com",
   location: "Accra, Ghana",
   social: {

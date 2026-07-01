@@ -46,6 +46,19 @@ export function ContactForm() {
           {/* Form */}
           <div>
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-8">
+              {/* Honeypot — hidden from real users, catches basic bots that
+                  auto-fill every field. Do not remove or rename. */}
+              <div className="sr-only" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input
+                  id="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  {...register("website")}
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <Input
                   label="Name *"

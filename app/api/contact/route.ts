@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
+    // Honeypot tripped — respond as if successful so the bot doesn't learn
+    // to look for a different signal, but skip sending the email entirely.
+    if (parsed.data.website) {
+      return NextResponse.json({ ok: true });
+    }
+
     const { name, email, company, message } = parsed.data;
 
     const apiKey = process.env.RESEND_API_KEY;

@@ -27,12 +27,15 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
     lenis.on("scroll", ScrollTrigger.update);
 
     // Drive Lenis from GSAP's ticker so both share the same animation frame.
-    gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+    // Named reference is required so `gsap.ticker.remove` actually un-registers
+    // this exact callback on cleanup (a fresh arrow function would not match).
+    const update = (time: number) => { lenis.raf(time * 1000); };
+    gsap.ticker.add(update);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       lenis.off("scroll", ScrollTrigger.update);
-      gsap.ticker.remove((time) => { lenis.raf(time * 1000); });
+      gsap.ticker.remove(update);
       lenis.destroy();
     };
   }, []);
