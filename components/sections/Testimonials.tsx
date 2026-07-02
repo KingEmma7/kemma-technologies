@@ -4,21 +4,26 @@ import { Section } from "@/components/ui/Section";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
 
+// TODO(launch-blocker): these quotes are drafts written from known facts
+// (book sales, live order volume, church usage) — they are NOT verbatim
+// quotes from these people. Get real, approved wording from each person
+// before this goes live. Publishing fabricated quotes attributed to named
+// individuals is a reputational and potential legal risk.
 const testimonials = [
   {
-    quote: "Kemma Technologies transformed our operational workflows with a platform that has saved us hours every week. The attention to detail is second to none.",
-    author: "Ama Serwaa",
-    role: "COO, FinancePro Ghana",
+    quote: "Kemma built my author site and helped launch Constract. Both platforms just work — readers can buy my books in a few clicks, and it's been a smooth partnership from day one.",
+    author: "Kofi Asiedu Mahama",
+    role: "Author · Founder, Constract",
   },
   {
-    quote: "Working with the Kemma team was seamless. They understood our vision immediately and delivered a product that exceeded every expectation.",
-    author: "Kofi Mensah",
-    role: "CEO, AgroLogic Africa",
+    quote: "Our website finally feels like our brand. Customers can browse the menu and place custom orders without calling us, and it's made a real difference day to day.",
+    author: "Esther Adem",
+    role: "Owner, Estee's Bakery",
   },
   {
-    quote: "Their AI-powered recommendation engine increased our conversion rate by 34%. Exceptional technical skill paired with genuine business insight.",
-    author: "Abena Asante",
-    role: "Head of Digital, RetailEdge",
+    quote: "The new site gives our congregation and visitors a proper digital home. It's easy for people of every age to find what they need, and that matters to us.",
+    author: "Bishop Veliane",
+    role: "Apostles Revelation Society — Wovenu Memorial Chapel",
   },
 ];
 
