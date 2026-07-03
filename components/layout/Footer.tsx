@@ -12,11 +12,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div className="flex flex-col gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image src="/logo-mark.svg" alt={SITE.name} width={40} height={40} className="object-contain" />
-              <span className="font-heading font-bold uppercase tracking-widest text-sm text-[var(--gold)]">
-                {SITE.name}
-              </span>
+            <Link href="/" className="flex items-center w-fit">
+              <Image
+                src="/logo.png"
+                alt={SITE.name}
+                width={1024}
+                height={768}
+                className="h-11 w-auto object-contain"
+              />
             </Link>
             <p className="text-sm text-[var(--muted)] leading-relaxed max-w-xs">
               {SITE.tagline}

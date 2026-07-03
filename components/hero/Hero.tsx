@@ -9,21 +9,32 @@ const HeroCanvas = dynamic(
   { ssr: false }
 );
 
-const tagline = "Engineering software, web platforms and intelligent digital solutions for modern businesses.";
+// Short, punchy headline — kept to a handful of words so it reads in a glance.
+// The fuller description of what we do lives in the smaller subhead below.
+// Flattened + precomputed at module scope (pure — no mutation during render).
+interface HeadlineWord {
+  word: string;
+  gold: boolean;
+  newLine: boolean;
+}
+
+const headlineWords: HeadlineWord[] = [
+  { word: "We", gold: false, newLine: false },
+  { word: "Engineer", gold: false, newLine: false },
+  { word: "Digital", gold: true, newLine: true },
+  { word: "Excellence.", gold: true, newLine: false },
+];
+
+const subhead = "Software, web platforms, and intelligent digital solutions for modern businesses.";
 
 const wordVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: 0.4 + i * 0.05, duration: 0.6, ease: "easeOut" as const },
+    transition: { delay: 0.4 + i * 0.08, duration: 0.6, ease: "easeOut" as const },
   }),
 };
-
-// Words to highlight in gold — defined explicitly so wording changes don't silently break styling.
-const GOLD_WORDS = new Set(["software,", "web", "platforms", "intelligent", "digital", "solutions"]);
-
-const words = tagline.split(" ");
 
 export function Hero() {
   return (
@@ -43,17 +54,18 @@ export function Hero() {
           Kemma Technologies — Ghana
         </motion.p>
 
-        <h1 className="font-heading font-bold text-4xl md:text-6xl lg:text-7xl leading-tight mb-8">
-          {words.map((word, i) => (
+        <h1 className="font-heading font-bold text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight mb-6">
+          {headlineWords.map(({ word, gold, newLine }, i) => (
             <motion.span
-              key={i}
+              key={word}
               custom={i}
               variants={wordVariants}
               initial="hidden"
               animate="visible"
               className={[
-                "inline-block mr-[0.25em]",
-                GOLD_WORDS.has(word) ? "text-gold-gradient" : "text-white",
+                newLine ? "block" : "inline-block",
+                "mr-[0.25em]",
+                gold ? "text-gold-gradient" : "text-white",
               ].join(" ")}
             >
               {word}
@@ -61,11 +73,20 @@ export function Hero() {
           ))}
         </h1>
 
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.6 }}
+          className="text-base md:text-lg text-[var(--silver)] max-w-lg mx-auto mb-10"
+        >
+          {subhead}
+        </motion.p>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4, duration: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center mt-10"
+          className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <ButtonLink href="/work" size="lg">View Our Work</ButtonLink>
           <ButtonLink href="/contact" variant="secondary" size="lg">Start a Project</ButtonLink>

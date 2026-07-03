@@ -92,10 +92,13 @@ Then add your cover image to `public/images/`.
 
 ## Logo assets
 
-A placeholder SVG logo mark is at `public/logo-mark.svg`. Replace it with the actual Kemma Technologies logo:
+The official Kemma Technologies logo lives at `public/logo.png` and is used as the full lockup (mark + wordmark) in `Navigation.tsx` and `Footer.tsx`. It's also copied into the App Router metadata slots for favicons and social previews:
 
-- Swap `public/logo-mark.svg` with the real logo file (SVG preferred for sharpness at all sizes).
-- If using a PNG, update the `src` in `components/layout/Navigation.tsx` and `components/layout/Footer.tsx`.
+- `app/icon.png` — browser tab favicon
+- `app/apple-icon.png` — iOS home screen icon
+- `app/opengraph-image.png` / `app/twitter-image.png` — social share previews
+
+To update the logo, replace all five files with the new asset (same filenames) and re-run `npm run build`.
 
 ## Contact form
 

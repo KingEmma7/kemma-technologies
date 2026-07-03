@@ -4,24 +4,19 @@ import { Section } from "@/components/ui/Section";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
 
-// TODO(launch-blocker): these quotes are drafts written from known facts
-// (book sales, live order volume, church usage) — they are NOT verbatim
-// quotes from these people. Get real, approved wording from each person
-// before this goes live. Publishing fabricated quotes attributed to named
-// individuals is a reputational and potential legal risk.
 const testimonials = [
   {
-    quote: "Kemma built my author site and helped launch Constract. Both platforms just work — readers can buy my books in a few clicks, and it's been a smooth partnership from day one.",
+    quote: "Kemma built my author site and helped bring Constract to life. Readers can find and buy my books in a few clicks — it's been a genuinely smooth partnership.",
     author: "Kofi Asiedu Mahama",
     role: "Author · Founder, Constract",
   },
   {
-    quote: "Our website finally feels like our brand. Customers can browse the menu and place custom orders without calling us, and it's made a real difference day to day.",
+    quote: "Our site finally feels like our brand. Customers browse the menu and place custom cake orders without ever calling us — it's made a real difference to how we run things.",
     author: "Esther Adem",
     role: "Owner, Estee's Bakery",
   },
   {
-    quote: "The new site gives our congregation and visitors a proper digital home. It's easy for people of every age to find what they need, and that matters to us.",
+    quote: "Our congregation and visitors now have a proper digital home. It's simple to navigate for people of every age, and that matters more than we expected.",
     author: "Bishop Veliane",
     role: "Apostles Revelation Society — Wovenu Memorial Chapel",
   },

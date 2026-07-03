@@ -67,19 +67,16 @@ export function Navigation() {
         ].join(" ")}
       >
         <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-16 h-20 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 z-[60]" aria-label={`${SITE.name} home`}>
+          {/* Logo — full lockup (mark + wordmark), so no separate text label is needed */}
+          <Link href="/" className="flex items-center z-[60] shrink-0" aria-label={`${SITE.name} home`}>
             <Image
-              src="/logo-mark.svg"
+              src="/logo.png"
               alt={SITE.name}
-              width={44}
-              height={44}
-              className="object-contain"
+              width={1024}
+              height={768}
+              className="h-12 sm:h-14 w-auto object-contain"
               priority
             />
-            <span className="font-heading font-bold text-base tracking-widest uppercase text-[var(--gold)] hidden sm:block">
-              {SITE.name}
-            </span>
           </Link>
 
           {/* Desktop inline links (always visible on md+) */}
