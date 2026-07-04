@@ -6,23 +6,28 @@ import { Reveal } from "@/components/ui/Reveal";
 const values = [
   {
     icon: "⚡",
-    title: "Engineering Excellence",
+    title: "Excellence",
     desc: "We hold ourselves to the highest standards of technical craft. Clean code, robust architecture and thoughtful decisions are non-negotiable.",
   },
   {
-    icon: "🤝",
-    title: "Client Partnership",
-    desc: "We don't just deliver software; we invest in understanding your business deeply and becoming a trusted extension of your team.",
+    icon: "🎯",
+    title: "Practicality",
+    desc: "We build for real-world use, not for show. Every decision is weighed against whether it genuinely solves the problem at hand.",
   },
   {
-    icon: "🌍",
-    title: "African Innovation",
-    desc: "We are proud to be building from Ghana. Our solutions are designed with African realities in mind — and African ambitions at heart.",
+    icon: "🤝",
+    title: "Trust",
+    desc: "We invest in understanding your business deeply, communicate clearly, and do what we say we'll do.",
+  },
+  {
+    icon: "🌱",
+    title: "Growth",
+    desc: "We build systems designed to grow with your business, not ones you'll outgrow in a year.",
   },
   {
     icon: "🔬",
-    title: "Continuous Learning",
-    desc: "Technology moves fast. We stay ahead through continuous research, experimentation and a culture of intellectual curiosity.",
+    title: "Innovation",
+    desc: "Technology moves fast. We stay ahead through continuous learning, experimentation, and modern AI-assisted workflows.",
   },
 ];
 
@@ -36,7 +41,7 @@ export function ValuesSection() {
         </h2>
       </Reveal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
         {values.map((v, i) => (
           <Reveal key={v.title} delay={i * 0.1}>
             <div className="flex gap-5">

@@ -56,3 +56,11 @@ export function getProjectBySlug(slug: string): { meta: ProjectMeta; content: st
 export function getFeaturedProjects(): ProjectMeta[] {
   return getAllProjects().filter((p) => p.featured === true);
 }
+
+/** Homepage showcase: featured first, then fill up to `limit` (single row). */
+export function getHomepageProjects(limit = 3): ProjectMeta[] {
+  const all = getAllProjects();
+  const featured = all.filter((p) => p.featured);
+  const rest = all.filter((p) => !p.featured);
+  return [...featured, ...rest].slice(0, limit);
+}

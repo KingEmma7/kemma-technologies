@@ -33,7 +33,7 @@ export function FeaturedWork({ projects }: FeaturedWorkProps) {
               transition={{ duration: 0.3 }}
               className="block group overflow-hidden rounded-sm bg-[#E8E8E8]"
             >
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-[16/10] overflow-hidden">
                 {project.cover ? (
                   <Image
                     src={project.cover}

@@ -66,15 +66,15 @@ export function Navigation() {
             : "bg-transparent",
         ].join(" ")}
       >
-        <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-16 h-20 flex items-center justify-between">
-          {/* Logo — full lockup (mark + wordmark), so no separate text label is needed */}
-          <Link href="/" className="flex items-center z-[60] shrink-0" aria-label={`${SITE.name} home`}>
+        <div className="mx-auto max-w-7xl pl-3 pr-4 md:px-10 lg:px-16 h-20 md:h-32 flex items-center justify-between">
+          {/* Logo — smaller on mobile; desktop size preserved at md+ */}
+          <Link href="/" className="flex items-center justify-start z-[60] shrink-0" aria-label={`${SITE.name} home`}>
             <Image
               src="/logo.png"
               alt={SITE.name}
               width={1024}
               height={768}
-              className="h-12 sm:h-14 w-auto object-contain"
+              className="h-24 w-auto object-contain object-left md:h-34"
               priority
             />
           </Link>

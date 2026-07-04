@@ -51,7 +51,7 @@ export function Hero() {
           transition={{ delay: 0.1, duration: 0.8 }}
           className="text-xs uppercase text-[var(--gold)] tracking-[0.3em] mb-8 font-medium"
         >
-          Kemma Technologies — Ghana
+          Kemma Technologies
         </motion.p>
 
         <h1 className="font-heading font-bold text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight mb-6">
@@ -90,21 +90,6 @@ export function Hero() {
         >
           <ButtonLink href="/work" size="lg">View Our Work</ButtonLink>
           <ButtonLink href="/contact" variant="secondary" size="lg">Start a Project</ButtonLink>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          aria-hidden="true"
-        >
-          <span className="text-xs uppercase tracking-widest text-[var(--muted)]">Scroll</span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-            className="w-px h-8 bg-gradient-to-b from-[var(--gold)] to-transparent"
-          />
         </motion.div>
       </div>
     </section>
