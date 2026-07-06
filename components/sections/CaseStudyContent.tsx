@@ -42,7 +42,15 @@ export function CaseStudyHero({ meta }: Props) {
           <h1 className="font-heading font-bold text-5xl md:text-6xl lg:text-7xl text-white mb-6 max-w-4xl">
             {meta.title}
           </h1>
-          <p className="text-[var(--silver)] text-xl max-w-2xl mb-10">{meta.summary}</p>
+          <p className="text-[var(--silver)] text-xl max-w-2xl mb-8">{meta.summary}</p>
+
+          {meta.liveUrl && (
+            <div className="mb-10">
+              <ButtonLink href={meta.liveUrl} external>
+                Visit Live Site ↗
+              </ButtonLink>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-10 border-t border-[var(--border)] pt-8">
             {meta.client && (

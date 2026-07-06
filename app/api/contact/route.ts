@@ -48,9 +48,12 @@ export async function POST(req: NextRequest) {
     const safeCompany = escapeHtml(company ?? "N/A");
     const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>");
 
+    // Uses Resend's shared sandbox sender since no custom domain is verified
+    // yet. Once a domain is verified in Resend, switch to a branded address
+    // (e.g. "Kemma Website <noreply@kemmatech.com>").
     const { error } = await resend.emails.send({
-      from:    "Kemma Website <noreply@kemmatech.com>",
-      to:      ["hello@kemmatech.com"],
+      from:    "Kemma Website <onboarding@resend.dev>",
+      to:      ["etagbor@gmail.com"],
       replyTo: email,
       subject: `New enquiry from ${name}${company ? ` (${company})` : ""}`,
       text:    `Name: ${name}\nEmail: ${email}\nCompany: ${company ?? "N/A"}\n\nMessage:\n${message}`,

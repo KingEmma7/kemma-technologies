@@ -6,8 +6,8 @@ import { Reveal } from "@/components/ui/Reveal";
 const steps = [
   { n: "01", title: "Discovery", desc: "We start by listening. Deep workshops to understand your business, users and constraints before writing a line of code." },
   { n: "02", title: "Strategy & Design", desc: "We map the solution space, prototype rapidly and align on a roadmap that balances ambition with pragmatism." },
-  { n: "03", title: "Engineering", desc: "Our engineers build iteratively with continuous delivery. You see progress every week, not after months of silence." },
-  { n: "04", title: "Launch & Growth", desc: "We ship, then stay. Post-launch support, performance monitoring and iterative improvement are part of our standard engagement." },
+  { n: "03", title: "Engineering", desc: "We build iteratively with continuous delivery. You see progress every week, not after months of silence." },
+  { n: "04", title: "Launch & Growth", desc: "We ship, then stay. Post-launch support and iterative improvement are part of the engagement, not an afterthought." },
 ];
 
 export function ProcessSection() {

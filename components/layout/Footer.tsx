@@ -58,7 +58,7 @@ export function Footer() {
                   LinkedIn
                 </a>
                 <a href={SITE.social.twitter} target="_blank" rel="noreferrer" className="hover:text-[var(--gold)] transition-colors duration-200 uppercase tracking-widest text-xs">
-                  Twitter
+                  X
                 </a>
               </li>
             </ul>

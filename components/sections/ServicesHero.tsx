@@ -33,7 +33,7 @@ export function ServicesHero() {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="text-[var(--silver)] text-xl max-w-2xl leading-relaxed"
         >
-          Three core capabilities. One integrated team. We move from strategy to shipped product faster than any agency you&apos;ve worked with.
+          Three core capabilities. One focused, founder-led process. We move from strategy to shipped product with clarity, speed, and engineering discipline — without unnecessary complexity.
         </motion.p>
       </Container>
     </section>

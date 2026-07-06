@@ -41,12 +41,19 @@ export const metadata: Metadata = {
       "Engineering software, web platforms, and intelligent digital solutions for modern businesses.",
     type: "website",
     locale: "en_US",
+    url: SITE.url,
+    siteName: SITE.name,
+    // Explicit image in addition to the file-based app/opengraph-image.png
+    // convention — some crawlers (e.g. link-unfurling bots) don't always
+    // resolve the file-based route correctly, so we set it directly too.
+    images: [{ url: `${SITE.url}/opengraph-image.png`, width: 1024, height: 768, alt: "Kemma Technologies" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Kemma Technologies",
     description:
       "Engineering software, web platforms, and intelligent digital solutions for modern businesses.",
+    images: [`${SITE.url}/twitter-image.png`],
   },
 };
 

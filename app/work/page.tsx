@@ -21,7 +21,7 @@ export default function WorkPage() {
             Work we&apos;re <span className="text-gold-gradient">proud to ship</span>
           </h1>
           <p className="text-[var(--silver)] text-xl max-w-xl">
-            A selection of projects across software engineering, web platforms and AI — from startups to enterprises.
+            A selection of real projects across web platforms, e-commerce, content, community, and business systems.
           </p>
         </div>
       </section>

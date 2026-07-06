@@ -147,6 +147,19 @@ export function ContactForm() {
                   <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">Location</p>
                   <p className="text-[var(--silver)] text-lg">{SITE.location}</p>
                 </div>
+                {SITE.whatsapp && (
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">WhatsApp</p>
+                    <a
+                      href={`https://wa.me/${SITE.whatsapp}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-[var(--silver)] hover:text-[var(--gold)] transition-colors text-lg"
+                    >
+                      <span aria-hidden="true">💬</span> Message us on WhatsApp
+                    </a>
+                  </div>
+                )}
                 <div>
                   <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">Social</p>
                   <div className="flex gap-6">
@@ -154,7 +167,7 @@ export function ContactForm() {
                       LinkedIn
                     </a>
                     <a href={SITE.social.twitter} target="_blank" rel="noreferrer" className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors">
-                      Twitter
+                      X
                     </a>
                   </div>
                 </div>
@@ -165,7 +178,7 @@ export function ContactForm() {
               <div className="text-4xl mb-4" aria-hidden="true">⏱</div>
               <h3 className="font-heading font-semibold text-white text-lg mb-2">24-hour response</h3>
               <p className="text-[var(--silver)] text-sm leading-relaxed">
-                We read every enquiry personally. You&apos;ll hear back from a senior team member — not an automated bot — within one business day.
+                We read every enquiry personally. You&apos;ll hear back directly from the founder or a senior technical collaborator — not an automated bot — within one business day.
               </p>
             </div>
           </div>
