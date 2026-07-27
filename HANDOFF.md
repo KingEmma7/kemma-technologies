@@ -1,7 +1,7 @@
 # Kemma Technologies — Repositioning Handoff
 
 Continuation notes for the strategic repositioning and professional upgrade of
-this site. Written at the end of **Phase 3**. Read this before changing code.
+this site. Written at the end of **Phase 4**. Read this before changing code.
 
 > `AUDIT_REPORT.md` in this repo is **stale** (dated 2026-07-01). It still
 > describes the testimonials as fictional, which was fixed two commits later,
@@ -139,16 +139,16 @@ Kemma products (Giveaways.live, In Development) → why Kemma → process (6 ste
 → testimonials (quotes unchanged) → final CTA.
 
 New/updated: `components/sections/{FlagshipPlatform,ProductsSection,WhyKemma}.tsx`,
-`lib/products.ts`, `content/projects/isgm-platform.mdx` (entry + cover so the
-flagship and case-study link work; Phase 4 still owns screenshot gallery
-rendering and deeper case-study polish), `public/projects/isgm/*.webp`,
-homepage wiring in `app/page.tsx`, ProcessSection expanded to 6 steps,
-ServicesSummary / FeaturedWork / CtaBand copy refreshed.
+`lib/products.ts`, homepage wiring in `app/page.tsx`, ProcessSection expanded
+to 6 steps, ServicesSummary / FeaturedWork / CtaBand copy refreshed.
 
-**Phase 4 — ISGM case study.** Expand `content/projects/isgm-platform.mdx`.
-Render `meta.screenshots`, which nothing currently does. Capture/convert
-remaining public screens (Programs, application) — authenticated screens stay
-out of scope.
+**Phase 4 — ISGM case study.** ✅ Complete. Expanded `isgm-platform.mdx` with
+full factual structure (challenge, solution, applicant/staff experience,
+engineering, outcomes — no fabricated metrics). Added
+`CaseStudyGallery` which renders `cover` + `meta.screenshots` on every case
+study that has them. Public screens captured: home, Programs, admissions
+(`/projects/isgm/{isgm-cover,isgm-home,isgm-programs,isgm-application}.webp`).
+Authenticated dashboards remain out of scope.
 
 **Phase 5 — Work architecture.** Add `category` + `status` to the schema in
 `lib/projects.ts`, filters, client-work vs Kemma-products split, and
