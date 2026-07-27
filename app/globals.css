@@ -16,6 +16,14 @@
   --foreground:  #EDEDED;
   --muted:       #888888;
   --border:      rgba(200,155,60,0.2);
+
+  /* On-light equivalents. #888 on the light panel is only 3.25:1 and fails
+     WCAG AA for body text, so light sections must use these instead of
+     reaching for the dark-surface tokens. */
+  --ink:           #111111;
+  --ink-body:      #4A4A4A;  /* 8.1:1 on --light-bg */
+  --muted-on-light:#5A5A5A;  /* 5.9:1 on --light-bg */
+  --border-on-light: rgba(0,0,0,0.12);
 }
 
 @theme inline {
@@ -30,6 +38,10 @@
   --color-error:       var(--error);
   --color-muted:       var(--muted);
   --color-border:      var(--border);
+  --color-ink:            var(--ink);
+  --color-ink-body:       var(--ink-body);
+  --color-muted-on-light: var(--muted-on-light);
+  --color-border-on-light:var(--border-on-light);
   --font-heading: var(--font-poppins);
   --font-body:    var(--font-inter);
 }
@@ -74,6 +86,84 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ─── Skip navigation ───────────────────────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100%;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--gold);
+  color: #040406;
+  font-weight: 600;
+  border-radius: 3px;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus-visible { top: 1rem; }
+
+/* ─── Scroll reveal ─────────────────────────────────────────────────────────────
+   The hidden state is scoped to `html.js`, which a blocking inline script in the
+   root layout sets before first paint. Without JavaScript the class is never
+   added and every revealed element renders fully visible — the page must be
+   readable even if scripts fail. */
+[data-reveal] {
+  transition-property: opacity, transform;
+  transition-duration: var(--reveal-duration, 0.6s);
+  transition-delay: var(--reveal-delay, 0s);
+  transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.js [data-reveal]:not([data-reveal-visible]) { opacity: 0; }
+.js [data-reveal="up"]:not([data-reveal-visible])    { transform: translateY(40px); }
+.js [data-reveal="down"]:not([data-reveal-visible])  { transform: translateY(-40px); }
+.js [data-reveal="left"]:not([data-reveal-visible])  { transform: translateX(60px); }
+.js [data-reveal="right"]:not([data-reveal-visible]) { transform: translateX(-60px); }
+
+/* Reduced motion: show content in place, with no offset and no delay. */
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal]:not([data-reveal-visible]) {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0s !important;
+  }
+}
+
+/* ─── Above-the-fold entrance ───────────────────────────────────────────────────
+   For hero content, which animates on load rather than on scroll. Same no-JS
+   contract as [data-reveal]: scoped to `html.js`, so the headline is present in
+   the served HTML and readable before (or without) hydration. */
+@keyframes kemma-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.js .enter {
+  animation: kemma-rise 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  animation-delay: var(--enter-delay, 0s);
+}
+
+/* `both` fill would hold the element hidden through its delay, so the animation
+   is removed outright rather than just shortened by the global guard above. */
+@media (prefers-reduced-motion: reduce) {
+  .js .enter { animation: none; }
+}
+
+/* Route-change fade. Opacity only — no transform, so it can't fight the hero
+   entrance running underneath it. */
+@keyframes kemma-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.js .page-enter {
+  animation: kemma-fade-in 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .page-enter { animation: none; }
 }
 
 /* ─── Typography helpers ────────────────────────────────────────────────────── */

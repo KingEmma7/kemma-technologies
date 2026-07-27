@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [],
   },
   experimental: {
-    optimizePackageImports: ["framer-motion", "gsap", "@react-three/fiber", "@react-three/drei"],
+    optimizePackageImports: ["framer-motion", "lucide-react", "@react-three/fiber"],
   },
   async headers() {
     return [

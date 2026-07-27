@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
+import { Clock, MessageCircle } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -156,7 +157,8 @@ export function ContactForm() {
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 text-[var(--silver)] hover:text-[var(--gold)] transition-colors text-lg"
                     >
-                      <span aria-hidden="true">💬</span> Message us on WhatsApp
+                      <MessageCircle className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
+                      Message us on WhatsApp
                     </a>
                   </div>
                 )}
@@ -175,7 +177,7 @@ export function ContactForm() {
             </div>
 
             <div className="border border-[var(--border)] rounded-sm p-8 bg-[rgba(255,255,255,0.02)]">
-              <div className="text-4xl mb-4" aria-hidden="true">⏱</div>
+              <Clock className="mb-4 h-7 w-7 text-[var(--gold)]" strokeWidth={1.5} aria-hidden="true" />
               <h3 className="font-heading font-semibold text-white text-lg mb-2">24-hour response</h3>
               <p className="text-[var(--silver)] text-sm leading-relaxed">
                 We read every enquiry personally. You&apos;ll hear back directly from the founder or a senior technical collaborator — not an automated bot — within one business day.

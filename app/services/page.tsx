@@ -1,14 +1,16 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { ServicesHero } from "@/components/sections/ServicesHero";
 import { ServicesCards } from "@/components/sections/ServicesCards";
 import { ServicesAudienceSection } from "@/components/sections/ServicesAudienceSection";
 import { ProcessSection } from "@/components/sections/ProcessSection";
 import { CtaBand } from "@/components/sections/CtaBand";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Services",
-  description: "Software engineering, web platforms and intelligent digital solutions — delivered by Kemma Technologies.",
-};
+  description:
+    "Digital platforms, web products and product engineering — what Kemma Technologies builds, and the work that demonstrates it.",
+  path: "/services",
+});
 
 export default function ServicesPage() {
   return (

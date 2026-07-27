@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { ProjectMeta } from "@/lib/projects";
 import { Container } from "@/components/ui/Container";
@@ -16,11 +13,9 @@ export function CaseStudyHero({ meta }: Props) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(200,155,60,0.06)_0%,transparent_60%)] pointer-events-none" />
 
       <Container>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-        >
+        {/* CSS entrance (see ServicesHero) so the case-study title is in the
+            served HTML rather than hidden behind hydration. */}
+        <div className="enter">
           <Link
             href="/work"
             className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[var(--muted)] hover:text-[var(--gold)] transition-colors mb-8"
@@ -72,7 +67,7 @@ export function CaseStudyHero({ meta }: Props) {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </Container>
     </section>
   );

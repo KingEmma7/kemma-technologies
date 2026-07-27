@@ -1,37 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Bot, Building2, Globe, Palette, Puzzle, RefreshCw } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 
 const capabilities = [
   {
-    icon: "🌐",
+    icon: Globe,
     title: "Custom Websites",
     desc: "Fast, polished marketing and brand sites built to convert and built to last.",
   },
   {
-    icon: "🧩",
+    icon: Puzzle,
     title: "Web Platforms",
     desc: "Multi-user products and portals with the architecture to grow with your business.",
   },
   {
-    icon: "🏢",
+    icon: Building2,
     title: "Internal Business Systems",
     desc: "Tools that replace spreadsheets and manual processes with reliable software.",
   },
   {
-    icon: "🤖",
+    icon: Bot,
     title: "AI-Assisted Solutions",
     desc: "Practical automations and AI-assisted workflows that save real time.",
   },
   {
-    icon: "🎨",
+    icon: Palette,
     title: "Frontend Engineering",
     desc: "Accessible, performant interfaces with careful attention to detail and craft.",
   },
   {
-    icon: "🔄",
+    icon: RefreshCw,
     title: "Digital Transformation Support",
     desc: "Helping teams move from manual, disconnected processes to modern digital operations.",
   },
@@ -55,7 +56,11 @@ export function WhatWeBuildSection() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="h-full rounded-sm border border-[#00000014] bg-[#00000004] p-8 hover:border-[var(--gold)] transition-colors duration-300"
             >
-              <div className="text-3xl mb-5">{c.icon}</div>
+              <c.icon
+                className="mb-5 h-7 w-7 text-[var(--gold)]"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
               <h3 className="font-heading font-semibold text-lg text-[#111] mb-2">{c.title}</h3>
               <p className="text-[#555] text-sm leading-relaxed">{c.desc}</p>
             </motion.div>

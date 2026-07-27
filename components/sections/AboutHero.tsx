@@ -1,56 +1,42 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 
+/**
+ * Server Component — see ServicesHero for why the entrance is CSS rather than
+ * Framer Motion.
+ */
 export function AboutHero() {
   return (
-    <section className="relative pt-40 pb-24 overflow-hidden bg-[var(--dark-bg)]">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(200,155,60,0.08)_0%,transparent_60%)] pointer-events-none" />
+    <section className="relative overflow-hidden bg-[var(--dark-bg)] pt-40 pb-24">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(200,155,60,0.08)_0%,transparent_60%)]" />
 
       <Container>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-xs uppercase tracking-widest text-[var(--gold)] mb-6"
-        >
+        <p className="enter mb-6 text-xs uppercase tracking-widest text-[var(--gold)]">
           About Kemma Technologies
-        </motion.p>
+        </p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="font-heading font-bold text-4xl md:text-6xl text-white mb-8 max-w-4xl leading-tight"
+        <h1
+          className="enter mb-8 max-w-4xl font-heading text-4xl font-bold leading-tight text-white md:text-6xl"
+          style={{ "--enter-delay": "0.1s" } as React.CSSProperties}
         >
-          Engineering reliable software, web platforms, and{" "}
-          <span className="text-gold-gradient">intelligent digital systems</span> for modern businesses.
-        </motion.h1>
+          Technology should make <span className="text-gold-gradient">serious work simpler</span>.
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="text-[var(--silver)] text-lg md:text-xl max-w-2xl leading-relaxed mb-10"
+        <p
+          className="enter mb-10 max-w-2xl text-lg leading-relaxed text-[var(--silver)] md:text-xl"
+          style={{ "--enter-delay": "0.25s" } as React.CSSProperties}
         >
-          Kemma Technologies helps businesses, founders, and organizations turn ideas into clean,
-          scalable, and practical digital products. We combine software engineering, thoughtful
-          user experience, and modern AI-assisted workflows to build websites, platforms, internal
-          systems, automations, and digital tools that are visually polished, reliable,
-          maintainable, and built for real-world use.
-        </motion.p>
+          Kemma Technologies is a product and software engineering company building digital
+          platforms, web products and business systems for organisations worldwide.
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="flex flex-col sm:flex-row gap-4"
+        <div
+          className="enter flex flex-col gap-4 sm:flex-row"
+          style={{ "--enter-delay": "0.35s" } as React.CSSProperties}
         >
           <ButtonLink href="/contact" size="lg">Start a Project</ButtonLink>
-          <ButtonLink href="/services" variant="secondary" size="lg">Explore Our Services</ButtonLink>
-        </motion.div>
+          <ButtonLink href="/work" variant="secondary" size="lg">Explore Our Work</ButtonLink>
+        </div>
       </Container>
     </section>
   );

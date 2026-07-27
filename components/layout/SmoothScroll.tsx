@@ -2,41 +2,59 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface SmoothScrollProps {
   children: React.ReactNode;
 }
 
+/**
+ * Momentum scrolling via Lenis, driven by its own rAF loop.
+ *
+ * This previously ran Lenis off the GSAP ticker and registered ScrollTrigger to
+ * keep the two in sync — but no ScrollTrigger animation ever existed in the
+ * codebase, so GSAP + ScrollTrigger were shipped on every route purely to call
+ * `lenis.raf()`. A plain rAF loop does the same job with no dependency.
+ *
+ * Reduced motion is re-checked live rather than only at mount, so toggling the
+ * OS setting takes effect without a reload.
+ */
 export function SmoothScroll({ children }: SmoothScrollProps) {
   useEffect(() => {
-    const prefersReduced =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let lenis: Lenis | null = null;
+    let frame = 0;
 
-    if (prefersReduced) return;
+    const start = () => {
+      if (lenis) return;
+      const instance = new Lenis({
+        duration: 1.2,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+      lenis = instance;
 
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    });
+      const raf = (time: number) => {
+        instance.raf(time);
+        frame = requestAnimationFrame(raf);
+      };
+      frame = requestAnimationFrame(raf);
+    };
 
-    // Keep GSAP ScrollTrigger in sync with Lenis scroll position.
-    lenis.on("scroll", ScrollTrigger.update);
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      // destroy() also unsets the styles Lenis applied, so native scrolling
+      // takes over cleanly when reduced motion is switched on mid-session.
+      lenis?.destroy();
+      lenis = null;
+    };
 
-    // Drive Lenis from GSAP's ticker so both share the same animation frame.
-    // Named reference is required so `gsap.ticker.remove` actually un-registers
-    // this exact callback on cleanup (a fresh arrow function would not match).
-    const update = (time: number) => { lenis.raf(time * 1000); };
-    gsap.ticker.add(update);
-    gsap.ticker.lagSmoothing(0);
+    const sync = () => (query.matches ? stop() : start());
+
+    sync();
+    query.addEventListener("change", sync);
 
     return () => {
-      lenis.off("scroll", ScrollTrigger.update);
-      gsap.ticker.remove(update);
-      lenis.destroy();
+      query.removeEventListener("change", sync);
+      stop();
     };
   }, []);
 

@@ -1,40 +1,34 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 
+/**
+ * Server Component. The entrance is CSS (`.enter`), scoped to `html.js`, so the
+ * heading is present and readable in the served HTML — the Framer Motion
+ * version emitted `opacity: 0` inline and left the page blank until hydration.
+ */
 export function ServicesHero() {
   return (
-    <section className="relative pt-40 pb-24 overflow-hidden bg-[var(--dark-bg)]">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,123,148,0.08)_0%,transparent_60%)] pointer-events-none" />
+    <section className="relative overflow-hidden bg-[var(--dark-bg)] pt-40 pb-24">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,123,148,0.08)_0%,transparent_60%)]" />
 
       <Container>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-xs uppercase tracking-widest text-[var(--gold)] mb-6"
-        >
+        <p className="enter mb-6 text-xs uppercase tracking-widest text-[var(--gold)]">
           What we build
-        </motion.p>
+        </p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="font-heading font-bold text-5xl md:text-7xl text-white mb-8 max-w-4xl"
+        <h1
+          className="enter mb-8 max-w-4xl font-heading text-4xl font-bold text-white sm:text-5xl md:text-6xl"
+          style={{ "--enter-delay": "0.1s" } as React.CSSProperties}
         >
-          Services built for <span className="text-gold-gradient">impact at scale</span>
-        </motion.h1>
+          Three capabilities, <span className="text-gold-gradient">backed by shipped work</span>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="text-[var(--silver)] text-xl max-w-2xl leading-relaxed"
+        <p
+          className="enter max-w-2xl text-lg leading-relaxed text-[var(--silver)] md:text-xl"
+          style={{ "--enter-delay": "0.25s" } as React.CSSProperties}
         >
-          Three core capabilities. One focused, founder-led process. We move from strategy to shipped product with clarity, speed, and engineering discipline — without unnecessary complexity.
-        </motion.p>
+          Digital platforms, web products and product engineering. Every capability below is
+          tied to work we have delivered and can point you to.
+        </p>
       </Container>
     </section>
   );

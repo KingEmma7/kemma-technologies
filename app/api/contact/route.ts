@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contactSchema } from "@/lib/validations/contact";
+import { SITE } from "@/lib/site";
 
 /** Escape HTML special chars so user input cannot inject markup into emails. */
 function escapeHtml(str: string): string {
@@ -48,12 +49,15 @@ export async function POST(req: NextRequest) {
     const safeCompany = escapeHtml(company ?? "N/A");
     const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>");
 
-    // Uses Resend's shared sandbox sender since no custom domain is verified
-    // yet. Once a domain is verified in Resend, switch to a branded address
-    // (e.g. "Kemma Website <noreply@kemmatech.com>").
+    // Sender falls back to Resend's shared sandbox address so the form keeps
+    // working before kemma.tech is verified in Resend. Once it is, set
+    // CONTACT_FROM_EMAIL (e.g. "Kemma Website <noreply@kemma.tech>") — sends
+    // from an unverified domain are rejected.
+    const from = process.env.CONTACT_FROM_EMAIL ?? "Kemma Website <onboarding@resend.dev>";
+
     const { error } = await resend.emails.send({
-      from:    "Kemma Website <onboarding@resend.dev>",
-      to:      ["etagbor@gmail.com"],
+      from,
+      to:      [SITE.email],
       replyTo: email,
       subject: `New enquiry from ${name}${company ? ` (${company})` : ""}`,
       text:    `Name: ${name}\nEmail: ${email}\nCompany: ${company ?? "N/A"}\n\nMessage:\n${message}`,

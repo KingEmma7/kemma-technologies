@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { AboutHero } from "@/components/sections/AboutHero";
 import { FounderSection } from "@/components/sections/FounderSection";
 import { MissionSection } from "@/components/sections/MissionSection";
@@ -8,10 +8,12 @@ import { ValuesSection } from "@/components/sections/ValuesSection";
 import { FounderLedSection } from "@/components/sections/FounderLedSection";
 import { CtaBand } from "@/components/sections/CtaBand";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "About",
-  description: "Kemma Technologies is a founder-led software and digital solutions company based in Accra, Ghana.",
-};
+  description:
+    "Kemma Technologies is a product and software engineering company building digital platforms, web products and business systems for organisations worldwide.",
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

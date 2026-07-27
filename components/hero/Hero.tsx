@@ -1,96 +1,57 @@
-"use client";
-
-import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { HeroCanvasMount } from "./HeroCanvasMount";
 
-const HeroCanvas = dynamic(
-  () => import("./HeroCanvas").then((m) => m.HeroCanvas),
-  { ssr: false }
-);
-
-// Short, punchy headline — kept to a handful of words so it reads in a glance.
-// The fuller description of what we do lives in the smaller subhead below.
-// Flattened + precomputed at module scope (pure — no mutation during render).
-interface HeadlineWord {
-  word: string;
-  gold: boolean;
-  newLine: boolean;
-}
-
-const headlineWords: HeadlineWord[] = [
-  { word: "We", gold: false, newLine: false },
-  { word: "Engineer", gold: false, newLine: false },
-  { word: "Digital", gold: true, newLine: true },
-  { word: "Excellence.", gold: true, newLine: false },
-];
-
-const subhead = "Software, web platforms, and intelligent digital solutions for modern businesses.";
-
-const wordVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: 0.4 + i * 0.08, duration: 0.6, ease: "easeOut" as const },
-  }),
+const headline = {
+  lead: "We build digital platforms that",
+  accent: "move organisations forward.",
 };
+
+const subhead =
+  "Kemma Technologies designs and engineers high-performance websites, business systems and end-to-end digital products for ambitious organisations worldwide.";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[var(--dark-bg)]">
+    <section className="relative flex min-h-[88svh] items-center justify-center overflow-hidden bg-[var(--dark-bg)] py-32">
       <div className="absolute inset-0 z-[1] bg-gradient-to-b from-transparent via-[rgba(4,4,6,0.4)] to-[var(--dark-bg)]" />
       <div className="absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,rgba(200,155,60,0.06)_0%,transparent_70%)]" />
 
-      <HeroCanvas />
+      <HeroCanvasMount />
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-10 text-center">
-        <motion.p
-          initial={{ opacity: 0, letterSpacing: "0.4em" }}
-          animate={{ opacity: 1, letterSpacing: "0.3em" }}
-          transition={{ delay: 0.1, duration: 0.8 }}
-          className="text-xs uppercase text-[var(--gold)] tracking-[0.3em] mb-8 font-medium"
+      <div className="relative z-10 mx-auto max-w-5xl px-6 text-center md:px-10">
+        <p
+          className="enter mb-8 text-xs font-medium uppercase tracking-[0.3em] text-[var(--gold)]"
+          style={{ "--enter-delay": "0.05s" } as React.CSSProperties}
         >
           Kemma Technologies
-        </motion.p>
+        </p>
 
-        <h1 className="font-heading font-bold text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight mb-6">
-          {headlineWords.map(({ word, gold, newLine }, i) => (
-            <motion.span
-              key={word}
-              custom={i}
-              variants={wordVariants}
-              initial="hidden"
-              animate="visible"
-              className={[
-                newLine ? "block" : "inline-block",
-                "mr-[0.25em]",
-                gold ? "text-gold-gradient" : "text-white",
-              ].join(" ")}
-            >
-              {word}
-            </motion.span>
-          ))}
+        {/*
+          Plain server-rendered heading. This was previously a set of Framer
+          Motion spans with `initial={{ opacity: 0 }}`, which meant the <h1> was
+          invisible in the served HTML until hydration finished.
+        */}
+        <h1
+          className="enter mb-6 font-heading text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+          style={{ "--enter-delay": "0.15s" } as React.CSSProperties}
+        >
+          <span className="text-white">{headline.lead} </span>
+          <span className="text-gold-gradient">{headline.accent}</span>
         </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.6 }}
-          className="text-base md:text-lg text-[var(--silver)] max-w-lg mx-auto mb-10"
+        <p
+          className="enter mx-auto mb-10 max-w-2xl text-base text-[var(--silver)] md:text-lg"
+          style={{ "--enter-delay": "0.3s" } as React.CSSProperties}
         >
           {subhead}
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+        <div
+          className="enter flex flex-col justify-center gap-4 sm:flex-row"
+          style={{ "--enter-delay": "0.45s" } as React.CSSProperties}
         >
           <ButtonLink href="/work" size="lg">View Our Work</ButtonLink>
           <ButtonLink href="/contact" variant="secondary" size="lg">Start a Project</ButtonLink>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

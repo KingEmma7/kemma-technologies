@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
 import { getAllProjects } from "@/lib/projects";
 import { WorkGrid } from "@/components/sections/WorkGrid";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Work",
-  description: "Projects and case studies from Kemma Technologies — software, web platforms and intelligent solutions.",
-};
+  description:
+    "Client platforms and Kemma products — digital platforms, web applications and business systems built end to end.",
+  path: "/work",
+});
 
 export default function WorkPage() {
   const projects = getAllProjects();

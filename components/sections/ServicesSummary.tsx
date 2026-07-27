@@ -24,9 +24,12 @@ export function ServicesSummary() {
           <Reveal key={s.id} delay={i * 0.12}>
             <Link href={s.href} className="block h-full group">
               <Card glow className="h-full group-hover:border-[var(--gold)] transition-colors duration-300">
-                <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300 inline-block">
-                  {s.icon}
-                </div>
+                <s.icon
+                  className="mb-6 h-8 w-8 transition-transform duration-300 group-hover:scale-110"
+                  style={{ color: s.iconColor }}
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
                 <h3 className="font-heading font-semibold text-xl text-white mb-3">{s.title}</h3>
                 <p className="text-[var(--silver)] text-sm leading-relaxed">{s.summary}</p>
                 <span className="inline-block mt-6 text-xs uppercase tracking-widest text-[var(--gold)]">

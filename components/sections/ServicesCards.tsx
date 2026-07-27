@@ -47,13 +47,12 @@ export function ServicesCards() {
                 {/* Header row */}
                 <div className="flex items-center justify-between p-8 gap-4">
                   <div className="flex items-center gap-5">
-                    <motion.span
-                      animate={{ color: isOpen ? service.iconColor : "#888" }}
-                      className="text-4xl"
+                    <service.icon
+                      className="h-9 w-9 shrink-0 transition-colors duration-300"
+                      style={{ color: isOpen ? service.iconColor : "var(--muted)" }}
+                      strokeWidth={1.5}
                       aria-hidden="true"
-                    >
-                      {service.icon}
-                    </motion.span>
+                    />
                     <div>
                       <h3 className="font-heading font-bold text-2xl text-white">{service.title}</h3>
                       <p className="text-[var(--muted)] text-sm mt-1">{service.tagline}</p>
