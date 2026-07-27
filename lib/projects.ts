@@ -67,9 +67,17 @@ export function getFeaturedProjects(): ProjectMeta[] {
   return getAllProjects().filter((p) => p.featured === true);
 }
 
-/** Homepage showcase: featured first, then fill up to `limit` (single row). */
-export function getHomepageProjects(limit = 3): ProjectMeta[] {
-  const all = getAllProjects();
+/**
+ * Homepage showcase: featured first, then fill up to `limit`.
+ * Pass `exclude` to omit projects that already have a dedicated homepage slot
+ * (e.g. the ISGM flagship section).
+ */
+export function getHomepageProjects(
+  limit = 3,
+  options: { exclude?: string[] } = {},
+): ProjectMeta[] {
+  const exclude = new Set(options.exclude ?? []);
+  const all = getAllProjects().filter((p) => !exclude.has(p.slug));
   const featured = all.filter((p) => p.featured);
   const rest = all.filter((p) => !p.featured);
   return [...featured, ...rest].slice(0, limit);
