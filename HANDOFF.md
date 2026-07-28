@@ -113,7 +113,7 @@ npm run build && grep -o 'opacity:0' .next/server/app/*.html | wc -l   # must be
 
 ### Changed in Phase 2
 
-`lib/site.ts` (kemma.tech, hello@kemma.tech, `domain`, `description`),
+`lib/site.ts` (canonical domain, contact address, `domain`, `description`),
 `lib/services.ts` (rewritten to three evidence-based groups with
 `problems`/`deliverables`/`evidence`), `lib/seo.ts` *(new)*, `app/layout.tsx`,
 `app/globals.css`, `app/sitemap.ts`, `app/api/contact/route.ts`, all five page
@@ -190,15 +190,18 @@ brief; fix `#888` call sites in `FounderSection`.
   Governance and Management." Nav: Home, About, Programs, Admissions, Partners,
   Faculty, News, Contact, Apply now, Sign in.
 - ISGM uses **"Programs"** (US spelling), not "Programmes". Match their spelling.
-- Domain availability (checked this session): `kemma.tech`,
-  `kemmatechnologies.com` and `kemmatech.com` were all **unregistered**.
-  `kemma.tech` does not resolve — DNS is not connected.
+- **Production domain is `kemmatechnologies.com`** — purchased, with Vercel DNS
+  configured at Hostinger. `kemma.tech` was considered and *not* bought; treat
+  any remaining reference to it as stale. Contact address is
+  `hello@kemmatechnologies.com`.
 
 ## Deployment blockers
 
 - `NEXT_PUBLIC_SITE_URL` in Vercel still points at the Vercel subdomain, so
-  canonicals will not say `kemma.tech` until it is updated. The local
+  canonicals will not say `kemmatechnologies.com` until it is updated. The local
   `.env.local` overrides it too — expect the Vercel URL in local builds.
+- Pick one canonical host: the code assumes the **apex**, so `www` must
+  redirect to it in Vercel, not serve the site in parallel.
 - `CONTACT_FROM_EMAIL` is unset, so enquiry mail sends from Resend's sandbox
   sender. Requires the domain verified in Resend.
 - OG/Twitter images are the 1024×768 logo — wrong ratio for social cards

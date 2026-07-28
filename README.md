@@ -1,6 +1,6 @@
 # Kemma Technologies Website
 
-Modern, animated marketing site for [Kemma Technologies](https://kemma-technologies.vercel.app) — a founder-led, Ghana-based technology studio specialising in software engineering, web platforms and intelligent digital solutions.
+Marketing and portfolio site for [Kemma Technologies](https://kemmatechnologies.com) — a product and software engineering company building digital platforms, web products and business systems. Based in Accra, working with organisations anywhere.
 
 ## Tech stack
 

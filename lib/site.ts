@@ -2,28 +2,31 @@
  * Single source of truth for brand, domain, contact info, social links and nav.
  *
  * Anything that needs the production URL or a contact address must read it from
- * here — never hard-code `kemma.tech` or an email address in a component, a
- * route handler or a metadata block.
+ * here — never hard-code `kemmatechnologies.com` or an email address in a
+ * component, a route handler or a metadata block.
  */
 export const SITE = {
   name: "Kemma Technologies",
 
   /** Bare domain, for display and for building canonical hosts. */
-  domain: "kemma.tech",
+  domain: "kemmatechnologies.com",
 
   /**
    * Canonical production origin. Drives metadataBase, canonical URLs, sitemap,
    * robots and social-preview URLs.
    *
-   * NOTE: `kemma.tech` must be connected in Vercel and resolving in DNS before
-   * this is correct in production — see README "Domain connection". Override
-   * per-environment with NEXT_PUBLIC_SITE_URL (preview deploys should set it to
-   * their own URL so crawlers don't see canonicals pointing at production).
+   * Pick one host and stay on it: `www` and the apex must not both serve the
+   * site, or the same page is indexed twice. This value is the apex, so `www`
+   * should redirect to it in Vercel.
+   *
+   * Override per-environment with NEXT_PUBLIC_SITE_URL — preview deploys should
+   * set it to their own URL so crawlers never see a preview emitting canonicals
+   * that point at production.
    */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://kemma.tech",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://kemmatechnologies.com",
 
   /** Enquiries inbox. Requires the domain to be verified in Resend. */
-  email: "hello@kemma.tech",
+  email: "hello@kemmatechnologies.com",
 
   location: "Accra, Ghana",
 

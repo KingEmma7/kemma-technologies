@@ -50,9 +50,10 @@ export async function POST(req: NextRequest) {
     const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>");
 
     // Sender falls back to Resend's shared sandbox address so the form keeps
-    // working before kemma.tech is verified in Resend. Once it is, set
-    // CONTACT_FROM_EMAIL (e.g. "Kemma Website <noreply@kemma.tech>") — sends
-    // from an unverified domain are rejected.
+    // working before kemmatechnologies.com is verified in Resend. Once it is,
+    // set CONTACT_FROM_EMAIL (e.g. "Kemma Website
+    // <noreply@kemmatechnologies.com>") — sends from an unverified domain are
+    // rejected.
     const from = process.env.CONTACT_FROM_EMAIL ?? "Kemma Website <onboarding@resend.dev>";
 
     const { error } = await resend.emails.send({

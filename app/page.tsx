@@ -8,6 +8,14 @@ import { ProcessSection } from "@/components/sections/ProcessSection";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { getHomepageProjects } from "@/lib/projects";
+import { absoluteUrl } from "@/lib/seo";
+
+// Title and description come from the root layout; only the canonical needs
+// setting here. Without it the homepage was the one route shipping no
+// canonical at all, since `alternates` isn't inherited from the layout.
+export const metadata = {
+  alternates: { canonical: absoluteUrl("/") },
+};
 
 export default function HomePage() {
   // ISGM has its own flagship section above — keep the grid for other work.
