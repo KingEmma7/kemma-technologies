@@ -28,7 +28,7 @@ export function Testimonials() {
       <Reveal>
         <p className="text-xs uppercase tracking-widest text-[var(--gold)] mb-4">What clients say</p>
         <h2 className="font-heading font-bold text-4xl md:text-5xl text-white mb-16">
-          Trusted by <span className="text-gold-gradient">forward-thinking teams</span>
+          What our clients say
         </h2>
       </Reveal>
 

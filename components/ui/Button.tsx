@@ -3,29 +3,23 @@
 import { forwardRef } from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost";
-export type ButtonSize = "sm" | "md" | "lg";
+import {
+  variantClasses,
+  sizeClasses,
+  type ButtonVariant,
+  type ButtonSize,
+} from "./buttonStyles";
+
+// Re-exported for existing consumers. The definitions live in buttonStyles.ts
+// so Server Components can import them without crossing the client boundary.
+export { variantClasses, sizeClasses };
+export type { ButtonVariant, ButtonSize };
 
 export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   children: React.ReactNode;
 }
-
-export const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-[var(--gold)] text-[#040406] font-semibold hover:brightness-110 shadow-[0_0_20px_rgba(200,155,60,0.3)]",
-  secondary:
-    "border border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-[#040406]",
-  ghost:
-    "text-[var(--gold)] hover:text-white underline-offset-4 hover:underline",
-};
-
-export const sizeClasses: Record<ButtonSize, string> = {
-  sm: "px-4 py-2 text-sm",
-  md: "px-6 py-3 text-base",
-  lg: "px-8 py-4 text-lg",
-};
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", size = "md", children, className = "", ...rest }, ref) => {

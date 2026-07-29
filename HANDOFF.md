@@ -1,7 +1,7 @@
 # Kemma Technologies — Repositioning Handoff
 
 Continuation notes for the strategic repositioning and professional upgrade of
-this site. Written at the end of **Phase 2**. Read this before changing code.
+this site. Written at the end of **Phase 4**. Read this before changing code.
 
 > `AUDIT_REPORT.md` in this repo is **stale** (dated 2026-07-01). It still
 > describes the testimonials as fictional, which was fixed two commits later,
@@ -113,7 +113,7 @@ npm run build && grep -o 'opacity:0' .next/server/app/*.html | wc -l   # must be
 
 ### Changed in Phase 2
 
-`lib/site.ts` (kemma.tech, hello@kemma.tech, `domain`, `description`),
+`lib/site.ts` (canonical domain, contact address, `domain`, `description`),
 `lib/services.ts` (rewritten to three evidence-based groups with
 `problems`/`deliverables`/`evidence`), `lib/seo.ts` *(new)*, `app/layout.tsx`,
 `app/globals.css`, `app/sitemap.ts`, `app/api/contact/route.ts`, all five page
@@ -133,18 +133,27 @@ for the no-JS fix anyway.
 
 ## Remaining phases
 
-**Phase 3 — Homepage.** Currently Hero → ServicesSummary → FeaturedWork →
-Testimonials → CtaBand. Target order: hero → **ISGM flagship** (larger than a
-normal card) → three capability groups → selected work → Kemma products →
-why Kemma → process (6 steps) → testimonials (copy unchanged) → final CTA.
+**Phase 3 — Homepage.** ✅ Complete. Order is now: hero → ISGM flagship →
+three capability groups → selected work (ISGM excluded; has its own section) →
+Kemma products (Giveaways.live, In Development) → why Kemma → process (6 steps)
+→ testimonials (quotes unchanged) → final CTA.
 
-**Phase 4 — ISGM case study.** New `content/projects/isgm-platform.mdx`
-(`lib/services.ts` already references this slug in `evidence`). Render
-`meta.screenshots`, which nothing currently does.
+New/updated: `components/sections/{FlagshipPlatform,ProductsSection,WhyKemma}.tsx`,
+`lib/products.ts`, homepage wiring in `app/page.tsx`, ProcessSection expanded
+to 6 steps, ServicesSummary / FeaturedWork / CtaBand copy refreshed.
+
+**Phase 4 — ISGM case study.** ✅ Complete. Expanded `isgm-platform.mdx` with
+full factual structure (challenge, solution, applicant/staff experience,
+engineering, outcomes — no fabricated metrics). Added
+`CaseStudyGallery` which renders `cover` + `meta.screenshots` on every case
+study that has them. Public screens captured: home, Programs, admissions
+(`/projects/isgm/{isgm-cover,isgm-home,isgm-programs,isgm-application}.webp`).
+Authenticated dashboards remain out of scope.
 
 **Phase 5 — Work architecture.** Add `category` + `status` to the schema in
 `lib/projects.ts`, filters, client-work vs Kemma-products split, and
-Giveaways.live as **In Development** (never as live/complete).
+Giveaways.live as **In Development** (never as live/complete). Reuse
+`lib/products.ts`.
 
 **Phase 6 — Services / About / Contact.** Services page around the three
 groups. About must become company-first: cut one of the two founder sections,
@@ -181,15 +190,18 @@ brief; fix `#888` call sites in `FounderSection`.
   Governance and Management." Nav: Home, About, Programs, Admissions, Partners,
   Faculty, News, Contact, Apply now, Sign in.
 - ISGM uses **"Programs"** (US spelling), not "Programmes". Match their spelling.
-- Domain availability (checked this session): `kemma.tech`,
-  `kemmatechnologies.com` and `kemmatech.com` were all **unregistered**.
-  `kemma.tech` does not resolve — DNS is not connected.
+- **Production domain is `kemmatechnologies.com`** — purchased, with Vercel DNS
+  configured at Hostinger. `kemma.tech` was considered and *not* bought; treat
+  any remaining reference to it as stale. Contact address is
+  `hello@kemmatechnologies.com`.
 
 ## Deployment blockers
 
 - `NEXT_PUBLIC_SITE_URL` in Vercel still points at the Vercel subdomain, so
-  canonicals will not say `kemma.tech` until it is updated. The local
+  canonicals will not say `kemmatechnologies.com` until it is updated. The local
   `.env.local` overrides it too — expect the Vercel URL in local builds.
+- Pick one canonical host: the code assumes the **apex**, so `www` must
+  redirect to it in Vercel, not serve the site in parallel.
 - `CONTACT_FROM_EMAIL` is unset, so enquiry mail sends from Resend's sandbox
   sender. Requires the domain verified in Resend.
 - OG/Twitter images are the 1024×768 logo — wrong ratio for social cards

@@ -23,11 +23,22 @@ export async function POST(req: NextRequest) {
 
     // Honeypot tripped — respond as if successful so the bot doesn't learn
     // to look for a different signal, but skip sending the email entirely.
-    if (parsed.data.website) {
+    if (parsed.data.nickname) {
       return NextResponse.json({ ok: true });
     }
 
-    const { name, email, company, message } = parsed.data;
+    const {
+      name,
+      email,
+      organisation,
+      website,
+      projectType,
+      description,
+      stage,
+      timeline,
+      budget,
+      preferredContact,
+    } = parsed.data;
 
     const apiKey = process.env.RESEND_API_KEY;
 
@@ -44,31 +55,66 @@ export async function POST(req: NextRequest) {
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
 
-    const safeName    = escapeHtml(name);
-    const safeEmail   = escapeHtml(email);
-    const safeCompany = escapeHtml(company ?? "N/A");
-    const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>");
+    // Every interpolated value is escaped — user input must never be able to
+    // inject markup into the notification email.
+    const blank = "—";
+    const rows: [string, string][] = [
+      ["Name", escapeHtml(name)],
+      ["Email", `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`],
+      ["Organisation", escapeHtml(organisation || blank)],
+      ["Website", escapeHtml(website || blank)],
+      ["Project type", escapeHtml(projectType)],
+      ["Current stage", escapeHtml(stage || blank)],
+      ["Timeline", escapeHtml(timeline || blank)],
+      ["Budget", escapeHtml(budget || blank)],
+      ["Preferred contact", escapeHtml(preferredContact)],
+    ];
+
+    const safeDescription = escapeHtml(description).replace(/\n/g, "<br/>");
+
+    // Plain-text alternative uses the raw values: it is never rendered as
+    // markup, and escaping there would show &amp; to the reader.
+    const textBody = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `Organisation: ${organisation || blank}`,
+      `Website: ${website || blank}`,
+      `Project type: ${projectType}`,
+      `Current stage: ${stage || blank}`,
+      `Timeline: ${timeline || blank}`,
+      `Budget: ${budget || blank}`,
+      `Preferred contact: ${preferredContact}`,
+      "",
+      "What they want to build:",
+      description,
+    ].join("\n");
 
     // Sender falls back to Resend's shared sandbox address so the form keeps
-    // working before kemma.tech is verified in Resend. Once it is, set
-    // CONTACT_FROM_EMAIL (e.g. "Kemma Website <noreply@kemma.tech>") — sends
-    // from an unverified domain are rejected.
+    // working before kemmatechnologies.com is verified in Resend. Once it is,
+    // set CONTACT_FROM_EMAIL (e.g. "Kemma Website
+    // <noreply@kemmatechnologies.com>") — sends from an unverified domain are
+    // rejected.
     const from = process.env.CONTACT_FROM_EMAIL ?? "Kemma Website <onboarding@resend.dev>";
 
     const { error } = await resend.emails.send({
       from,
       to:      [SITE.email],
       replyTo: email,
-      subject: `New enquiry from ${name}${company ? ` (${company})` : ""}`,
-      text:    `Name: ${name}\nEmail: ${email}\nCompany: ${company ?? "N/A"}\n\nMessage:\n${message}`,
+      subject: `${projectType} enquiry from ${name}${organisation ? ` (${organisation})` : ""}`,
+      text:    textBody,
       html: `
-        <h2>New Contact Enquiry</h2>
-        <p><strong>Name:</strong> ${safeName}</p>
-        <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
-        <p><strong>Company:</strong> ${safeCompany}</p>
+        <h2>New enquiry</h2>
+        <table cellpadding="6" style="border-collapse:collapse">
+          ${rows
+            .map(
+              ([label, value]) =>
+                `<tr><td style="vertical-align:top"><strong>${label}</strong></td><td>${value}</td></tr>`
+            )
+            .join("")}
+        </table>
         <hr />
-        <p><strong>Message:</strong></p>
-        <p>${safeMessage}</p>
+        <p><strong>What they want to build:</strong></p>
+        <p>${safeDescription}</p>
       `,
     });
 

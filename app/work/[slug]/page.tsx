@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProjects, getProjectBySlug } from "@/lib/projects";
 import { CaseStudyHero, CaseStudyFooter } from "@/components/sections/CaseStudyContent";
+import { CaseStudyGallery } from "@/components/sections/CaseStudyGallery";
 import { MdxSection } from "@/components/sections/MdxSection";
 import { breadcrumbJsonLd, creativeWorkJsonLd, jsonLdScript, pageMetadata } from "@/lib/seo";
 
@@ -64,6 +65,11 @@ export default async function CaseStudyPage({ params }: Props) {
         }}
       />
       <CaseStudyHero meta={meta} />
+      <CaseStudyGallery
+        title={meta.title}
+        cover={meta.cover}
+        screenshots={meta.screenshots}
+      />
       <MdxSection content={project.content} />
       <CaseStudyFooter />
     </article>

@@ -146,7 +146,9 @@ export function Navigation() {
                 key={href}
                 href={href}
                 className={[
-                  "text-sm uppercase tracking-widest font-medium transition-colors duration-200",
+                  // min-h-11 keeps the target at 44px without changing the
+                  // visual rhythm of the bar — the text stays where it was.
+                  "inline-flex min-h-11 items-center text-sm font-medium uppercase tracking-widest transition-colors duration-200",
                   pathname === href
                     ? "text-[var(--gold)]"
                     : "text-[var(--silver)] hover:text-[var(--gold)]",
@@ -161,7 +163,9 @@ export function Navigation() {
           <button
             ref={toggleButtonRef}
             onClick={toggle}
-            className="z-[60] flex flex-col justify-center items-center w-10 h-10 gap-[6px]"
+            // Hidden on md+ where the inline links are already visible — having
+            // both meant two controls for the same five destinations.
+            className="z-[60] flex h-11 w-11 flex-col items-center justify-center gap-[6px] md:hidden"
             aria-expanded={open}
             aria-controls="nav-overlay"
             aria-label={open ? "Close menu" : "Open menu"}

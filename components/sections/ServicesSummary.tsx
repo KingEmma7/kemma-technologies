@@ -10,29 +10,50 @@ export function ServicesSummary() {
   return (
     <Section>
       <Reveal>
-        <p className="text-xs uppercase tracking-widest text-[var(--gold)] mb-4">What we do</p>
-        <h2 className="font-heading font-bold text-4xl md:text-5xl text-white mb-4">
-          Capabilities built for <span className="text-gold-gradient">modern businesses</span>
+        <p className="mb-4 text-xs uppercase tracking-widest text-[var(--gold)]">
+          What we do
+        </p>
+        <h2 className="mb-4 font-heading text-4xl font-bold text-white md:text-5xl">
+          Three capabilities.{" "}
+          <span className="text-gold-gradient">Evidence behind each.</span>
         </h2>
-        <p className="text-[var(--silver)] max-w-xl mb-16">
-          We combine deep technical expertise with strategic thinking to deliver digital products that move the needle.
+        <p className="mb-16 max-w-xl text-[var(--silver)]">
+          Platforms that run operations, web products that convert, and
+          engineering support for products that already matter.
         </p>
       </Reveal>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {SERVICES.map((s, i) => (
           <Reveal key={s.id} delay={i * 0.12}>
-            <Link href={s.href} className="block h-full group">
-              <Card glow className="h-full group-hover:border-[var(--gold)] transition-colors duration-300">
+            <Link href={s.href} className="group block h-full">
+              <Card
+                glow
+                className="h-full transition-colors duration-300 group-hover:border-[var(--gold)]"
+              >
                 <s.icon
                   className="mb-6 h-8 w-8 transition-transform duration-300 group-hover:scale-110"
                   style={{ color: s.iconColor }}
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
-                <h3 className="font-heading font-semibold text-xl text-white mb-3">{s.title}</h3>
-                <p className="text-[var(--silver)] text-sm leading-relaxed">{s.summary}</p>
-                <span className="inline-block mt-6 text-xs uppercase tracking-widest text-[var(--gold)]">
+                <h3 className="mb-2 font-heading text-xl font-semibold text-white">
+                  {s.title}
+                </h3>
+                <p className="mb-6 text-sm leading-relaxed text-[var(--silver)]">
+                  {s.summary}
+                </p>
+                <ul className="mb-6 space-y-2">
+                  {s.capabilities.slice(0, 4).map((cap) => (
+                    <li
+                      key={cap}
+                      className="text-xs leading-snug text-[var(--muted)] before:mr-2 before:text-[var(--gold)] before:content-['·']"
+                    >
+                      {cap}
+                    </li>
+                  ))}
+                </ul>
+                <span className="inline-block text-xs uppercase tracking-widest text-[var(--gold)]">
                   Learn more →
                 </span>
               </Card>

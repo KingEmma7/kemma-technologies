@@ -1,34 +1,42 @@
-"use client";
-
-import { Handshake, Microscope, Sprout, Target, Zap } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 
-const values = [
+/**
+ * What Kemma believes.
+ *
+ * Server Component. These replaced a generic set of one-word corporate values
+ * (Excellence, Trust, Growth, Innovation) that could have belonged to any
+ * company. Each of these is a stated trade-off, which is both more useful to a
+ * prospective client and harder to fake.
+ */
+const beliefs = [
   {
-    icon: Zap,
-    title: "Excellence",
-    desc: "We hold ourselves to the highest standards of technical craft. Clean code, robust architecture and thoughtful decisions are non-negotiable.",
+    title: "Useful before impressive",
+    desc: "A product that solves the actual problem beats one that demos well. Visual ambition should never outrun usefulness.",
   },
   {
-    icon: Target,
-    title: "Practicality",
-    desc: "We build for real-world use, not for show. Every decision is weighed against whether it genuinely solves the problem at hand.",
+    title: "Clear before complicated",
+    desc: "Complexity is a cost paid by everyone who touches the system afterwards. We add it only where it earns its place.",
   },
   {
-    icon: Handshake,
-    title: "Trust",
-    desc: "We invest in understanding your business deeply, communicate clearly, and do what we say we'll do.",
+    title: "Evidence before claims",
+    desc: "We would rather show a platform in production than describe a capability we cannot demonstrate.",
   },
   {
-    icon: Sprout,
-    title: "Growth",
-    desc: "We build systems designed to grow with your business, not ones you'll outgrow in a year.",
+    title: "Quality across design and engineering",
+    desc: "A well-built product with a poor interface is unfinished, and so is a beautiful one that falls over under real use.",
   },
   {
-    icon: Microscope,
-    title: "Innovation",
-    desc: "Technology moves fast. We stay ahead through continuous learning, experimentation, and modern AI-assisted workflows.",
+    title: "Accessibility and performance are requirements",
+    desc: "They are part of whether the product works, not a polish pass to schedule if time allows.",
+  },
+  {
+    title: "Systems that support real operations",
+    desc: "Software has to fit how a team actually works — the approvals, the exceptions, the records they answer for.",
+  },
+  {
+    title: "Long-term thinking over disposable builds",
+    desc: "We build so the next change is cheap, and so your team can own the code after we hand it over.",
   },
 ];
 
@@ -36,25 +44,22 @@ export function ValuesSection() {
   return (
     <Section light>
       <Reveal>
-        <p className="text-xs uppercase tracking-widest text-[var(--gold)] mb-4">What drives us</p>
-        <h2 className="font-heading font-bold text-4xl md:text-5xl text-[#111] mb-16">
-          Our values
+        <p className="mb-4 text-xs uppercase tracking-widest text-[var(--gold)]">What we believe</p>
+        <h2 className="mb-16 max-w-3xl font-heading text-3xl font-bold text-[var(--ink)] md:text-5xl">
+          The principles behind how we build
         </h2>
       </Reveal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-        {values.map((v, i) => (
-          <Reveal key={v.title} delay={i * 0.1}>
-            <div className="flex gap-5">
-              <v.icon className="mt-1 h-6 w-6 shrink-0 text-[var(--gold)]" strokeWidth={1.5} aria-hidden="true" />
-              <div>
-                <h3 className="font-heading font-semibold text-xl text-[#111] mb-2">{v.title}</h3>
-                <p className="text-[#555] leading-relaxed">{v.desc}</p>
-              </div>
-            </div>
+      <ul className="grid list-none grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        {beliefs.map((belief, i) => (
+          <Reveal as="li" key={belief.title} delay={Math.min(i, 5) * 0.08}>
+            <h3 className="mb-2 font-heading text-lg font-semibold text-[var(--ink)]">
+              {belief.title}
+            </h3>
+            <p className="leading-relaxed text-[var(--ink-body)]">{belief.desc}</p>
           </Reveal>
         ))}
-      </div>
+      </ul>
     </Section>
   );
 }

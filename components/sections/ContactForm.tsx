@@ -5,11 +5,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, MessageCircle } from "lucide-react";
-import { Input, Textarea } from "@/components/ui/Input";
+import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { SITE } from "@/lib/site";
-import { contactSchema, type ContactFormData } from "@/lib/validations/contact";
+import {
+  BUDGET_RANGES,
+  CONTACT_METHODS,
+  PROJECT_STAGES,
+  PROJECT_TYPES,
+  TIMELINES,
+  contactSchema,
+  type ContactFormData,
+} from "@/lib/validations/contact";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -21,7 +29,10 @@ export function ContactForm() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) });
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { preferredContact: "Email" },
+  });
 
   const onSubmit = async (data: ContactFormData) => {
     setStatus("loading");
@@ -48,19 +59,21 @@ export function ContactForm() {
           <div>
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-8">
               {/* Honeypot — hidden from real users, catches basic bots that
-                  auto-fill every field. Do not remove or rename. */}
+                  auto-fill every field. Deliberately NOT named `website`: that
+                  is a real field below, and a collision would silently discard
+                  genuine enquiries as spam. */}
               <div className="sr-only" aria-hidden="true">
-                <label htmlFor="website">Website</label>
+                <label htmlFor="nickname">Nickname</label>
                 <input
-                  id="website"
+                  id="nickname"
                   type="text"
                   tabIndex={-1}
                   autoComplete="off"
-                  {...register("website")}
+                  {...register("nickname")}
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                 <Input
                   label="Name *"
                   placeholder="Your name"
@@ -71,26 +84,77 @@ export function ContactForm() {
                 <Input
                   label="Email *"
                   type="email"
-                  placeholder="you@company.com"
+                  placeholder="you@organisation.com"
                   autoComplete="email"
                   error={errors.email?.message}
                   {...register("email")}
                 />
               </div>
 
-              <Input
-                label="Company"
-                placeholder="Your company (optional)"
-                autoComplete="organization"
-                {...register("company")}
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                <Input
+                  label="Organisation"
+                  placeholder="Your organisation (optional)"
+                  autoComplete="organization"
+                  error={errors.organisation?.message}
+                  {...register("organisation")}
+                />
+                <Input
+                  label="Website"
+                  placeholder="yourdomain.com (optional)"
+                  autoComplete="url"
+                  error={errors.website?.message}
+                  {...register("website")}
+                />
+              </div>
+
+              <Select
+                label="Project type *"
+                placeholder="Choose the closest match"
+                options={PROJECT_TYPES}
+                error={errors.projectType?.message}
+                {...register("projectType")}
               />
 
               <Textarea
-                label="Message *"
-                placeholder="Tell us about your project — what you're building, your timeline and budget range…"
-                error={errors.message?.message}
-                {...register("message")}
+                label="What are you trying to build? *"
+                placeholder="Tell us what you are trying to launch, improve or automate…"
+                error={errors.description?.message}
+                {...register("description")}
               />
+
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                <Select
+                  label="Current stage"
+                  placeholder="Optional"
+                  options={PROJECT_STAGES}
+                  error={errors.stage?.message}
+                  {...register("stage")}
+                />
+                <Select
+                  label="Desired timeline"
+                  placeholder="Optional"
+                  options={TIMELINES}
+                  error={errors.timeline?.message}
+                  {...register("timeline")}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                <Select
+                  label="Approximate budget"
+                  placeholder="Optional"
+                  options={BUDGET_RANGES}
+                  error={errors.budget?.message}
+                  {...register("budget")}
+                />
+                <Select
+                  label="Preferred contact method"
+                  options={CONTACT_METHODS}
+                  error={errors.preferredContact?.message}
+                  {...register("preferredContact")}
+                />
+              </div>
 
               <div className="flex flex-col gap-4">
                 <Button
@@ -140,7 +204,7 @@ export function ContactForm() {
               <div className="flex flex-col gap-6">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">Email</p>
-                  <a href={`mailto:${SITE.email}`} className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors text-lg">
+                  <a href={`mailto:${SITE.email}`} className="inline-flex min-h-6 items-center text-lg text-[var(--silver)] transition-colors hover:text-[var(--gold)]">
                     {SITE.email}
                   </a>
                 </div>

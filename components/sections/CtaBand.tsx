@@ -16,14 +16,14 @@ interface CtaBandProps {
 }
 
 export function CtaBand({
-  eyebrow = "Ready to build?",
+  eyebrow = "Start a project",
   heading = (
-    <>Let&apos;s create something <span className="text-gold-gradient">exceptional</span> together</>
+    <>Have a serious digital product to <span className="text-gold-gradient">build</span>?</>
   ),
-  body = "Tell us about your project and we'll get back to you within 24 hours.",
-  primaryLabel = "Start a Conversation",
+  body = "Tell us what you are trying to launch, improve or automate. We will help turn the problem into a practical product direction.",
+  primaryLabel = "Start a Project",
   primaryHref = "/contact",
-  secondaryLabel = "See Our Work",
+  secondaryLabel = "Explore Our Work",
   secondaryHref = "/work",
 }: CtaBandProps) {
   return (
