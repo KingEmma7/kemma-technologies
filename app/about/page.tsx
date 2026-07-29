@@ -5,7 +5,7 @@ import { MissionSection } from "@/components/sections/MissionSection";
 import { WhatWeBuildSection } from "@/components/sections/WhatWeBuildSection";
 import { TechPhilosophySection } from "@/components/sections/TechPhilosophySection";
 import { ValuesSection } from "@/components/sections/ValuesSection";
-import { FounderLedSection } from "@/components/sections/FounderLedSection";
+import { GlobalDeliverySection } from "@/components/sections/GlobalDeliverySection";
 import { CtaBand } from "@/components/sections/CtaBand";
 
 export const metadata = pageMetadata({
@@ -18,21 +18,23 @@ export const metadata = pageMetadata({
 export default function AboutPage() {
   return (
     <>
+      {/* Company first, leadership last. The founder block used to sit second,
+          before the company had said anything about itself. */}
       <AboutHero />
-      <FounderSection />
       <MissionSection />
       <WhatWeBuildSection />
-      <TechPhilosophySection />
       <ValuesSection />
-      <FounderLedSection />
+      <TechPhilosophySection />
+      <GlobalDeliverySection />
+      <FounderSection />
       <CtaBand
         heading={
-          <>Let&apos;s build something useful, beautiful, and <span className="text-gold-gradient">built to last</span>.</>
+          <>Have a serious digital product to <span className="text-gold-gradient">build</span>?</>
         }
-        body="Kemma Technologies is ready to partner with businesses, founders, and organizations that want to take their digital presence and operations seriously."
-        primaryLabel="Start a Conversation"
-        secondaryLabel={undefined}
-        secondaryHref={undefined}
+        body="Tell us what you are trying to launch, improve or automate. We will help turn the problem into a practical product direction."
+        primaryLabel="Start a Project"
+        secondaryLabel="Explore Our Work"
+        secondaryHref="/work"
       />
     </>
   );
