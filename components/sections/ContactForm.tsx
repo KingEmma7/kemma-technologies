@@ -204,7 +204,7 @@ export function ContactForm() {
               <div className="flex flex-col gap-6">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-[var(--muted)] mb-2">Email</p>
-                  <a href={`mailto:${SITE.email}`} className="text-[var(--silver)] hover:text-[var(--gold)] transition-colors text-lg">
+                  <a href={`mailto:${SITE.email}`} className="inline-flex min-h-6 items-center text-lg text-[var(--silver)] transition-colors hover:text-[var(--gold)]">
                     {SITE.email}
                   </a>
                 </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { type ButtonVariant, type ButtonSize, variantClasses, sizeClasses } from "./Button";
+import { type ButtonVariant, type ButtonSize, variantClasses, sizeClasses } from "./buttonStyles";
 
 interface ButtonLinkProps {
   href: string;
