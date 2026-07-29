@@ -2,6 +2,27 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import { z } from "zod";
+import { PRODUCTS, type Product } from "./products";
+
+/**
+ * What kind of work a project is. A project can be more than one — ISGM is both
+ * a platform and institutional work — so this is a list, not a single value.
+ */
+export const PROJECT_CATEGORIES = [
+  "platform",
+  "website",
+  "commerce",
+  "institutional",
+] as const;
+
+export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
+
+/**
+ * Delivery status. `in-development` must be used for anything not yet publicly
+ * usable — never present unfinished work as shipped.
+ */
+export const PROJECT_STATUSES = ["live", "in-development"] as const;
+export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
 const projectSchema = z.object({
   title:       z.string(),
@@ -12,6 +33,8 @@ const projectSchema = z.object({
   year:        z.number().optional(),
   client:      z.string().optional(),
   featured:    z.boolean().optional(),
+  categories:  z.array(z.enum(PROJECT_CATEGORIES)).default([]),
+  status:      z.enum(PROJECT_STATUSES).default("live"),
   // Link to the real, live product. Only set this when the URL is verified —
   // never fabricate a live link for a project that isn't actually deployed.
   liveUrl:     z.string().url().optional(),
@@ -65,6 +88,64 @@ export function getProjectBySlug(slug: string): { meta: ProjectMeta; content: st
 
 export function getFeaturedProjects(): ProjectMeta[] {
   return getAllProjects().filter((p) => p.featured === true);
+}
+
+/**
+ * A single entry in the Work index.
+ *
+ * Client platforms and Kemma-owned products are listed together so visitors can
+ * filter across everything, but `owner` keeps the distinction explicit — client
+ * work must never read as a Kemma product, or the reverse.
+ *
+ * Products have no case study, so `href` is optional: a card without one is not
+ * a link to nowhere, it simply doesn't link.
+ */
+export interface WorkItem {
+  id: string;
+  title: string;
+  summary: string;
+  owner: "client" | "kemma";
+  categories: readonly ProjectCategory[];
+  status: ProjectStatus;
+  year?: number;
+  cover?: string;
+  tags?: string[];
+  liveUrl?: string;
+  /** Case-study path, when one exists. */
+  href?: string;
+}
+
+function projectToWorkItem(p: ProjectMeta): WorkItem {
+  return {
+    id: p.slug,
+    title: p.title,
+    summary: p.summary,
+    owner: "client",
+    categories: p.categories,
+    status: p.status,
+    year: p.year,
+    cover: p.cover,
+    tags: p.tags,
+    liveUrl: p.liveUrl,
+    href: `/work/${p.slug}`,
+  };
+}
+
+function productToWorkItem(product: Product): WorkItem {
+  return {
+    id: product.id,
+    title: product.name,
+    summary: product.summary,
+    owner: "kemma",
+    categories: product.categories,
+    status: product.status,
+    liveUrl: product.href,
+  };
+}
+
+/** Everything shown on the Work page: client projects first, then products. */
+export function getWorkItems(): WorkItem[] {
+  return [...getAllProjects().map(projectToWorkItem), ...PRODUCTS.map(productToWorkItem)];
 }
 
 /**
