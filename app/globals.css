@@ -8,8 +8,9 @@
   --dark-bg: #040406;
   --light-bg:#F5F5F5;
   --accent:  #007B94;
+  --accent-text: #35A7BC;
   --success: #2A8C53;
-  --error:   #B84A4A;
+  --error:   #D96868;
 
   /* Semantic */
   --background: var(--dark-bg);
@@ -34,6 +35,7 @@
   --color-dark-bg:     var(--dark-bg);
   --color-light-bg:    var(--light-bg);
   --color-accent:      var(--accent);
+  --color-accent-text: var(--accent-text);
   --color-success:     var(--success);
   --color-error:       var(--error);
   --color-muted:       var(--muted);

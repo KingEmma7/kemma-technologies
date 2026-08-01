@@ -129,7 +129,7 @@ function WorkCard({ item }: { item: WorkItem }) {
 
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
           {isProduct && (
-            <span className="rounded-sm bg-[rgba(4,4,6,0.85)] px-2.5 py-1 text-[10px] uppercase tracking-widest text-[var(--accent)] ring-1 ring-[rgba(0,123,148,0.5)]">
+            <span className="rounded-sm bg-[rgba(4,4,6,0.85)] px-2.5 py-1 text-[10px] uppercase tracking-widest text-[var(--accent-text)] ring-1 ring-[rgba(0,123,148,0.5)]">
               Kemma Product
             </span>
           )}

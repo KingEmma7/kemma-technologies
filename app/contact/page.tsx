@@ -21,7 +21,7 @@ export default function ContactPage() {
             Let&apos;s build something <span className="text-gold-gradient">great</span>
           </h1>
           <p className="text-[var(--silver)] text-xl max-w-xl">
-            Tell us about your project. We&apos;ll review it and get back to you within 24 hours.
+            Tell us about your project. We typically reply within one business day.
           </p>
         </div>
       </section>
