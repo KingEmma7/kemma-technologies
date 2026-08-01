@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import matter from "gray-matter";
 import { z } from "zod";
+import { parse as parseYaml } from "yaml";
 import { PRODUCTS, type Product } from "./products";
 
 /**
@@ -51,6 +51,24 @@ export type ProjectMeta = z.infer<typeof projectSchema> & { slug: string };
 
 const PROJECTS_DIR = path.join(process.cwd(), "content/projects");
 
+function parseProjectFile(raw: string, filename: string): { data: unknown; content: string } | null {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw);
+  if (!match) {
+    console.warn(`[projects] Missing frontmatter block in ${filename}`);
+    return null;
+  }
+
+  try {
+    return {
+      data: parseYaml(match[1]),
+      content: raw.slice(match[0].length),
+    };
+  } catch (error) {
+    console.warn(`[projects] Invalid YAML in ${filename}:`, error);
+    return null;
+  }
+}
+
 export function getAllProjects(): ProjectMeta[] {
   if (!fs.existsSync(PROJECTS_DIR)) return [];
 
@@ -60,8 +78,9 @@ export function getAllProjects(): ProjectMeta[] {
     .map((file) => {
       const slug = file.replace(".mdx", "");
       const raw = fs.readFileSync(path.join(PROJECTS_DIR, file), "utf-8");
-      const { data } = matter(raw);
-      const parsed = projectSchema.safeParse(data);
+      const projectFile = parseProjectFile(raw, file);
+      if (!projectFile) return null;
+      const parsed = projectSchema.safeParse(projectFile.data);
       if (!parsed.success) {
         console.warn(`[projects] Invalid frontmatter in ${file}:`, parsed.error.flatten());
         return null;
@@ -77,13 +96,14 @@ export function getProjectBySlug(slug: string): { meta: ProjectMeta; content: st
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(raw);
-  const parsed = projectSchema.safeParse(data);
+  const projectFile = parseProjectFile(raw, `${slug}.mdx`);
+  if (!projectFile) return null;
+  const parsed = projectSchema.safeParse(projectFile.data);
   if (!parsed.success) {
     console.warn(`[projects] Invalid frontmatter in ${slug}.mdx:`, parsed.error.flatten());
     return null;
   }
-  return { meta: { slug, ...parsed.data }, content };
+  return { meta: { slug, ...parsed.data }, content: projectFile.content };
 }
 
 export function getFeaturedProjects(): ProjectMeta[] {

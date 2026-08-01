@@ -1,6 +1,6 @@
 # Kemma Technologies Website
 
-Marketing and portfolio site for [Kemma Technologies](https://kemmatechnologies.com) — a product and software engineering company building digital platforms, web products and business systems. Based in Accra, working with organisations anywhere.
+Marketing and portfolio site for [Kemma Technologies](https://www.kemmatechnologies.com) — a product and software engineering company building digital platforms, web products and business systems. Based in Accra, working with organisations anywhere.
 
 ## Tech stack
 
@@ -8,12 +8,13 @@ Marketing and portfolio site for [Kemma Technologies](https://kemmatechnologies.
 |---|---|
 | Framework | Next.js (App Router) + TypeScript |
 | Styling | Tailwind CSS v4 with custom design tokens |
-| Animation | Framer Motion + GSAP (ScrollTrigger) |
-| 3D / WebGL | Three.js + react-three-fiber + drei |
+| Animation | Framer Motion + Lenis |
+| 3D / WebGL | Three.js + react-three-fiber |
 | Smooth scroll | Lenis |
-| Content | Local MDX files (`content/projects/`) |
+| Content | Local MDX files with validated YAML frontmatter (`content/projects/`) |
 | Forms | react-hook-form + Zod |
 | Email | Resend |
+| Testing | Vitest + production build regression checks |
 | Deployment | Vercel |
 
 ## Design tokens
@@ -25,12 +26,14 @@ Marketing and portfolio site for [Kemma Technologies](https://kemmatechnologies.
 | Dark bg | `#040406` | Default background |
 | Light bg | `#F5F5F5` | Alternating panels |
 | Accent | `#007B94` | Tech/interactive accent |
+| Accent text | `#35A7BC` | Accessible accent on dark surfaces |
+| Error | `#D96868` | Form validation on dark surfaces |
 
 ## Getting started
 
 ```bash
-# 1. Install dependencies
-npm install
+# 1. Install dependencies from the lockfile
+npm ci
 
 # 2. Set up environment variables
 cp .env.local.example .env.local
@@ -64,7 +67,11 @@ content/
   projects/   MDX case studies with frontmatter
 
 lib/
-  projects.ts  MDX loader utilities
+  projects.ts       MDX loader utilities
+  contact-email.ts  Safe email-template helpers
+
+tests/              Contact and content regression tests
+scripts/            Build-output checks
 ```
 
 ## Adding a project / case study
@@ -99,22 +106,40 @@ screenshots to make a project look more impressive.
 
 ## Logo assets
 
-The official Kemma Technologies logo lives at `public/logo.png` and is used as the full lockup (mark + wordmark) in `Navigation.tsx` and `Footer.tsx`. It's also copied into the App Router metadata slots for favicons and social previews:
+The official Kemma Technologies logo lives at `public/logo.png` and is used as the full lockup (mark + wordmark) in `Navigation.tsx` and `Footer.tsx`.
 
 - `app/icon.png` — browser tab favicon
 - `app/apple-icon.png` — iOS home screen icon
-- `app/opengraph-image.png` / `app/twitter-image.png` — social share previews
+- `app/opengraph-image.tsx` — generated 1200×630 social share preview
 
-To update the logo, replace all five files with the new asset (same filenames) and re-run `npm run build`.
+To update the logo, replace the public logo and icon assets, then re-run `npm run build`.
 
 ## Contact form
 
 The `/api/contact` route sends emails via [Resend](https://resend.com). Add your `RESEND_API_KEY` to `.env.local`.
 
-- **Development:** if the key is missing, the submission is logged to the server console and the API returns success, so the form can be tested locally without a real key.
+- **Development:** if the key is missing, the server records only a configuration warning and returns success, so the form can be tested locally without logging personal enquiry data.
 - **Production:** if the key is missing, the API returns a `500` error instead of silently succeeding — a misconfigured deployment will surface the error rather than losing enquiries.
 
-The `to` address is currently `etagbor@gmail.com` and the `from` address uses Resend's shared sandbox sender (`onboarding@resend.dev`), which works without a verified domain. Once a custom domain is verified in Resend, update both in `app/api/contact/route.ts`.
+The recipient is `SITE.email` (`hello@kemmatechnologies.com`). Set
+`CONTACT_FROM_EMAIL` to a sender on a domain verified in Resend. The
+`onboarding@resend.dev` fallback is for onboarding only and must not be treated
+as proof that production delivery works.
+
+The API accepts JSON only, limits the body to 16 KiB, validates maximum field
+lengths, rejects unknown fields and keeps a honeypot as a low-cost first signal.
+Production rate limiting belongs at the Vercel Firewall layer; follow
+`docs/vercel-firewall.md` and roll the rule out in log mode before enforcement.
+
+## Verification
+
+```bash
+npm run check
+npm audit --audit-level=high
+```
+
+`npm run check` runs lint, TypeScript, Vitest, the production build and the
+no-JavaScript visibility regression check. The same gate runs in GitHub Actions.
 
 ## Performance notes
 
@@ -139,4 +164,7 @@ vercel --prod
 
 Environment variables to configure in Vercel dashboard:
 - `RESEND_API_KEY` — required in production; the contact form returns an error without it.
-- `NEXT_PUBLIC_SITE_URL` — the canonical deployed URL, used for metadata, sitemap.xml, robots.txt, and social preview links. Update this if a custom domain is connected later.
+- `NEXT_PUBLIC_SITE_URL` — the canonical deployed URL, used for metadata,
+  sitemap.xml, robots.txt and social preview links. Production currently uses
+  `https://www.kemmatechnologies.com`; the apex redirects there.
+- `CONTACT_FROM_EMAIL` — branded sender on a Resend-verified domain.

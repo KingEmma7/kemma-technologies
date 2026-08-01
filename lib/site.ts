@@ -15,15 +15,15 @@ export const SITE = {
    * Canonical production origin. Drives metadataBase, canonical URLs, sitemap,
    * robots and social-preview URLs.
    *
-   * Pick one host and stay on it: `www` and the apex must not both serve the
-   * site, or the same page is indexed twice. This value is the apex, so `www`
-   * should redirect to it in Vercel.
+   * Pick one host and stay on it. Production currently serves `www` and
+   * permanently redirects the apex, so metadata and discovery URLs use `www`
+   * as well.
    *
    * Override per-environment with NEXT_PUBLIC_SITE_URL — preview deploys should
    * set it to their own URL so crawlers never see a preview emitting canonicals
    * that point at production.
    */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://kemmatechnologies.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.kemmatechnologies.com",
 
   /** Enquiries inbox. Requires the domain to be verified in Resend. */
   email: "hello@kemmatechnologies.com",
