@@ -28,6 +28,9 @@ export const SITE = {
   /** Enquiries inbox. Requires the domain to be verified in Resend. */
   email: "hello@kemmatechnologies.com",
 
+  /** Privacy and support contact published for ARS Pocket. */
+  arsPocketPrivacyEmail: "emmanuel@kemmatechnologies.com",
+
   location: "Accra, Ghana",
 
   /**
