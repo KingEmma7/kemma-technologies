@@ -9,6 +9,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE.url}/services`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE.url}/work`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE.url}/contact`, changeFrequency: "yearly", priority: 0.6 },
+    {
+      url: `${SITE.url}/ars-pocket/privacy`,
+      changeFrequency: "yearly",
+      priority: 0.5,
+    },
   ];
 
   const projectRoutes: MetadataRoute.Sitemap = getAllProjects().map((p) => ({
