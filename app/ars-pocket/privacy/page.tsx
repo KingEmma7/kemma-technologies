@@ -61,7 +61,7 @@ const sections = [
     id: "changes",
     title: "Changes",
     paragraphs: [
-      "If ARS Pocket’s data practices materially change, this notice and the Google Play Data safety declaration will be updated before release.",
+      "If ARS Pocket’s data practices materially change, this notice and the Google Play Data safety declaration will be updated before any release that uses the new practices.",
     ],
   },
 ] as const;
