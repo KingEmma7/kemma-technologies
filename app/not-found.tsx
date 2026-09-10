@@ -1,24 +1,23 @@
-import type { Metadata } from "next";
-import { ButtonLink } from "@/components/ui/ButtonLink";
-
-export const metadata: Metadata = {
-  title: "Page Not Found",
-};
-
+import Link from "next/link";
+import { PageIntro } from "@/components/site/PageIntro";
+export const metadata = { title: "Page not found" };
 export default function NotFound() {
   return (
-    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-[var(--dark-bg)] px-6">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(200,155,60,0.06)_0%,transparent_70%)]" />
-      <div className="relative z-10 text-center max-w-lg">
-        <p className="text-xs uppercase tracking-widest text-[var(--gold)] mb-6">404</p>
-        <h1 className="font-heading font-bold text-3xl md:text-5xl text-white mb-6">
-          Page not found
-        </h1>
-        <p className="text-[var(--silver)] mb-10">
-          The page you&apos;re looking for doesn&apos;t exist or may have moved.
-        </p>
-        <ButtonLink href="/" size="lg">Back to Home</ButtonLink>
+    <div className="error-page">
+      <PageIntro
+        label="404 / A small detour"
+        title="This page"
+        quiet="isn’t here."
+        description="The address may have changed. Explore our work or head back to the beginning."
+      />
+      <div className="wrap error-actions">
+        <Link href="/" className="solid-button">
+          Back to home ↗
+        </Link>
+        <Link href="/work" className="text-link">
+          Explore our work ↗
+        </Link>
       </div>
-    </section>
+    </div>
   );
 }
