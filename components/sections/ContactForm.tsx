@@ -176,7 +176,7 @@ export function ContactForm() {
                       role="status"
                       className="text-[var(--success)] text-sm"
                     >
-                      ✓ Message sent! We&apos;ll be in touch within 24 hours.
+                      ✓ Message sent! We typically reply within one business day.
                     </motion.p>
                   )}
                   {status === "error" && (
@@ -242,9 +242,9 @@ export function ContactForm() {
 
             <div className="border border-[var(--border)] rounded-sm p-8 bg-[rgba(255,255,255,0.02)]">
               <Clock className="mb-4 h-7 w-7 text-[var(--gold)]" strokeWidth={1.5} aria-hidden="true" />
-              <h3 className="font-heading font-semibold text-white text-lg mb-2">24-hour response</h3>
+              <h3 className="font-heading font-semibold text-white text-lg mb-2">A personal response</h3>
               <p className="text-[var(--silver)] text-sm leading-relaxed">
-                We read every enquiry personally. You&apos;ll hear back directly from the founder or a senior technical collaborator — not an automated bot — within one business day.
+                We read every enquiry personally. You&apos;ll hear back directly from the founder or a senior technical collaborator — not an automated bot. We typically reply within one business day.
               </p>
             </div>
           </div>

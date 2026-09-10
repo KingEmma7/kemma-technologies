@@ -1,32 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contactSchema } from "@/lib/validations/contact";
 import { SITE } from "@/lib/site";
+import { escapeHtml } from "@/lib/contact-email";
 
-/** Escape HTML special chars so user input cannot inject markup into emails. */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+const MAX_CONTACT_BODY_BYTES = 16 * 1024;
 
 export async function POST(req: NextRequest) {
+  const contentType = req.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.startsWith("application/json")) {
+    return NextResponse.json(
+      { error: "Content-Type must be application/json" },
+      { status: 415 },
+    );
+  }
+
+  const declaredLength = Number(req.headers.get("content-length"));
+  if (
+    Number.isFinite(declaredLength) &&
+    declaredLength > MAX_CONTACT_BODY_BYTES
+  ) {
+    return NextResponse.json({ error: "Request too large" }, { status: 413 });
+  }
+
+  let body: unknown;
   try {
-    const body = await req.json();
-    const parsed = contactSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    const rawBody = await req.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_CONTACT_BODY_BYTES) {
+      return NextResponse.json({ error: "Request too large" }, { status: 413 });
     }
+    body = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-    // Honeypot tripped — respond as if successful so the bot doesn't learn
-    // to look for a different signal, but skip sending the email entirely.
-    if (parsed.data.nickname) {
-      return NextResponse.json({ ok: true });
-    }
+  const parsed = contactSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+  }
 
+  // Honeypot tripped — respond as if successful so the bot doesn't learn
+  // to look for a different signal, but skip sending the email entirely.
+  if (parsed.data.nickname) {
+    return NextResponse.json({ ok: true });
+  }
+
+  try {
     const {
       name,
       email,

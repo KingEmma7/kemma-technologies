@@ -210,7 +210,7 @@ export function Navigation() {
                       "transition-colors duration-200",
                       pathname === href
                         ? "text-gold-gradient"
-                        : "text-[#444] hover:text-[var(--gold)]",
+                        : "text-[var(--muted)] hover:text-[var(--gold)]",
                     ].join(" ")}
                   >
                     {label}

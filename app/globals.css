@@ -2581,3 +2581,83 @@ a.index-project:hover .index-image img {
     width: 68px;
   }
 }
+
+/* Existing ARS Pocket notice, presented with the site's shared theme tokens. */
+.privacy-page {
+  max-width: 920px;
+  padding-block: 72px 95px;
+}
+.privacy-header {
+  padding-bottom: 35px;
+  border-bottom: 1px solid var(--line);
+}
+.privacy-header .eyebrow {
+  color: var(--section-label);
+}
+.privacy-page h1 {
+  white-space: normal;
+  font-size: clamp(42px, 6vw, 72px);
+  margin-block: 22px;
+}
+.privacy-date {
+  color: var(--muted);
+  font-size: 13px;
+}
+.privacy-intro {
+  color: var(--body-copy);
+  font-size: 18px;
+  line-height: 1.8;
+  margin-top: 22px;
+}
+.privacy-sections {
+  padding-block: 40px;
+}
+.privacy-sections section + section {
+  margin-top: 42px;
+}
+.privacy-page h2 {
+  color: var(--ink);
+  font-size: 27px;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+}
+.privacy-paragraphs {
+  color: var(--body-copy);
+  font-size: 15px;
+  line-height: 1.85;
+  margin-top: 17px;
+}
+.privacy-paragraphs p + p {
+  margin-top: 16px;
+}
+.privacy-contact {
+  border-top: 1px solid var(--line);
+  padding-top: 32px;
+}
+.privacy-contact address {
+  font-style: normal;
+  color: var(--body-copy);
+  font-size: 15px;
+  line-height: 1.85;
+  margin-top: 18px;
+}
+.privacy-contact a {
+  color: var(--olive);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .privacy-page {
+    padding-block: 45px 65px;
+  }
+  .privacy-intro {
+    font-size: 16px;
+  }
+  .privacy-paragraphs {
+    font-size: 14px;
+  }
+  .privacy-page h2 {
+    font-size: 25px;
+  }
+}

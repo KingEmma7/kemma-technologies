@@ -124,7 +124,7 @@ export function ContactForm() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@company.com"
-                maxLength={150}
+                maxLength={254}
                 required
                 {...register("email")}
                 {...accessibility("email")}
@@ -139,7 +139,7 @@ export function ContactForm() {
               rows={4}
               placeholder="What would you like to build or improve?"
               minLength={20}
-              maxLength={5000}
+              maxLength={4000}
               required
               {...register("description")}
               {...accessibility("description")}
@@ -157,7 +157,7 @@ export function ContactForm() {
                 Organisation
                 <input
                   autoComplete="organization"
-                  maxLength={200}
+                  maxLength={150}
                   {...register("organisation")}
                   {...accessibility("organisation")}
                 />

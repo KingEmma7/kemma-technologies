@@ -54,20 +54,32 @@ const optionalChoice = <T extends readonly [string, ...string[]]>(values: T) =>
   z.union([z.enum(values), z.literal("")]).optional();
 
 export const contactSchema = z.object({
-  name:  z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be 100 characters or fewer"),
+  email: z
+    .string()
+    .trim()
+    .email("Please enter a valid email address")
+    .max(254, "Email address is too long"),
 
-  organisation: z.string().optional(),
+  organisation: z.string().trim().max(150, "Organisation must be 150 characters or fewer").optional(),
 
   // Free text rather than z.string().url(): people type "acme.com" without a
   // scheme, and rejecting that is friction for a field that is only context.
-  website: z.string().max(200).optional(),
+  website: z.string().trim().max(200).optional(),
 
   projectType: z.enum(PROJECT_TYPES, {
     message: "Please choose the closest project type",
   }),
 
-  description: z.string().min(20, "Please give us at least a couple of sentences"),
+  description: z
+    .string()
+    .trim()
+    .min(20, "Please give us at least a couple of sentences")
+    .max(4_000, "Description must be 4,000 characters or fewer"),
 
   stage:    optionalChoice(PROJECT_STAGES),
   timeline: optionalChoice(TIMELINES),
@@ -85,7 +97,7 @@ export const contactSchema = z.object({
   // NOTE: this was previously named `website`, which now collides with the real
   // website field above. Renaming it is required — if both used `website`, a
   // genuine enquiry that filled it in would be silently discarded as spam.
-  nickname: z.string().optional(),
-});
+  nickname: z.string().trim().max(200).optional(),
+}).strict();
 
 export type ContactFormData = z.infer<typeof contactSchema>;
