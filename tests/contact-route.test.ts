@@ -31,13 +31,17 @@ afterEach(() => {
 
 describe("POST /api/contact", () => {
   it("requires JSON content", async () => {
-    const response = await POST(request("name=Emmanuel", { "content-type": "text/plain" }));
+    const response = await POST(
+      request("name=Emmanuel", { "content-type": "text/plain" }),
+    );
 
     expect(response.status).toBe(415);
   });
 
   it("returns a client error for malformed JSON", async () => {
-    const response = await POST(request("{", { "content-type": "application/json" }));
+    const response = await POST(
+      request("{", { "content-type": "application/json" }),
+    );
 
     expect(response.status).toBe(400);
   });
@@ -74,15 +78,23 @@ describe("POST /api/contact", () => {
     await expect(response.json()).resolves.toEqual({ ok: true });
   });
 
-  it("surfaces missing production email configuration", async () => {
-    vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("RESEND_API_KEY", "");
+  it.each(["production", "development"])(
+    "reports unavailable email configuration in %s without claiming delivery",
+    async (environment) => {
+      vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      vi.stubEnv("NODE_ENV", environment);
+      vi.stubEnv("RESEND_API_KEY", "");
 
-    const response = await POST(
-      request(JSON.stringify(validContact), { "content-type": "application/json" }),
-    );
+      const response = await POST(
+        request(JSON.stringify(validContact), {
+          "content-type": "application/json",
+        }),
+      );
 
-    expect(response.status).toBe(500);
-  });
+      expect(response.status).toBe(503);
+      await expect(response.json()).resolves.toEqual({
+        error: "Email is temporarily unavailable",
+      });
+    },
+  );
 });

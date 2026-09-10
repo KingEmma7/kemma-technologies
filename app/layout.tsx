@@ -1,23 +1,26 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-import { Navigation } from "@/components/layout/Navigation";
-import { Footer } from "@/components/layout/Footer";
-import { SmoothScroll } from "@/components/layout/SmoothScroll";
-import { PageTransition } from "@/components/layout/PageTransition";
+import { Navigation } from "@/components/site/Navigation";
+import { Footer } from "@/components/site/Footer";
 import { SITE } from "@/lib/site";
 import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
+import { themeScript } from "@/components/site/theme";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-poppins",
+const instrument = localFont({
+  src: [
+    {
+      path: "./fonts/instrument-sans-regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/instrument-sans-medium.ttf",
+      weight: "500 700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-instrument",
   display: "swap",
 });
 
@@ -55,38 +58,32 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-GB" className={`${inter.variable} ${poppins.variable}`}>
+    <html
+      lang="en-GB"
+      data-theme="light"
+      suppressHydrationWarning
+      className={instrument.variable}
+    >
       <head>
-        {/* Marks that scripting is available, before first paint. Scroll-reveal
-            hidden states are scoped to `html.js`, so without this the page
-            still renders fully visible instead of blank. Must stay inline and
-            render-blocking — deferring it would cause a visible flash. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.documentElement.classList.add('js')`,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd()) }}
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(organizationJsonLd()),
+          }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript(websiteJsonLd()) }}
         />
       </head>
-      {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla, Grammarly)
-          inject attributes onto <body> before React hydrates. This is a benign,
-          well-documented mismatch — see https://react.dev/link/hydration-mismatch */}
-      <body suppressHydrationWarning>
-        <a href="#main" className="skip-link">Skip to main content</a>
-        <SmoothScroll>
-          <Navigation />
-          <PageTransition>
-            <main id="main">{children}</main>
-          </PageTransition>
-          <Footer />
-        </SmoothScroll>
+      <body>
+        <a href="#main" className="skip-link">
+          Skip to main content
+        </a>
+        <Navigation />
+        <main id="main">{children}</main>
+        <Footer />
       </body>
     </html>
   );

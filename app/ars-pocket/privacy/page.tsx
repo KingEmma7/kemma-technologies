@@ -1,4 +1,3 @@
-import { Container } from "@/components/ui/Container";
 import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
@@ -68,66 +67,48 @@ const sections = [
 
 export default function ArsPocketPrivacyPage() {
   return (
-    <article className="bg-[var(--surface)] pb-24 pt-36 md:pb-32 md:pt-44">
-      <Container narrow>
-        <header className="border-b border-[var(--border)] pb-10">
-          <p className="mb-5 text-xs uppercase tracking-widest text-[var(--gold)]">
-            ARS Pocket App
-          </p>
-          <h1 className="max-w-3xl text-4xl font-bold text-[var(--foreground)] md:text-6xl">
-            Privacy notice
-          </h1>
-          <p className="mt-6 text-base text-[var(--muted)]">
-            Effective 19 August 2026
-          </p>
-          <p className="mt-6 text-lg leading-8 text-[var(--silver)]">
-            ARS Pocket is developed and maintained by {SITE.name} for the
-            Apostles Revelation Society, Wovenu Memorial Chapel.
-          </p>
-        </header>
+    <article className="privacy-page wrap">
+      <header className="privacy-header">
+        <p className="eyebrow">ARS Pocket App</p>
+        <h1 className="privacy-title">Privacy notice</h1>
+        <p className="privacy-date">Effective 19 August 2026</p>
+        <p className="privacy-intro">
+          ARS Pocket is developed and maintained by {SITE.name} for the Apostles
+          Revelation Society, Wovenu Memorial Chapel.
+        </p>
+      </header>
 
-        <div className="space-y-12 py-12">
-          {sections.map((section) => (
-            <section key={section.id} aria-labelledby={section.id}>
-              <h2
-                className="text-2xl font-semibold text-[var(--foreground)]"
-                id={section.id}
-              >
-                {section.title}
-              </h2>
-              <div className="mt-5 space-y-4 text-base leading-8 text-[var(--silver)]">
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+      <div className="privacy-sections">
+        {sections.map((section) => (
+          <section key={section.id} aria-labelledby={section.id}>
+            <h2 id={section.id}>{section.title}</h2>
+            <div className="privacy-paragraphs">
+              {section.paragraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
 
-        <section
-          aria-labelledby="ars-pocket-privacy-contact"
-          className="border-t border-[var(--border)] pt-10"
-        >
-          <h2
-            className="text-2xl font-semibold text-[var(--foreground)]"
-            id="ars-pocket-privacy-contact"
+      <section
+        aria-labelledby="ars-pocket-privacy-contact"
+        className="privacy-contact"
+      >
+        <h2 id="ars-pocket-privacy-contact">Contact</h2>
+        <address className="privacy-address">
+          Emmanuel Mawulolo Tagbor
+          <br />
+          {SITE.name}
+          <br />
+          <a
+            className="text-link"
+            href={`mailto:${SITE.arsPocketPrivacyEmail}`}
           >
-            Contact
-          </h2>
-          <address className="mt-5 not-italic text-base leading-8 text-[var(--silver)]">
-            Emmanuel Mawulolo Tagbor
-            <br />
-            {SITE.name}
-            <br />
-            <a
-              className="inline-flex min-h-11 items-center text-[var(--gold)] underline decoration-transparent underline-offset-4 transition-colors hover:decoration-current"
-              href={`mailto:${SITE.arsPocketPrivacyEmail}`}
-            >
-              {SITE.arsPocketPrivacyEmail}
-            </a>
-          </address>
-        </section>
-      </Container>
+            {SITE.arsPocketPrivacyEmail}
+          </a>
+        </address>
+      </section>
     </article>
   );
 }

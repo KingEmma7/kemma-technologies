@@ -14,7 +14,7 @@ interface PageMetaInput {
   description: string;
   /** Site-relative path, e.g. "/work". Used for the canonical + OG URL. */
   path: string;
-  /** Site-relative OG image path. Omit to inherit the generated site-wide card. */
+  /** Site-relative OG image path. Omit to use the generated site-wide card. */
   image?: string;
   type?: "website" | "article";
 }
@@ -28,7 +28,7 @@ export function pageMetadata({
   title,
   description,
   path,
-  image,
+  image = "/opengraph-image",
   type = "website",
 }: PageMetaInput): Metadata {
   const url = absoluteUrl(path);

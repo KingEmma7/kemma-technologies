@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProjects, getProjectBySlug } from "@/lib/projects";
-import { CaseStudyHero, CaseStudyFooter } from "@/components/sections/CaseStudyContent";
-import { CaseStudyGallery } from "@/components/sections/CaseStudyGallery";
-import { MdxSection } from "@/components/sections/MdxSection";
-import { breadcrumbJsonLd, creativeWorkJsonLd, jsonLdScript, pageMetadata } from "@/lib/seo";
+import { CaseStudyHero, CaseStudyBody } from "@/components/site/CaseStudy";
+import { ContactBand } from "@/components/site/Sections";
+import {
+  breadcrumbJsonLd,
+  creativeWorkJsonLd,
+  jsonLdScript,
+  pageMetadata,
+} from "@/lib/seo";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -48,7 +52,7 @@ export default async function CaseStudyPage({ params }: Props) {
               year: meta.year,
               client: meta.client,
               image: meta.cover,
-            })
+            }),
           ),
         }}
       />
@@ -60,18 +64,13 @@ export default async function CaseStudyPage({ params }: Props) {
               { name: "Home", path: "/" },
               { name: "Work", path: "/work" },
               { name: meta.title, path: `/work/${meta.slug}` },
-            ])
+            ]),
           ),
         }}
       />
       <CaseStudyHero meta={meta} />
-      <CaseStudyGallery
-        title={meta.title}
-        cover={meta.cover}
-        screenshots={meta.screenshots}
-      />
-      <MdxSection content={project.content} />
-      <CaseStudyFooter />
+      <CaseStudyBody meta={meta} content={project.content} />
+      <ContactBand />
     </article>
   );
 }

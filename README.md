@@ -118,8 +118,8 @@ To update the logo, replace the public logo and icon assets, then re-run `npm ru
 
 The `/api/contact` route sends emails via [Resend](https://resend.com). Add your `RESEND_API_KEY` to `.env.local`.
 
-- **Development:** if the key is missing, the server records only a configuration warning and returns success, so the form can be tested locally without logging personal enquiry data.
-- **Production:** if the key is missing, the API returns a `500` error instead of silently succeeding — a misconfigured deployment will surface the error rather than losing enquiries.
+- **Development and production:** if the key is missing, the API returns `503` and the form displays its error state. The server logs only a configuration warning, never personal enquiry data.
+- A working Resend key and permitted sender are required to test successful delivery. Without a key, you can still test form validation and the unavailable-email state locally.
 
 The recipient is `SITE.email` (`hello@kemmatechnologies.com`). Set
 `CONTACT_FROM_EMAIL` to a sender on a domain verified in Resend. The

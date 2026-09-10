@@ -8,11 +8,17 @@ const MAX_CONTACT_BODY_BYTES = 16 * 1024;
 export async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type")?.toLowerCase() ?? "";
   if (!contentType.startsWith("application/json")) {
-    return NextResponse.json({ error: "Content-Type must be application/json" }, { status: 415 });
+    return NextResponse.json(
+      { error: "Content-Type must be application/json" },
+      { status: 415 },
+    );
   }
 
   const declaredLength = Number(req.headers.get("content-length"));
-  if (Number.isFinite(declaredLength) && declaredLength > MAX_CONTACT_BODY_BYTES) {
+  if (
+    Number.isFinite(declaredLength) &&
+    declaredLength > MAX_CONTACT_BODY_BYTES
+  ) {
     return NextResponse.json({ error: "Request too large" }, { status: 413 });
   }
 
@@ -55,13 +61,11 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.RESEND_API_KEY;
 
     if (!apiKey) {
-      // Do not log enquiry fields: contact submissions contain personal data.
-      // Development can still exercise the UI without claiming delivery.
-      console.warn("[contact] RESEND_API_KEY is not set — email not sent.");
-      if (process.env.NODE_ENV === "development") {
-        return NextResponse.json({ ok: true }); // allow dev testing
-      }
-      return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+      console.warn("[contact] Email provider is not configured.");
+      return NextResponse.json(
+        { error: "Email is temporarily unavailable" },
+        { status: 503 },
+      );
     }
 
     const { Resend } = await import("resend");
@@ -72,7 +76,10 @@ export async function POST(req: NextRequest) {
     const blank = "—";
     const rows: [string, string][] = [
       ["Name", escapeHtml(name)],
-      ["Email", `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`],
+      [
+        "Email",
+        `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`,
+      ],
       ["Organisation", escapeHtml(organisation || blank)],
       ["Website", escapeHtml(website || blank)],
       ["Project type", escapeHtml(projectType)],
@@ -106,21 +113,22 @@ export async function POST(req: NextRequest) {
     // set CONTACT_FROM_EMAIL (e.g. "Kemma Website
     // <noreply@kemmatechnologies.com>") — sends from an unverified domain are
     // rejected.
-    const from = process.env.CONTACT_FROM_EMAIL ?? "Kemma Website <onboarding@resend.dev>";
+    const from =
+      process.env.CONTACT_FROM_EMAIL ?? "Kemma Website <onboarding@resend.dev>";
 
     const { error } = await resend.emails.send({
       from,
-      to:      [SITE.email],
+      to: [SITE.email],
       replyTo: email,
       subject: `${projectType} enquiry from ${name}${organisation ? ` (${organisation})` : ""}`,
-      text:    textBody,
+      text: textBody,
       html: `
         <h2>New enquiry</h2>
         <table cellpadding="6" style="border-collapse:collapse">
           ${rows
             .map(
               ([label, value]) =>
-                `<tr><td style="vertical-align:top"><strong>${label}</strong></td><td>${value}</td></tr>`
+                `<tr><td style="vertical-align:top"><strong>${label}</strong></td><td>${value}</td></tr>`,
             )
             .join("")}
         </table>
@@ -132,7 +140,10 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("[contact] Resend returned an error:", error);
-      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to send email" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ ok: true });
