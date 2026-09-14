@@ -11,9 +11,7 @@ export default function ContactPage() {
   return (
     <>
       <PageIntro
-        label="A conversation starts here"
-        title="What are you"
-        quiet="thinking about?"
+        title="Tell us about your project."
         description="A new product. A better website. A complicated problem worth untangling. Let’s work out the next step together."
       />
       <ContactForm />

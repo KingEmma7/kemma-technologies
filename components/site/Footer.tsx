@@ -8,9 +8,11 @@ export function Footer() {
       <Brand />
       <p>© {new Date().getFullYear()} Kemma Technologies</p>
       <div>
-        <a href={`mailto:${SITE.email}`}>Email ↗</a>
-        <Link href="/contact">Contact ↗</Link>
-        <a href="#top">Back to top ↑</a>
+        <a href={`mailto:${SITE.email}`}>Email</a>
+        <Link href="/demos">Demos</Link>
+        <Link href="/pricing">Pricing</Link>
+        <Link href="/contact">Contact</Link>
+        <a href="#top">Back to top</a>
       </div>
     </footer>
   );

@@ -37,18 +37,13 @@ export default function ServicesPage() {
   return (
     <>
       <PageIntro
-        label="What we bring"
-        title="From the first question"
-        quiet="to the final detail."
+        title="Design and engineering."
         description="Design and engineering, kept close. So what looks right works right, too."
       />
       <div className="services-detail wrap">
         {SERVICES.map((service, i) => (
           <section className="service-detail" key={service.id} id={service.id}>
             <div>
-              <p className="eyebrow section-index">
-                0{i + 1} / Our capabilities
-              </p>
               <h2>{titles[i]}</h2>
               <p className="service-tagline">{service.tagline}</p>
             </div>
@@ -70,12 +65,12 @@ export default function ServicesPage() {
                   ))}
                 </ul>
               </details>
+              {service.id === "web" && <Link className="text-link" href="/pricing">Explore website scope and pricing</Link>}
               <div className="service-evidence">
-                <p className="eyebrow">In the work</p>
+                <p className="context-label">Related projects</p>
                 {service.evidence.map((slug) => (
                   <Link className="text-link" href={`/work/${slug}`} key={slug}>
                     {projectPresentation[slug]?.name ?? slug}
-                    <span aria-hidden="true">↗</span>
                   </Link>
                 ))}
               </div>
@@ -85,11 +80,10 @@ export default function ServicesPage() {
       </div>
       <section className="principles-section">
         <div className="wrap">
-          <p className="eyebrow section-index">A clear path through the work</p>
+          <p className="context-label section-label">How a project develops</p>
           <div className="process-grid">
-            {process.map(([title, body], i) => (
+            {process.map(([title, body]) => (
               <div key={title}>
-                <span className="eyebrow">0{i + 1}</span>
                 <h2>{title}.</h2>
                 <p>{body}</p>
               </div>
@@ -98,13 +92,9 @@ export default function ServicesPage() {
         </div>
       </section>
       <section className="editorial-section wrap">
-        <p className="eyebrow">Ways to work together</p>
+        <p className="context-label">Ways to work together</p>
         <div>
-          <h2>
-            The right shape
-            <br />
-            <span className="quiet-type">for your project.</span>
-          </h2>
+          <h2>Choose the support your project needs.</h2>
           <div className="engagement-list">
             <div>
               <h3>A defined project</h3>

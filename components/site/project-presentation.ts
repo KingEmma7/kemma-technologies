@@ -11,7 +11,7 @@ export const projectPresentation: Record<
 > = {
   "isgm-platform": {
     name: "ISGM",
-    headline: "One institution. One connected platform.",
+    headline: "A connected platform for ISGM.",
     image: "/design/isgm.png",
     alt: "ISGM homepage showing a smiling woman receiving her certificate",
     domain: "pisgm.org",
@@ -19,7 +19,7 @@ export const projectPresentation: Record<
   },
   "estees-bakery": {
     name: "Cakes by Estee",
-    headline: "A personal touch. An effortless order.",
+    headline: "Online ordering for Cakes by Estee.",
     image: "/design/bakery.png",
     alt: "Cakes by Estee storefront and cake ordering experience",
     domain: "esteesbakery.com",
@@ -27,14 +27,14 @@ export const projectPresentation: Record<
   },
   constract: {
     name: "Constract",
-    headline: "A marketplace. Many moving parts.",
+    headline: "The Constract marketplace.",
   },
   "kofi-asiedu-mahama": {
     name: "Kofi Asiedu Mahama",
-    headline: "From the author. Directly to the reader.",
+    headline: "An author’s publishing and sales platform.",
   },
   "ars-wovenu-memorial-chapel": {
     name: "Wovenu Memorial Chapel",
-    headline: "A digital home. For a living community.",
+    headline: "A website for Wovenu Memorial Chapel.",
   },
 };

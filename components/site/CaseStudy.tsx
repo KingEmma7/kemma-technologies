@@ -9,13 +9,11 @@ export function CaseStudyHero({ meta }: { meta: ProjectMeta }) {
   return (
     <div className="case-page wrap">
       <Link className="case-back" href="/work">
-        ← Back to work
+        Back to work
       </Link>
       <div className="case-top">
         <div>
-          <p className="eyebrow">
-            Selected work / {display?.name ?? meta.title}
-          </p>
+          <p className="context-label">{display?.name ?? meta.title}</p>
           <h1>{display?.headline ?? meta.title}</h1>
         </div>
         <p>{meta.summary}</p>
@@ -60,7 +58,6 @@ export async function CaseStudyBody({
     <div className="wrap">
       <div className="case-body">
         <aside>
-          <p className="eyebrow section-index">Behind the work</p>
           {meta.liveUrl && (
             <a
               href={meta.liveUrl}
@@ -68,7 +65,7 @@ export async function CaseStudyBody({
               target="_blank"
               rel="noreferrer"
             >
-              Visit the website <span aria-hidden="true">↗</span>
+              Visit the website
             </a>
           )}
           <p className="case-status">
@@ -83,7 +80,7 @@ export async function CaseStudyBody({
       </div>
       {meta.screenshots && meta.screenshots.length > 0 && (
         <section className="case-gallery" aria-labelledby="gallery-title">
-          <h2 id="gallery-title">A closer look.</h2>
+          <h2 id="gallery-title">Project screens</h2>
           <div>
             {meta.screenshots.map((src, i) => (
               <figure key={src}>
@@ -112,9 +109,9 @@ export async function CaseStudyBody({
         </section>
       )}
       <div className="case-next">
-        <h2>Another perspective.</h2>
+        <h2>More client work</h2>
         <Link href="/work" className="text-link">
-          Explore all work <span aria-hidden="true">↗</span>
+          Explore all work
         </Link>
       </div>
     </div>

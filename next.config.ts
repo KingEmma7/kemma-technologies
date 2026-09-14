@@ -23,6 +23,13 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      {
+        source: "/demo-sites/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Content-Security-Policy", value: "connect-src 'none'; form-action 'none'; object-src 'none'; base-uri 'self'" },
+        ],
+      },
     ];
   },
 };
