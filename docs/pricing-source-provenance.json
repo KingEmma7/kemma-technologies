@@ -1,0 +1,21 @@
+{
+  "source": "Owner-confirmed launch offer, 14 September 2026, delegated by the Kemma business task",
+  "version": "2026-09-14.1",
+  "sourceStatus": "approved_for_implementation_and_production_release",
+  "businessTask": "01a07c35-802a-70b2-9a03-fde4483609d7",
+  "approvedChanges": [
+    "GHS 1,500 build-only; GHS 500 first-year domain/basic-hosting package provision; standard package GHS 2,000",
+    "Single GHS 500 launch discount for first five eligible new bundled projects confirmed by deposit; no expiry or remaining-count claim",
+    "Up to five short pages, 2,000 supplied words and 15 supplied images; other starter limits unchanged",
+    "Exact chosen renewals disclosed before deposit; premium domains and specialist infrastructure quoted with overlap credits"
+  ],
+  "preserved": "All 38 addon prices, units, dependencies and overlap rules; optional care; dated supplier examples",
+  "originalAddonSource": {
+    "source": "Kemma business Pricing_Proposal.md and pricing-catalogue.json",
+    "sha256": "e9eee201e44445e795281fd780164e26323326073cab10600ae82b37d16c935b",
+    "reviewedOn": "2026-09-10"
+  },
+  "supplierObservationDate": "2026-09-10",
+  "approvedCatalogueV2Sha256": "11dcd083922bddeb3ce4eb45292e7708c3a53b8d941c7ea6adcbd62e8a93d0a1",
+  "addonFeesUnitsQuoteFlagsComparedToV2": true
+}

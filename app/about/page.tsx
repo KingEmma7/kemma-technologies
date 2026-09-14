@@ -27,19 +27,13 @@ export default function AboutPage() {
   return (
     <>
       <PageIntro
-        label="The studio"
-        title="Small by design."
-        quiet="Deeply invested."
+        title="An independent studio."
         description="Kemma is a founder-led design and engineering studio based in Accra, building for organisations anywhere."
       />
       <section className="editorial-section wrap">
-        <p className="eyebrow">Independent by choice.</p>
+        <p className="context-label">Working with Kemma</p>
         <div>
-          <h2>
-            Good thinking.
-            <br />
-            <span className="quiet-type">Careful making.</span>
-          </h2>
+          <h2>Direct collaboration from idea to delivery.</h2>
           <p className="editorial-lead">
             You work directly with the person thinking through the problem,
             shaping the experience, and writing the software.
@@ -58,11 +52,10 @@ export default function AboutPage() {
       </section>
       <section className="principles-section">
         <div className="wrap">
-          <p className="eyebrow section-index">How we work</p>
+          <p className="context-label section-label">How we work</p>
           <div className="principle-grid">
-            {principles.map(([title, body], i) => (
+            {principles.map(([title, body]) => (
               <div key={title}>
-                <span className="eyebrow">0{i + 1}</span>
                 <h2>{title}</h2>
                 <p>{body}</p>
               </div>
@@ -81,11 +74,13 @@ export default function AboutPage() {
           />
         </div>
         <div>
-          <p className="eyebrow section-index">The person behind the work</p>
+          <p className="context-label section-label">
+            The person behind the work
+          </p>
           <h2>
             Emmanuel
             <br />
-            <span className="quiet-type">Mawulolo Tagbor.</span>
+            Mawulolo Tagbor.
           </h2>
           <p className="founder-role">Founder / Senior software engineer</p>
           <p>
@@ -98,7 +93,7 @@ export default function AboutPage() {
             is planned and built.
           </p>
           <Link className="text-link" href="/work">
-            See the work <span aria-hidden="true">↗</span>
+            See the work
           </Link>
         </div>
       </section>

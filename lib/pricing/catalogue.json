@@ -1,0 +1,744 @@
+{
+  "version": "2026-09-14.1",
+  "reviewedOn": "2026-09-14",
+  "currency": "GHS",
+  "baseFee": 1500,
+  "whatsapp": "+233545559070",
+  "starter": {
+    "pages_max": 5,
+    "supplied_words_max": 2000,
+    "supplied_images_max": 15,
+    "form_fields_max": 5,
+    "revision_rounds": 1,
+    "defect_correction_days": 30,
+    "included": [
+      "adapted reusable layout",
+      "responsive design",
+      "baseline accessibility",
+      "HTTPS setup",
+      "image optimisation",
+      "basic SEO and indexing setup",
+      "social and WhatsApp links",
+      "one working enquiry form",
+      "handover",
+      "eligible standard domain and suitable basic hosting for the first year with the bundled package"
+    ],
+    "excluded": [
+      "premium domains, specialist infrastructure, subscriptions and renewals after year one",
+      "copywriting",
+      "asset production",
+      "CMS",
+      "catalogue/cart",
+      "accounts",
+      "payments",
+      "custom 3D",
+      "ongoing edits"
+    ]
+  },
+  "addons": [
+    {
+      "id": "page",
+      "group": "content",
+      "name": "Extra short page",
+      "min": 200,
+      "max": 300,
+      "unit": "page",
+      "scope": "one additional short page beyond the five included pages, using supplied content and the agreed layout"
+    },
+    {
+      "id": "gallery",
+      "group": "content",
+      "name": "Image gallery",
+      "min": 200,
+      "max": 350,
+      "scope": "Up to 12 supplied images; credit base-scope overlap"
+    },
+    {
+      "id": "copy",
+      "group": "content",
+      "name": "Content writing",
+      "min": 200,
+      "max": 400,
+      "unit": "short page",
+      "scope": "Up to 400 words, one edit, factual approval by client"
+    },
+    {
+      "id": "revision",
+      "group": "content",
+      "name": "Extra revision",
+      "min": 200,
+      "max": 200,
+      "unit": "hour",
+      "scope": "Agreed change estimate; not correction of Kemma defects"
+    },
+    {
+      "id": "cms",
+      "group": "content",
+      "name": "Self-editable content section",
+      "min": 700,
+      "max": 1200,
+      "scope": "One content type, three entries, editor training",
+      "running_cost": "Platform/hosting as selected"
+    },
+    {
+      "id": "catalogue",
+      "group": "commerce",
+      "name": "Catalogue and WhatsApp ordering",
+      "min": 500,
+      "max": 900,
+      "scope": "10 simple products, quantities and WhatsApp handoff; manual confirmation",
+      "exclusive_with": [
+        "store"
+      ]
+    },
+    {
+      "id": "product_entry",
+      "group": "content",
+      "name": "Extra product entry",
+      "min": 20,
+      "max": 40,
+      "unit": "simple product",
+      "scope": "Prepared copy, price and image"
+    },
+    {
+      "id": "filters",
+      "group": "content",
+      "name": "Search and filters",
+      "min": 400,
+      "max": 800,
+      "scope": "One existing collection, up to three filters"
+    },
+    {
+      "id": "booking_embed",
+      "group": "bookings",
+      "name": "Booking-service embed",
+      "min": 300,
+      "max": 500,
+      "scope": "One existing calendar/service",
+      "running_cost": "Selected service/reminders"
+    },
+    {
+      "id": "booking_custom",
+      "group": "bookings",
+      "name": "Custom booking workflow",
+      "min": 1500,
+      "max": null,
+      "quote_required": true,
+      "scope": "Availability, capacity, cancellations, staff and reminders specified before quote",
+      "running_cost": "Hosting, calendar/reminder services and care to quote"
+    },
+    {
+      "id": "guided_form",
+      "group": "enquiries",
+      "name": "Guided enquiry",
+      "min": 400,
+      "max": 800,
+      "scope": "Up to three steps, conditional questions, one delivery destination"
+    },
+    {
+      "id": "payment_links",
+      "group": "commerce",
+      "name": "Hosted payment links",
+      "min": 300,
+      "max": 300,
+      "scope": "Up to three supported links, test and manual-reconciliation instructions",
+      "exclusive_with": [
+        "gateway",
+        "store"
+      ],
+      "running_cost": "Payment processor fees"
+    },
+    {
+      "id": "gateway",
+      "group": "commerce",
+      "name": "Gateway on an existing store",
+      "min": 700,
+      "max": 1200,
+      "scope": "One compatible existing store/gateway, verified status and recovery",
+      "requires": "existing compatible store",
+      "exclusive_with": [
+        "payment_links",
+        "store"
+      ],
+      "running_cost": "Payment processor fees"
+    },
+    {
+      "id": "store",
+      "group": "commerce",
+      "name": "Standard store module",
+      "min": 1500,
+      "max": 2500,
+      "scope": "10 simple products, cart, guest checkout, one gateway, basic order admin, one delivery rule",
+      "includes": [
+        "catalogue",
+        "gateway"
+      ],
+      "running_cost": "Compatible hosting, any licences, email and transaction fees"
+    },
+    {
+      "id": "accounts",
+      "group": "accounts",
+      "name": "Standard accounts",
+      "min": 500,
+      "max": 900,
+      "scope": "Existing supported platform/provider; signup, login, recovery, logout and one account area",
+      "overlap_rule": "No separate charge when already included in platform configuration",
+      "running_cost": "Selected platform/provider and email"
+    },
+    {
+      "id": "social_login",
+      "group": "accounts",
+      "name": "Social login",
+      "min": 200,
+      "max": 400,
+      "unit": "provider",
+      "requires": "existing accounts",
+      "scope": "One provider and configuration/testing",
+      "running_cost": "Existing account provider and any related charges"
+    },
+    {
+      "id": "order_history",
+      "group": "accounts",
+      "name": "Order history",
+      "min": 300,
+      "max": 600,
+      "requires": "accounts and central order records",
+      "scope": "Customer view of existing orders",
+      "overlap_rule": "Credit existing store functionality",
+      "running_cost": "Existing accounts and central order storage"
+    },
+    {
+      "id": "dashboard",
+      "group": "operations",
+      "name": "Custom staff dashboard",
+      "min": 1500,
+      "max": null,
+      "quote_required": true,
+      "scope": "Named workflows and permissions; standard platform admin excluded from this charge",
+      "running_cost": "Hosting, data services and care to quote"
+    },
+    {
+      "id": "subscriptions",
+      "group": "commerce",
+      "name": "Subscriptions or deposits",
+      "min": 700,
+      "max": null,
+      "quote_required": true,
+      "requires": "compatible store/service",
+      "scope": "Methods, cancellations and licences established first",
+      "running_cost": "Compatible platform, licences and processor fees to quote"
+    },
+    {
+      "id": "crm",
+      "group": "operations",
+      "name": "Supported CRM/email automation",
+      "min": 400,
+      "max": 900,
+      "scope": "One source, one destination, one workflow with failure handling",
+      "running_cost": "Selected services"
+    },
+    {
+      "id": "portal",
+      "group": "operations",
+      "name": "Custom portal or marketplace",
+      "min": null,
+      "max": null,
+      "quote_required": true,
+      "scope": "Discovery for roles, data, payouts and operations",
+      "running_cost": "Hosting, data, payments and operational support to quote"
+    },
+    {
+      "id": "live_chat",
+      "group": "chat",
+      "name": "Human live-chat widget",
+      "min": 200,
+      "max": 300,
+      "scope": "One tool, appearance and offline state; no staffing included",
+      "running_cost": "Chosen tool; human staffing and paid extras separate"
+    },
+    {
+      "id": "faq",
+      "group": "chat",
+      "name": "Fixed FAQ assistant",
+      "min": 500,
+      "max": 500,
+      "scope": "15 approved answers and human handoff; no generative model"
+    },
+    {
+      "id": "ai",
+      "group": "chat",
+      "name": "Hosted AI assistant",
+      "min": 750,
+      "max": 1500,
+      "scope": "One provider, up to 10 supplied sources, bounded answers and checks",
+      "running_cost": "Licence/message usage",
+      "overlap_rule": "Replace overlapping fixed FAQ setup; do not charge twice"
+    },
+    {
+      "id": "ai_api",
+      "group": "chat",
+      "name": "Kemma-built AI FAQ assistant",
+      "min": 1200,
+      "max": 2500,
+      "quote_required": true,
+      "scope": "Small supplied knowledge set, server access, request limits, enforced usage cap, human fallback; validated reusable module needed for entry price",
+      "running_cost": "Model usage, hosting and care; measure before bundling"
+    },
+    {
+      "id": "ai_actions",
+      "group": "chat",
+      "name": "AI with private data or actions",
+      "min": null,
+      "max": null,
+      "quote_required": true,
+      "scope": "Permissions, private data, tools, monitoring and audit"
+    },
+    {
+      "id": "analytics",
+      "group": "visibility",
+      "name": "Analytics and enquiry events",
+      "min": 250,
+      "max": 500,
+      "scope": "One property, up to three events, initial check",
+      "running_cost": "Selected analytics plan, if chargeable"
+    },
+    {
+      "id": "local_search",
+      "group": "visibility",
+      "name": "Local search/profile assistance",
+      "min": 300,
+      "max": 600,
+      "scope": "Eligible client-owned profile; verification outcome not guaranteed"
+    },
+    {
+      "id": "seo_expanded",
+      "group": "visibility",
+      "name": "Expanded on-page SEO",
+      "min": 400,
+      "max": 900,
+      "scope": "Up to five pages; no ranking guarantee"
+    },
+    {
+      "id": "social_feed",
+      "group": "visibility",
+      "name": "Embedded social feed",
+      "min": 200,
+      "max": 400,
+      "scope": "One compatible feed",
+      "running_cost": "Any selected widget licence"
+    },
+    {
+      "id": "meta_measurement",
+      "group": "visibility",
+      "name": "Meta measurement setup",
+      "min": 300,
+      "max": 600,
+      "scope": "Agreed events/consent configuration; ad spend and management excluded",
+      "running_cost": "Advertising spend and management excluded"
+    },
+    {
+      "id": "messaging_api",
+      "group": "operations",
+      "name": "WhatsApp API/SMS automation",
+      "min": null,
+      "max": null,
+      "quote_required": true,
+      "scope": "Business approval, workflows and provider fees determined first",
+      "running_cost": "Chosen provider and per-message charges to quote"
+    },
+    {
+      "id": "bespoke_page",
+      "group": "design",
+      "name": "Bespoke page composition",
+      "min": 500,
+      "max": 1000,
+      "unit": "key page",
+      "scope": "Original layout beyond starter structure; asset production separate"
+    },
+    {
+      "id": "scroll",
+      "group": "design",
+      "name": "Signature scroll sequence",
+      "min": 750,
+      "max": 1500,
+      "scope": "One sequence with mobile and reduced-motion alternatives",
+      "exclusive_with": [
+        "three_scroll"
+      ]
+    },
+    {
+      "id": "three_viewer",
+      "group": "design",
+      "name": "Interactive 3D viewer",
+      "min": 1200,
+      "max": 2500,
+      "scope": "One supplied usable model, rotate/drag, lighting, optimisation and static fallback",
+      "exclusive_with": [
+        "three_scroll"
+      ]
+    },
+    {
+      "id": "three_scroll",
+      "group": "design",
+      "name": "3D object with scroll presentation",
+      "min": 1750,
+      "max": 3500,
+      "scope": "One usable model and one sequence",
+      "includes": [
+        "three_viewer",
+        "scroll"
+      ]
+    },
+    {
+      "id": "three_model",
+      "group": "design",
+      "name": "New 3D model or repair",
+      "min": 1500,
+      "max": null,
+      "quote_required": true,
+      "scope": "Model complexity, rights, materials and outputs agreed first"
+    },
+    {
+      "id": "configurator",
+      "group": "design",
+      "name": "Product configurator",
+      "min": 2500,
+      "max": null,
+      "quote_required": true,
+      "scope": "One model and bounded options; new models/commerce separately scoped",
+      "running_cost": "Hosting; any model, commerce or service costs to quote"
+    }
+  ],
+  "examples": [
+    {
+      "id": "starter",
+      "addons": [],
+      "build_from": 1500,
+      "standard_package_from": 2000,
+      "launch_package_from": 1500
+    },
+    {
+      "id": "catalogue",
+      "addons": [
+        "catalogue"
+      ],
+      "build_from": 2000,
+      "standard_package_from": 2500,
+      "launch_package_from": 2000
+    },
+    {
+      "id": "links",
+      "addons": [
+        "catalogue",
+        "payment_links"
+      ],
+      "build_from": 2300,
+      "standard_package_from": 2800,
+      "launch_package_from": 2300
+    },
+    {
+      "id": "faq",
+      "addons": [
+        "catalogue",
+        "payment_links",
+        "faq"
+      ],
+      "build_from": 2800,
+      "standard_package_from": 3300,
+      "launch_package_from": 2800
+    },
+    {
+      "id": "store",
+      "addons": [
+        "store",
+        "accounts"
+      ],
+      "build_from": 3500,
+      "required_running_costs_unquoted": true,
+      "standard_package_from": 4000,
+      "launch_package_from": 3500
+    },
+    {
+      "id": "three",
+      "addons": [
+        "three_scroll"
+      ],
+      "build_from": 3250,
+      "standard_package_from": 3750,
+      "launch_package_from": 3250
+    },
+    {
+      "id": "ai",
+      "addons": [
+        "ai"
+      ],
+      "build_from": 2250,
+      "example_software_usd_monthly": 40,
+      "standard_package_from": 2750,
+      "launch_package_from": 2250
+    }
+  ],
+  "care": [
+    {
+      "id": "client_managed",
+      "annual_service_fee": 0,
+      "scope": "Handover; no ongoing Kemma service"
+    },
+    {
+      "id": "static_managed",
+      "annual_service_fee": 300,
+      "scope": "Release backups, quarterly site/form checks, annual renewal review, one hour of small edits yearly; no emergency response guarantee",
+      "not_suitable_for": [
+        "live store",
+        "custom backend",
+        "database"
+      ]
+    },
+    {
+      "id": "active_care",
+      "monthly_service_fee_from": 200,
+      "quote_required": true,
+      "scope": "Named updates/backups/restore/checkout checks for chosen CMS/store and 30 minutes small edits monthly; infrastructure separate"
+    }
+  ],
+  "suppliers": [
+    {
+      "id": "stormer_com",
+      "source": "https://stormerhost.com/clients/cart.php?a=add&domain=register",
+      "currency": "GHS",
+      "registration_year": 185,
+      "renewal_year": 190,
+      "qualifier": "Standard available .com; checkout charges and future changes unconfirmed"
+    },
+    {
+      "id": "namecheap_com",
+      "source": "https://www.namecheap.com/domains/registration/gtld/com/",
+      "currency": "USD",
+      "registration_sale_year": 11.28,
+      "renewal_year": 18.48,
+      "possible_icann_fee_year": 0.2
+    },
+    {
+      "id": "cloudflare_static",
+      "source": "https://developers.cloudflare.com/pages/functions/pricing/",
+      "currency": "USD",
+      "static_asset_requests": 0,
+      "qualifier": "Static requests are free; functions/other services have separate allowances"
+    },
+    {
+      "id": "stormer_starter",
+      "source": "https://stormerhost.com/clients/store/linux-shared-hosting",
+      "currency": "GHS",
+      "annual_from": 108,
+      "qualifier": "Renewal/performance not verified; 1 GB, 5 mailboxes, SSL, no domain"
+    },
+    {
+      "id": "vercel_pro",
+      "source": "https://vercel.com/pricing",
+      "currency": "USD",
+      "monthly_from": 20,
+      "qualifier": "Team/shared overhead; usage and extras may add cost; account activation not checked"
+    },
+    {
+      "id": "vercel_hobby",
+      "source": "https://vercel.com/docs/plans/hobby",
+      "qualifier": "Personal non-commercial use only"
+    },
+    {
+      "id": "supabase_pro",
+      "source": "https://supabase.com/pricing",
+      "currency": "USD",
+      "monthly_from": 25,
+      "extra_project_monthly_from": 10,
+      "qualifier": "Not needed when a suitable store platform already provides database/auth"
+    },
+    {
+      "id": "resend_free",
+      "source": "https://resend.com/pricing",
+      "currency": "USD",
+      "monthly": 0,
+      "emails_month": 3000,
+      "emails_day": 100,
+      "domains": 3,
+      "qualifier": "Transactional mail, not employee inboxes; shared quota"
+    },
+    {
+      "id": "zoho_mail",
+      "source": "https://www.zoho.com/mail/zohomail-pricing.html",
+      "qualifier": "Per-user annual billing verified; current direct-page amount unavailable, quote needed"
+    },
+    {
+      "id": "paystack_ghana",
+      "source": "https://paystack.com/gh/pricing",
+      "transaction_rate": 0.0195,
+      "qualifier": "Kemma integration service separate; no live merchant account verification performed"
+    },
+    {
+      "id": "paystack_verification",
+      "source": "https://paystack.com/docs/payments/verify-payments/",
+      "qualifier": "Verify payment before delivering value"
+    },
+    {
+      "id": "tawk",
+      "source": "https://www.tawk.to/why-free/",
+      "core_chat_price": 0,
+      "qualifier": "Human staffing and AI/branding add-ons separate"
+    },
+    {
+      "id": "chatbase_hobby",
+      "source": "https://www.chatbase.co/pricing",
+      "currency": "USD",
+      "monthly": 40,
+      "message_credits_month": 700,
+      "qualifier": "Monthly billing view; annual discount not used in examples"
+    },
+    {
+      "id": "openai_gpt41_mini",
+      "source": "https://developers.openai.com/api/docs/models/gpt-4.1-mini",
+      "currency": "USD",
+      "input_per_million_tokens": 0.4,
+      "output_per_million_tokens": 1.6,
+      "qualifier": "Text-processing cost only; illustrative model, not final provider selection",
+      "illustration": {
+        "replies": 1000,
+        "input_tokens_per_reply": 2000,
+        "output_tokens_per_reply": 300,
+        "model_text_cost": 1.28
+      }
+    },
+    {
+      "id": "woocommerce",
+      "source": "https://woocommerce.com/pricing/",
+      "core_licence": 0,
+      "qualifier": "Hosting/extensions/maintenance separate; platform selection still open"
+    }
+  ],
+  "groups": [
+    {
+      "id": "content",
+      "name": "Content and enquiries",
+      "matches": [
+        "content",
+        "enquiries"
+      ]
+    },
+    {
+      "id": "bookings",
+      "name": "Bookings and schedules",
+      "matches": [
+        "bookings"
+      ]
+    },
+    {
+      "id": "selling",
+      "name": "Selling and customer accounts",
+      "matches": [
+        "commerce",
+        "accounts"
+      ]
+    },
+    {
+      "id": "operations",
+      "name": "Business operations",
+      "matches": [
+        "operations"
+      ]
+    },
+    {
+      "id": "chat",
+      "name": "Chat and assistants",
+      "matches": [
+        "chat"
+      ]
+    },
+    {
+      "id": "visibility",
+      "name": "Search, measurement and social",
+      "matches": [
+        "visibility"
+      ]
+    },
+    {
+      "id": "design",
+      "name": "Design, scroll and 3D",
+      "matches": [
+        "design"
+      ]
+    }
+  ],
+  "paths": [
+    {
+      "id": "starter",
+      "name": "Business enquiries",
+      "exampleName": "Business website",
+      "features": [],
+      "summary": "Explain your services and receive enquiries."
+    },
+    {
+      "id": "catalogue",
+      "name": "Catalogue & WhatsApp",
+      "exampleName": "Catalogue & WhatsApp ordering",
+      "features": [
+        "catalogue"
+      ],
+      "summary": "Up to 10 simple products, quantities and an order summary. You confirm availability and delivery."
+    },
+    {
+      "id": "links",
+      "name": "Hosted payment links",
+      "exampleName": "Catalogue with payment links",
+      "features": [
+        "catalogue",
+        "payment_links"
+      ],
+      "summary": "Add up to three provider links. You check payments and match them to orders manually."
+    },
+    {
+      "id": "store",
+      "name": "Standard online store",
+      "exampleName": "Standard store + accounts",
+      "features": [
+        "store"
+      ],
+      "summary": "Up to 10 products, cart, guest checkout, one gateway, order administration and one delivery rule."
+    }
+  ],
+  "demoPaths": [
+    {
+      "id": "pace",
+      "name": "PACE",
+      "features": [
+        "booking_embed"
+      ],
+      "summary": "A smaller gym website can show your classes, coaches and a booking-service embed.",
+      "boundary": "The showcase layout, editable schedules, capacity-aware booking, member accounts and payments are separate production work."
+    },
+    {
+      "id": "sill",
+      "name": "SILL",
+      "features": [
+        "cms",
+        "filters",
+        "gallery"
+      ],
+      "summary": "Start with an agency website, an editable listing section, filters and a supplied image gallery.",
+      "boundary": "The demo’s saved homes stay in one browser. Live inventory, account-synced favourites, viewing management and the bespoke layout need their own scope."
+    },
+    {
+      "id": "afram",
+      "name": "Afram Advisory",
+      "features": [
+        "guided_form"
+      ],
+      "summary": "Start with a professional-services website and a guided three-step enquiry.",
+      "boundary": "The demo’s full page collection, bespoke composition, editable insights and CRM routing are additional work. This estimate includes a real enquiry delivery destination, not a live consultancy service."
+    }
+  ],
+  "packageFee": 500,
+  "launch": {
+    "enabled": true,
+    "discount": 500,
+    "booking_limit": 5,
+    "terms": "First 5 eligible new website projects confirmed by deposit. Availability is confirmed in your written quote. One discount per bundled project; no stacking with build-only."
+  }
+}

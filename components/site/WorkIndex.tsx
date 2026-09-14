@@ -58,7 +58,7 @@ export function WorkIndex({ items }: { items: WorkItem[] }) {
                 </div>
               )}
               <div className="index-project-top">
-                <p className="eyebrow">
+                <p className="context-label">
                   {item.owner === "kemma" ? "Kemma product" : "Client project"}
                 </p>
                 <span className="project-status">
@@ -72,9 +72,7 @@ export function WorkIndex({ items }: { items: WorkItem[] }) {
               <div className="index-project-bottom">
                 <span>{item.categories.join(" / ")}</span>
                 {item.href && (
-                  <span className="text-link">
-                    Explore project <span aria-hidden="true">↗</span>
-                  </span>
+                  <span className="text-link">Explore project</span>
                 )}
               </div>
             </>

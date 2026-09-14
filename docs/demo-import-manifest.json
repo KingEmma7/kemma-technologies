@@ -1,0 +1,109 @@
+{
+  "format": 1,
+  "demos": [
+    {
+      "id": "pace",
+      "base": "/demo-sites/pace/",
+      "vite": "7.3.6",
+      "inputs": {
+        "index.html": "f133d85115946f9af6a6472590852e75e3f12c12681941aff60b30fcaf3f1fa5",
+        "public/fonts/BarlowCondensed-OFL.txt": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f",
+        "public/fonts/Chivo-OFL.txt": "c9b69fa18c372df2b187b49efc57b1ea643b86a938e5af32f6b5a7af1017c891",
+        "public/fonts/display.ttf": "e476562ec9c1e16cf16475895b511f08c804f438cc9a9f80a44ea50a0eeb5b65",
+        "public/fonts/text.ttf": "801674cbeff749011a0186b2c932dc9158187a8ca4ca6598db2a1f5c7c4342d1",
+        "public/images/studio.jpg": "0c0d219ce8878912ecf3c18ddc39e8d8ce625c81159da569922a5af8b5756306",
+        "public/images/training.jpg": "a898e187b3dfd73971fbe9eadc413b897d8e9c8d0cf386537e1c06363054c7db",
+        "src.js": "9960ea145cba2c4e969bb8197d16c5e39e45bd8d086b4c2bd984478f9d222440",
+        "style.css": "78410c6efb245dcf804b9c0785dedfafe0ad5fc66c754d3819c83a8a54cc2b4f",
+        "package-lock.json": "92c4375b8ef220205f7f11ebf6a1c6e939dcb950580e9c8cc46fab96568ed194"
+      },
+      "output": {
+        "assets/index-BB6YRCwt.js": "054b70a04313d173e103313591ff38108ae177bcd52a3805a1ea6d033b7f2db9",
+        "assets/index-BmgInAY4.css": "726a62bce7e9ef2cd4026d29f665797ae376338db89e7adaf9ecc9d55d648d3b",
+        "fonts/BarlowCondensed-OFL.txt": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f",
+        "fonts/Chivo-OFL.txt": "c9b69fa18c372df2b187b49efc57b1ea643b86a938e5af32f6b5a7af1017c891",
+        "fonts/display.ttf": "e476562ec9c1e16cf16475895b511f08c804f438cc9a9f80a44ea50a0eeb5b65",
+        "fonts/text.ttf": "801674cbeff749011a0186b2c932dc9158187a8ca4ca6598db2a1f5c7c4342d1",
+        "images/studio.jpg": "0c0d219ce8878912ecf3c18ddc39e8d8ce625c81159da569922a5af8b5756306",
+        "images/training.jpg": "a898e187b3dfd73971fbe9eadc413b897d8e9c8d0cf386537e1c06363054c7db",
+        "index.html": "c8cddeefa44a490c169c6088e36757632e20da8c80b38b6146c91e1c48907b83"
+      },
+      "preview": {
+        "source": "../pace-after-desktop.png",
+        "inputSha256": "9df4964119279ebe70d693d1844d38c9150965ca5b41812d82a83e70eeba879e",
+        "outputSha256": "11952bde4f03efefd1620156e257f41a83b12318b75fe25aa59414bae298fd58"
+      }
+    },
+    {
+      "id": "sill",
+      "base": "/demo-sites/sill/",
+      "vite": "7.3.6",
+      "inputs": {
+        "index.html": "179ace5178f142b7f06af54185f46dc9f45a76293305c16022d1b94ffee621f6",
+        "public/assets/Bodoni-OFL.txt": "931dfe2e0cd3c9443295f5c1d754b8a8403bf060df50c1d5900267ade83d0046",
+        "public/assets/Manrope-OFL.txt": "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
+        "public/assets/bodoni.ttf": "7bf8604bdeb63fe00278935c1a7e8595de56dfc053ab43581ca848ffd5ad11ba",
+        "public/assets/home-1.jpg": "33f9d9ff206a9392580cea244ae7775fe8af9d8ac2ced1e2979365a4144ee343",
+        "public/assets/home-2.jpg": "737f46681e67da1c93242916a1c715776a2f9a0ae0fa4e7543e964f99ee8574b",
+        "public/assets/home-3.jpg": "b508a095a4abfc061ec154cc696e398367e80736497d6327480e1179f4789bb0",
+        "public/assets/home-4.jpg": "d7083595c385fd524672f067f58ed6205c4949e59fa814bbb485f61d0d6f436a",
+        "public/assets/home-5.jpg": "a0b916573328175708277f4813955c96e4535472ee84875ff40f96d89168555c",
+        "public/assets/home-6.jpg": "fa8043854b8b5637104eae250fdad208cc912dae479094e5c1e9090fb995f4db",
+        "public/assets/manrope.ttf": "a13d9b41b0a471ce58f0e46d377fa3cc76615e4632c3b15eb397caadf7a13f0a",
+        "src/data.js": "c435ed6f96b46fee4f42921d966c23095dceb7eecf1f6a03f9d2c8a3bbb6d427",
+        "src/main.js": "a4bddeb8fdf919b7cfaa91bdc85e016d105e909f480ea481e413ea8338b3e91a",
+        "src/style.css": "9564f437352d84ab5ccac5639e4d1b3a7972711a28b78834c071406aff917b4c",
+        "package-lock.json": "5a808fa4fdee80dd954ae154ef0ceed32ac5218c4c146e23853d16266b6a98c2"
+      },
+      "output": {
+        "assets/Bodoni-OFL.txt": "931dfe2e0cd3c9443295f5c1d754b8a8403bf060df50c1d5900267ade83d0046",
+        "assets/Manrope-OFL.txt": "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
+        "assets/bodoni.ttf": "7bf8604bdeb63fe00278935c1a7e8595de56dfc053ab43581ca848ffd5ad11ba",
+        "assets/home-1.jpg": "33f9d9ff206a9392580cea244ae7775fe8af9d8ac2ced1e2979365a4144ee343",
+        "assets/home-2.jpg": "737f46681e67da1c93242916a1c715776a2f9a0ae0fa4e7543e964f99ee8574b",
+        "assets/home-3.jpg": "b508a095a4abfc061ec154cc696e398367e80736497d6327480e1179f4789bb0",
+        "assets/home-4.jpg": "d7083595c385fd524672f067f58ed6205c4949e59fa814bbb485f61d0d6f436a",
+        "assets/home-5.jpg": "a0b916573328175708277f4813955c96e4535472ee84875ff40f96d89168555c",
+        "assets/home-6.jpg": "fa8043854b8b5637104eae250fdad208cc912dae479094e5c1e9090fb995f4db",
+        "assets/index-D7QGGYoM.js": "08f94683ccf5a449f3f8c2ad875d3059838edc5b7751d7fefa18bf5bb8bfafb1",
+        "assets/index-DbH27KCH.css": "eec50051ee59d9915b9ac5aa1b4933ab0a6a77c6c916cc5a7433483bd9b3eaaa",
+        "assets/manrope.ttf": "a13d9b41b0a471ce58f0e46d377fa3cc76615e4632c3b15eb397caadf7a13f0a",
+        "index.html": "ca5b5c3893b5957f07f3869021a746c6a57f2c634493495e139faf528b576214"
+      },
+      "preview": {
+        "source": "notes/design-revision/after-desktop-home-viewport.png",
+        "inputSha256": "ff22253a66932fc3063ffd1c299eac3aefc526e71e1eac087ba9483e5c77b35d",
+        "outputSha256": "ca7a58da46d1512d7b71fcf46a5a9c6c23d80e1df251d15699485235e032aee3"
+      }
+    },
+    {
+      "id": "afram",
+      "base": "/demo-sites/afram/",
+      "vite": "8.2.2",
+      "inputs": {
+        "index.html": "692d2db12ab35d6166bca15954d15ed6d0306530bb6c08221ab9b061485fb294",
+        "public/fonts/Manrope-OFL.txt": "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
+        "public/fonts/Manrope.ttf": "d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40",
+        "public/fonts/Syne-OFL.txt": "cc43cdce6f91c57989af8459341c276655e34224e954fa69c2ad700831a742d8",
+        "public/fonts/Syne.ttf": "ce5ac77142a65cab2248a1a2ebb740b1d4d9c20b52488877d3ff664d1356104a",
+        "src.js": "4358ecce453a4873c1e7c649d465c7f6ebec2399fc2fc6a5522eafce528decef",
+        "style.css": "279f3abd7a7c54909e43c28f47d70124206ea526651f6cdc1829a6616dfd5ade",
+        "package-lock.json": "4ad20116f57a3d750e06bd4d8158968425f3e34405fed510d2f38c8418772eb5"
+      },
+      "output": {
+        "assets/index-CrlI68ao.css": "b580cd16d1a1127c0d0e693c55d0e2981b3b786738a4d083efb6ff94ef7ce2c8",
+        "assets/index-DDV_gU6m.js": "b786661c069dca94f1ce29c5aaa970235fee7498e55635027cc2251ad858496e",
+        "fonts/Manrope-OFL.txt": "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
+        "fonts/Manrope.ttf": "d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40",
+        "fonts/Syne-OFL.txt": "cc43cdce6f91c57989af8459341c276655e34224e954fa69c2ad700831a742d8",
+        "fonts/Syne.ttf": "ce5ac77142a65cab2248a1a2ebb740b1d4d9c20b52488877d3ff664d1356104a",
+        "index.html": "44367ebe9b6843c555ee18cab9aa82a6fce75093d536216f0e66acd73cf50613"
+      },
+      "preview": {
+        "source": "evidence/refinement/after-desktop.png",
+        "inputSha256": "f23f0bc982c02588c58dedce3a7e102eb11884c3c23943502c81150efe663641",
+        "outputSha256": "1d7600ea267497fb913233724fa33a8dd886355dd3e97a7d3f3ca3882cc800fe"
+      }
+    }
+  ]
+}

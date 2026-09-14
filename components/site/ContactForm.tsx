@@ -193,7 +193,6 @@ export function ContactForm() {
           </p>
           <button className="solid-button" type="submit">
             {status === "loading" ? "Sending enquiry…" : "Send enquiry"}
-            <span aria-hidden="true">↗</span>
           </button>
         </fieldset>
         {status === "success" && (
@@ -211,12 +210,7 @@ export function ContactForm() {
         )}
       </form>
       <aside className="contact-aside">
-        <p className="eyebrow section-index">A direct conversation</p>
-        <h2>
-          Good work starts
-          <br />
-          <span className="quiet-type">with understanding.</span>
-        </h2>
+        <h2>Contact Kemma directly</h2>
         <p>
           Tell us what matters to your business, where you are now, and what
           you’d like to change.
@@ -225,7 +219,7 @@ export function ContactForm() {
           <div>
             <dt>Email</dt>
             <dd>
-              <a href={`mailto:${SITE.email}`}>{SITE.email} ↗</a>
+              <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
             </dd>
           </div>
           <div>
@@ -243,13 +237,13 @@ export function ContactForm() {
             target="_blank"
             rel="noreferrer"
           >
-            WhatsApp ↗
+            WhatsApp
           </a>
           <a href={SITE.social.linkedin} target="_blank" rel="noreferrer">
-            LinkedIn ↗
+            LinkedIn
           </a>
           <a href={SITE.social.twitter} target="_blank" rel="noreferrer">
-            X ↗
+            X
           </a>
         </div>
       </aside>

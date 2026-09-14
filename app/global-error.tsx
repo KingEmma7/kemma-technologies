@@ -19,14 +19,13 @@ export default function GlobalError({
       </head>
       <body style={{ fontFamily: "Arial, sans-serif" }}>
         <main className="wrap error-page page-intro">
-          <p className="eyebrow">A momentary interruption</p>
-          <h1>Let’s try that again.</h1>
+          <h1>The site couldn’t load.</h1>
           <p className="form-intro">
             The site couldn’t load. Please refresh the page or try again.
           </p>
           <div className="error-actions">
             <button className="solid-button" onClick={reset}>
-              Try again ↗
+              Try again
             </button>
           </div>
         </main>

@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check:no-js": "node scripts/check-no-js.mjs",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:no-js"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:no-js && npm run check:demos",
+    "demos:import": "node scripts/import-demos.mjs",
+    "check:demos": "node scripts/check-demos.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

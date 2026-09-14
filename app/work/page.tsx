@@ -13,9 +13,7 @@ export default function WorkPage() {
   return (
     <>
       <PageIntro
-        label="Selected work / Our products"
-        title="Different challenges."
-        quiet="The same care."
+        title="Client work and Kemma products."
         description="From an institution’s daily operations to a bakery’s next order. Thoughtful experiences, with dependable systems behind them."
       />
       <WorkIndex items={getWorkItems()} />

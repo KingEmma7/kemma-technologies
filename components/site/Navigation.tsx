@@ -8,6 +8,8 @@ import { Appearance } from "./Appearance";
 
 const links = [
   { href: "/work", label: "Work" },
+  { href: "/demos", label: "Demos" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/services", label: "Capabilities" },
   { href: "/about", label: "Studio" },
 ];
@@ -26,14 +28,13 @@ export function Navigation() {
             aria-current={pathname.startsWith(link.href) ? "page" : undefined}
           >
             {link.label}
-            {link.href === "/work" && <span className="nav-count">05</span>}
           </Link>
         ))}
       </nav>
       <div className="header-actions">
         <Appearance />
-        <Link className="text-link" href="/contact">
-          Let’s talk <span aria-hidden="true">↗</span>
+        <Link className="contact-link" href="/contact">
+          Let’s talk
         </Link>
         <MobileMenu key={pathname} />
       </div>
@@ -90,7 +91,7 @@ function MobileMenu() {
           </Link>
         ))}
         <Link href="/contact" onClick={() => setOpen(false)}>
-          Let’s talk ↗
+          Let’s talk
         </Link>
       </nav>
     </div>

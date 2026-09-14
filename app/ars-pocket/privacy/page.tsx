@@ -69,7 +69,7 @@ export default function ArsPocketPrivacyPage() {
   return (
     <article className="privacy-page wrap">
       <header className="privacy-header">
-        <p className="eyebrow">ARS Pocket App</p>
+        <p className="context-label">ARS Pocket App</p>
         <h1 className="privacy-title">Privacy notice</h1>
         <p className="privacy-date">Effective 19 August 2026</p>
         <p className="privacy-intro">
