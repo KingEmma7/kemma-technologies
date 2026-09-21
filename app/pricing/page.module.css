@@ -180,6 +180,15 @@
 .reference { margin-top:10px; margin-bottom:80px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
 .reference > summary { cursor:pointer; min-height:78px; display:flex; align-items:center; font-size:20px; letter-spacing:-.3px; }
 .referenceBody { border-top:1px solid var(--line); }
+.serverPricing { padding:70px 0; border-bottom:1px solid var(--line); }
+.priceTableWrap { overflow-x:auto; }
+.serverPricing table { width:100%; min-width:620px; border-collapse:collapse; text-align:left; }
+.serverPricing th, .serverPricing td { padding:18px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+.serverPricing thead th { color:var(--body-copy); font-size:12px; font-weight:400; }
+.serverPricing tbody th { font-size:15px; font-weight:500; }
+.serverPricing tbody td { font-size:17px; }
+.serverPricing tbody td:last-child { color:var(--body-copy); }
+.serverPriceTerms { max-width:800px; margin-top:18px; color:var(--body-copy); font-size:13px; line-height:1.65; }
 @media(max-width:1000px) {
   .starter { gap:40px; }
   .plannerGrid { grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:30px; }

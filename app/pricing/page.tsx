@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { PageIntro } from "@/components/site/PageIntro";
 import { PricingPlanner } from "@/components/site/PricingPlanner";
-import { addons, catalogue, charge, estimate, initialSelection, launchTerms, money } from "@/lib/pricing/estimate";
+import { addons, catalogue, charge, estimate, initialSelection, launchTerms, money, packageLabel, selectJourney, standardPackageLabel, type Selection } from "@/lib/pricing/estimate";
 import { pageMetadata } from "@/lib/seo";
 import styles from "./page.module.css";
 
@@ -30,11 +30,12 @@ export default function PricingPage() {
     <PageIntro label="Website pricing" title="Try what your website could do." description="Choose a customer journey. See the experience and starting estimate together." />
     <section className={`wrap ${styles.section}`} id="estimate" aria-labelledby="estimate-title">
       <h2 id="estimate-title" className="sr-only">Interactive website estimate</h2>
-      <Suspense fallback={<p className={styles.loading}>The interactive estimate is loading. All prices and scope remain available in the breakdown below.</p>}><PricingPlanner /></Suspense>
+      <Suspense fallback={<p className={styles.loading}>Interactive controls need JavaScript. Open “Full scope, costs and practical details” below for server-rendered launch and standard prices.</p>}><PricingPlanner /></Suspense>
     </section>
     <details className={`wrap ${styles.reference}`}>
       <summary>Full scope, costs and practical details</summary>
       <div className={styles.referenceBody}>
+    <ServerPriceSummary />
     <section className={styles.section} aria-labelledby="starter-title">
       <div className={styles.sectionHeading}><h2 id="starter-title">What the starting website includes.</h2><p>No fixed page or product cap · first-year eligible standard domain and basic hosting included with the bundled package.</p></div>
       <div className={styles.starterScope}>
@@ -87,6 +88,29 @@ export default function PricingPage() {
       </div>
     </details>
   </>;
+}
+
+function ServerPriceSummary() {
+  const guestStore = selectJourney(initialSelection(), "payments");
+  const journeys: Array<[string, string, Selection]> = [
+    ["enquiries", "Receive enquiries", initialSelection("starter")],
+    ["orders", "Build product orders", initialSelection("catalogue")],
+    ["payments", "Take payments online · guest checkout", guestStore],
+  ];
+  return <section className={styles.serverPricing} aria-labelledby="server-pricing-title" data-pricing-server-summary>
+    <div className={styles.sectionHeading}><h2 id="server-pricing-title">Starting prices for the three journeys.</h2><p>These use the same catalogue as the interactive estimate. Guest checkout does not add customer accounts; accounts and other custom functions remain optional scope.</p></div>
+    <div className={styles.priceTableWrap}><table>
+      <thead><tr><th scope="col">Customer journey</th><th scope="col">{catalogue.launch.enabled ? "Launch price" : "Starting price"}</th>{catalogue.launch.enabled && <><th scope="col">Standard price</th><th scope="col">Savings</th></>}</tr></thead>
+      <tbody>{journeys.map(([id, label, selection]) => {
+        const result = estimate(selection);
+        return <tr key={id} data-price-path={id} data-launch-price={packageLabel(result)} data-standard-price={standardPackageLabel(result)}>
+          <th scope="row">{label}</th><td>{packageLabel(result)}</td>{catalogue.launch.enabled && <><td><s>{standardPackageLabel(result)}</s></td><td>{money(result.discount)}</td></>}
+        </tr>;
+      })}</tbody>
+    </table></div>
+    {catalogue.launch.enabled && <p className={styles.serverPriceTerms}>{launchTerms} The discount applies once per eligible bundled project. Build-only receives no launch discount.</p>}
+    <p className={styles.serverPriceTerms}>The bundled package includes an eligible standard domain and suitable basic hosting for year one. From year two, the exact selected renewal and billing owner are agreed before deposit.</p>
+  </section>;
 }
 
 function SupplierExamples() {
