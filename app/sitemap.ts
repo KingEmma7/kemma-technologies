@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { articles, openSourceSeries } from "@/lib/editorial";
 import { SITE } from "@/lib/site";
 import { getAllProjects } from "@/lib/projects";
 
@@ -24,5 +25,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...projectRoutes];
+  return [...staticRoutes, ...projectRoutes,
+    { url: `${SITE.url}/blog`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE.url}${openSourceSeries.href}`, changeFrequency: "weekly", priority: 0.7 },
+    ...articles.map((article) => ({ url: `${SITE.url}${article.href}`, changeFrequency: "monthly" as const, priority: 0.6 })),
+  ];
 }
