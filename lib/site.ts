@@ -5,6 +5,8 @@
  * here — never hard-code `kemmatechnologies.com` or an email address in a
  * component, a route handler or a metadata block.
  */
+const phoneE164 = "+233203781818";
+
 export const SITE = {
   name: "Kemma Technologies",
 
@@ -43,8 +45,13 @@ export const SITE = {
   /** Short form for the footer and compact surfaces. */
   tagline: "Digital platforms, web products and business systems. Based in Accra. Building for organisations anywhere.",
 
+  phone: {
+    display: "020 378 1818",
+    e164: phoneE164,
+  },
+
   // E.164 digits only (no "+", no spaces) — used to build wa.me links.
-  whatsapp: "233545559070",
+  whatsapp: phoneE164.slice(1),
 
   social: {
     linkedin: "https://www.linkedin.com/company/kemma-technologies",

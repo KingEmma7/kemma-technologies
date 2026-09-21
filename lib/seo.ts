@@ -83,6 +83,7 @@ export function organizationJsonLd(): Record<string, unknown> {
     name: SITE.name,
     url: SITE.url,
     email: SITE.email,
+    telephone: SITE.phone.e164,
     description: SITE.description,
     logo: absoluteUrl("/logo.png"),
     address: {
