@@ -4,7 +4,7 @@ Status: approved for the September 2026 website release with the pricing page an
 
 ## Visitor journey
 
-`/demos` presents PACE, SILL and Afram Advisory as fictional frontend demonstrations. It is available in the desktop/mobile navigation and footer. Each entry has an approved screenshot, a short business journey, things to try, a working demo link and a separate WhatsApp enquiry to `+233545559070` carrying that demo’s name. The enquiry link opens a prepared message; the visitor decides whether to send it. The gallery also links to actual client work and Kemma’s contact page.
+`/demos` presents PACE, SILL and Afram Advisory as fictional frontend demonstrations. It is available in the desktop/mobile navigation and footer. Each entry has an approved screenshot, a short business journey, things to try, a working demo link and a separate WhatsApp enquiry to `+233203781818` carrying that demo’s name. The enquiry link opens a prepared message; the visitor decides whether to send it. The gallery also links to actual client work and Kemma’s contact page.
 
 | Demo | Entry | Example deep link | Primary journey |
 | --- | --- | --- | --- |

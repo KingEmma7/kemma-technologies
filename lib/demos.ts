@@ -1,6 +1,7 @@
 import pacePreview from "@/public/demo-previews/pace.webp";
 import sillPreview from "@/public/demo-previews/sill.webp";
 import aframPreview from "@/public/demo-previews/afram.webp";
+import { SITE } from "@/lib/site";
 
 export const demos = [
   {
@@ -39,5 +40,5 @@ export const demos = [
 ] as const;
 
 export function demoEnquiry(name: string) {
-  return `https://wa.me/233545559070?text=${encodeURIComponent(`Hi Kemma, I tried the ${name} demo and would like to discuss a similar website for my business.`)}`;
+  return `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(`Hi Kemma, I tried the ${name} demo and would like to discuss a similar website for my business.`)}`;
 }

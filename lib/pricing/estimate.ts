@@ -40,6 +40,20 @@ export function initialSelection(path = "starter", demo = ""): Selection {
     offer: "package", domain: "standard", aiService: "quote", care: "client_managed", demo: demoPath?.id ?? "",
   };
 }
+export type JourneyGoal = "enquiries" | "orders" | "payments";
+export function selectJourney(raw: Selection, goal: JourneyGoal): Selection {
+  const path = goal === "enquiries" ? "starter" : goal === "payments" ? "store" : ["catalogue", "links"].includes(raw.path) ? raw.path : "catalogue";
+  return { ...raw, path, extras: { ...raw.extras }, credits: [...raw.credits] };
+}
+export function selectOrderVariant(raw: Selection, variant: "catalogue" | "links" | "faq"): Selection {
+  return {
+    ...raw,
+    path: variant === "catalogue" ? "catalogue" : "links",
+    assistant: variant === "faq" ? "faq" : raw.assistant === "faq" ? "none" : raw.assistant,
+    extras: { ...raw.extras },
+    credits: [...raw.credits],
+  };
+}
 export function extraAvailability(id: string, s: Selection): string | null {
   const store = s.path === "store" || s.existingStore;
   const accounts = Boolean(s.extras.accounts) || s.existingAccounts;
@@ -155,6 +169,10 @@ export function packageLabel(result: ReturnType<typeof estimate>) {
   if (result.packageMax === null) return `${money(result.packageMin)} + quote needed`;
   return result.packageMin === result.packageMax ? money(result.packageMin) : `${money(result.packageMin)}–${result.packageMax.toLocaleString("en-GH")}`;
 }
+export function standardPackageLabel(result: ReturnType<typeof estimate>) {
+  if (result.standardPackageMax === null) return `${money(result.standardPackageMin)} + quote needed`;
+  return result.standardPackageMin === result.standardPackageMax ? money(result.standardPackageMin) : `${money(result.standardPackageMin)}–${result.standardPackageMax.toLocaleString("en-GH")}`;
+}
 export const launchTerms = `First ${catalogue.launch.booking_limit} eligible new website projects confirmed by deposit. Availability confirmed in your written quote.`;
 export function enquiryUrl(raw: Selection) {
   const e = estimate(raw), s = e.selection;
@@ -164,10 +182,10 @@ export function enquiryUrl(raw: Selection) {
     demo ? `Demo reference: ${demo.name}. The full showcase is separately scoped.` : "",
     `Website path: ${catalogue.paths.find((p) => p.id === s.path)?.name}.`,
     `Selected work: ${e.lines.map((a) => `${a.name}${a.qty > 1 ? ` × ${a.qty}` : ""}${a.credited ? " (platform credit assumed)" : ""}`).join(", ") || "Starter scope only"}.`,
-    `Offer: ${s.offer === "package" ? "Website with first-year eligible standard domain and basic hosting" : "Build-only with suitable existing services"}. Up to ${catalogue.starter.pages_max} short pages, supplied content, one revision.`,
+    `Offer: ${s.offer === "package" ? "Website with first-year eligible standard domain and basic hosting" : "Build-only with suitable existing services"}. No fixed page or product cap; agreed structure and supplied content preparation, with one revision.`,
     `Build work: ${buildLabel(e)}. First-year package provision: ${money(e.packageFee)}.`,
     e.launchApplied ? `Launch discount: ${money(e.discount)} once per bundled project. ${launchTerms} No build-only stacking.` : "",
-    `Website ${e.launchApplied ? "launch " : ""}estimate: ${packageLabel(e)}${e.launchApplied ? `; standard from ${money(e.standardPackageMin)}` : ""}.`,
+    `Website ${e.launchApplied ? "launch " : ""}estimate: ${packageLabel(e)}${e.launchApplied ? `; standard price ${standardPackageLabel(e)}; save ${money(e.discount)}` : ""}.`,
     `Known first-year GHS subtotal from ${money(e.firstYearGhsMin)}${e.usdAnnual ? `; separately ${money(e.usdAnnual, "USD")}/year` : ""}.`,
     `Domain: ${{standard: "eligible standard name included for year one", premium: "premium name or extension, extra cost to quote with credit", existing: "existing domain, ownership and renewal to confirm"}[s.domain]}. Hosting: ${s.offer === "package" ? "suitable basic hosting included for year one; specialist infrastructure quoted with bundled-work credit" : "use my suitable existing services; compatibility and upgrades to confirm"}. Care: ${{client_managed: "handover, no ongoing Kemma care", static_managed: "annual static care", active_care: "active care, final monthly fee to quote"}[s.care]}.`,
     e.renewalNote,

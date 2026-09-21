@@ -1,13 +1,10 @@
 {
-  "version": "2026-09-14.1",
-  "reviewedOn": "2026-09-14",
+  "version": "2026-09-21.1",
+  "reviewedOn": "2026-09-21",
   "currency": "GHS",
   "baseFee": 1500,
-  "whatsapp": "+233545559070",
+  "whatsapp": "+233203781818",
   "starter": {
-    "pages_max": 5,
-    "supplied_words_max": 2000,
-    "supplied_images_max": 15,
     "form_fields_max": 5,
     "revision_rounds": 1,
     "defect_correction_days": 30,
@@ -39,11 +36,11 @@
     {
       "id": "page",
       "group": "content",
-      "name": "Extra short page",
+      "name": "Additional content preparation",
       "min": 200,
       "max": 300,
-      "unit": "page",
-      "scope": "one additional short page beyond the five included pages, using supplied content and the agreed layout"
+      "unit": "content section",
+      "scope": "Preparation and layout of additional supplied content beyond the agreed starting scope; page count itself is not capped"
     },
     {
       "id": "gallery",
@@ -51,7 +48,7 @@
       "name": "Image gallery",
       "min": 200,
       "max": 350,
-      "scope": "Up to 12 supplied images; credit base-scope overlap"
+      "scope": "Curated gallery using the agreed supplied images; credit base-scope overlap"
     },
     {
       "id": "copy",
@@ -59,8 +56,8 @@
       "name": "Content writing",
       "min": 200,
       "max": 400,
-      "unit": "short page",
-      "scope": "Up to 400 words, one edit, factual approval by client"
+      "unit": "content section",
+      "scope": "One agreed content section, one edit and factual approval by the client"
     },
     {
       "id": "revision",
@@ -77,7 +74,7 @@
       "name": "Self-editable content section",
       "min": 700,
       "max": 1200,
-      "scope": "One content type, three entries, editor training",
+      "scope": "One content type, initial editor setup and training",
       "running_cost": "Platform/hosting as selected"
     },
     {
@@ -86,7 +83,7 @@
       "name": "Catalogue and WhatsApp ordering",
       "min": 500,
       "max": 900,
-      "scope": "10 simple products, quantities and WhatsApp handoff; manual confirmation",
+      "scope": "Product catalogue, quantities and WhatsApp handoff; supplied product data and manual confirmation",
       "exclusive_with": [
         "store"
       ]
@@ -94,11 +91,11 @@
     {
       "id": "product_entry",
       "group": "content",
-      "name": "Extra product entry",
+      "name": "Product content preparation",
       "min": 20,
       "max": 40,
-      "unit": "simple product",
-      "scope": "Prepared copy, price and image"
+      "unit": "product record",
+      "scope": "Kemma prepares supplied product copy, price, image and structured entry; catalogue capacity is not capped"
     },
     {
       "id": "filters",
@@ -168,7 +165,7 @@
       "name": "Standard store module",
       "min": 1500,
       "max": 2500,
-      "scope": "10 simple products, cart, guest checkout, one gateway, basic order admin, one delivery rule",
+      "scope": "Product catalogue, cart, guest checkout, one gateway, basic order admin and one delivery rule; supplied product data",
       "includes": [
         "catalogue",
         "gateway"
@@ -316,7 +313,7 @@
       "name": "Expanded on-page SEO",
       "min": 400,
       "max": 900,
-      "scope": "Up to five pages; no ranking guarantee"
+      "scope": "Expanded technical and on-page setup for the agreed site scope; no ranking guarantee"
     },
     {
       "id": "social_feed",
@@ -681,7 +678,7 @@
       "features": [
         "catalogue"
       ],
-      "summary": "Up to 10 simple products, quantities and an order summary. You confirm availability and delivery."
+      "summary": "Products, quantities and an order summary. You confirm availability and delivery."
     },
     {
       "id": "links",
@@ -700,7 +697,7 @@
       "features": [
         "store"
       ],
-      "summary": "Up to 10 products, cart, guest checkout, one gateway, order administration and one delivery rule."
+      "summary": "Products, cart, guest checkout, one gateway, order administration and one delivery rule."
     }
   ],
   "demoPaths": [

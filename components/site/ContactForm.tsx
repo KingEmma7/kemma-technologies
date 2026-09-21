@@ -217,6 +217,12 @@ export function ContactForm() {
         </p>
         <dl>
           <div>
+            <dt>Phone</dt>
+            <dd>
+              <a href={`tel:${SITE.phone.e164}`}>{SITE.phone.display}</a>
+            </dd>
+          </div>
+          <div>
             <dt>Email</dt>
             <dd>
               <a href={`mailto:${SITE.email}`}>{SITE.email}</a>

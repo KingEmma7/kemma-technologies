@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { addons, assistantIds, presentationIds, catalogue, charge, estimate, initialSelection, extraAvailability, packageLabel, launchTerms, enquiryUrl, money, type Selection } from "@/lib/pricing/estimate";
+import { ArrowUpRight, Check, CircleCheck, Coffee, CreditCard, Inbox, MessageCircle, Minus, Plus, ShoppingBag } from "lucide-react";
+import { addons, assistantIds, presentationIds, catalogue, charge, estimate, initialSelection, extraAvailability, packageLabel, standardPackageLabel, launchTerms, enquiryUrl, money, selectJourney, selectOrderVariant, type JourneyGoal, type Selection } from "@/lib/pricing/estimate";
 import styles from "@/app/pricing/page.module.css";
 
 const mainIds = ["catalogue", "payment_links", "store", ...assistantIds, ...presentationIds];
@@ -40,6 +41,11 @@ function Planner({ initial }: { initial: Selection }) {
           <p>{demo.summary}</p><p>{demo.boundary}</p>
           <Link className="text-link" href={`/demos#${demo.id}`}>Revisit the demo</Link>
         </div>}
+        <JourneyPreview selection={s} update={update} />
+        {result.notes.length > 0 && <div className={styles.changeNote} role="status">{result.notes.map((note) => <p key={note}>{note}</p>)}</div>}
+        <details className={styles.customise}>
+          <summary>Customise scope and running costs</summary>
+          <div className={styles.customiseBody}>
         <fieldset>
           <legend>Choose your starting offer</legend>
           <div className={styles.routeChoices}>
@@ -91,7 +97,7 @@ function Planner({ initial }: { initial: Selection }) {
             {Object.entries(s.extras).map(([id, quantity]) => {
               const a = addons.find((x) => x.id === id)!;
               return <li key={id}><div><strong>{a.name}</strong><small>{charge(a)}</small></div>
-                {a.unit && <label className={styles.quantity}>Number of {a.unit === "hour" ? "hours" : a.unit === "provider" ? "providers" : a.unit.includes("page") ? "pages" : "products"}
+                {a.unit && <label className={styles.quantity}>Number of {quantityUnit(a.unit)}
                   <input aria-label={`${a.name} quantity`} type="number" min="1" max="1000" step="1" value={quantity} onChange={(e) => update({ extras: { ...s.extras, [id]: Math.max(1, Math.floor(Number(e.target.value) || 1)) } })} />
                 </label>}
                 <button type="button" aria-label={`Remove ${a.name}`} onClick={() => remove(id)}>Remove</button>
@@ -138,17 +144,38 @@ function Planner({ initial }: { initial: Selection }) {
           </label>
           <p className={styles.hint}>{catalogue.care.find((c) => c.id === s.care)?.scope}</p>
         </fieldset>
-        {result.notes.length > 0 && <div className={styles.changeNote} role="status">{result.notes.map((note) => <p key={note}>{note}</p>)}</div>}
         <button className={styles.reset} type="button" onClick={() => { setRaw(initialSelection()); setExtra(""); }}>Start again</button>
+          </div>
+        </details>
       </div>
       <aside className={styles.estimate} aria-label="Your website estimate">
         <p className={styles.estimateLabel}>{s.offer === "build_only" ? "Build-only estimate" : result.launchApplied ? "Launch website package estimate" : "Website package estimate"}</p>
-        <p className={styles.estimatePrice} aria-live="polite" aria-atomic="true">{packageLabel(result)}</p>
-        {result.launchApplied && <p className={styles.hint}>Standard from {money(result.standardPackageMin)}. {launchTerms}</p>}
-        <p className={styles.hint}>For up to {catalogue.starter.pages_max} short pages and the selected additions. We’ll confirm the design, content, platform and final fee in writing.</p>
+        <div className={styles.priceComparison} key={`${packageLabel(result)}:${standardPackageLabel(result)}:${result.discount}`}>
+          {result.launchApplied && <div className={styles.standardPriceBlock}><span>Standard price</span><s>{standardPackageLabel(result)}</s></div>}
+          <div className={styles.launchPriceBlock}><span>{result.launchApplied ? "Launch price" : s.offer === "build_only" ? "Build price" : "Package price"}</span><div className={styles.priceLine}><p className={styles.estimatePrice} aria-live="polite" aria-atomic="true">{packageLabel(result)}</p>{result.launchApplied && <strong className={styles.savingsBadge}>Save {money(result.discount)}</strong>}</div></div>
+        </div>
+        {result.launchApplied && <p className={styles.hint}>{launchTerms}</p>}
+        <p className={styles.selectedScope}><strong>{catalogue.paths.find((path) => path.id === s.path)?.name}</strong><span>{catalogue.paths.find((path) => path.id === s.path)?.summary}</span><small>No fixed page or product cap · agreed supplied content · {catalogue.starter.revision_rounds} revision</small></p>
+        <a className={`solid-button ${styles.quoteButton}`} href={enquiryUrl(raw)}>Request this scope on WhatsApp</a>
+        <p className={styles.quoteNote}>Your selections are added to a message for you to review before sending.</p>
+        <div className={styles.renewalSummary}>
+          <div><Check aria-hidden="true" size={18} /><p><strong>Year one</strong><span>{s.offer === "package" ? "Eligible standard domain + basic hosting included" : "Uses your suitable existing services"}</span></p></div>
+          <div><CreditCard aria-hidden="true" size={18} /><p><strong>From year two</strong><span>Exact renewal agreed before deposit</span></p></div>
+        </div>
+        {(result.firstYearGhsMin !== result.packageMin || result.careAnnual > 0 || result.activeCareFrom !== null || result.usdMonthly > 0) && <dl className={styles.compactCosts}>
+          {result.firstYearGhsMin !== result.packageMin && <div><dt>Known first-year GHS subtotal</dt><dd>{money(result.firstYearGhsMin)}{result.firstYearGhsMax !== null && result.firstYearGhsMax !== result.firstYearGhsMin ? `–${result.firstYearGhsMax.toLocaleString("en-GH")}` : ""}</dd></div>}
+          {result.careAnnual > 0 && <div><dt>Optional fixed care</dt><dd>{money(result.careAnnual)}/year</dd></div>}
+          {result.activeCareFrom !== null && <div><dt>Optional active care</dt><dd>From {money(result.activeCareFrom)}/month · final quote needed</dd></div>}
+          {result.usdMonthly > 0 && <div><dt>AI subscription</dt><dd>{money(result.usdMonthly, "USD")}/month · separate</dd></div>}
+        </dl>}
+        {result.incomplete && <p className={styles.requiredNotice}>Some required build or service costs still need a written quote.</p>}
+        {result.usage.length > 0 && <p className={styles.requiredNotice}>Transaction or usage fees apply when selected services are used.</p>}
+        <details className={styles.estimateDetails}>
+          <summary>Full cost breakdown and conditions</summary>
+          <div>
         <details className={styles.calculation}>
           <summary>How this is calculated</summary>
-          <ul><li><span>Website build · up to {catalogue.starter.pages_max} short pages</span><span>{money(catalogue.baseFee)}</span></li>
+          <ul><li><span>Website build · agreed layout and supplied content scope</span><span>{money(catalogue.baseFee)}</span></li>
             {result.packageFee > 0 && <li><span>First-year domain & basic hosting package</span><span>{money(result.packageFee)}</span></li>}
             {result.discount > 0 && <li><span>Launch discount · once per project</span><span>−{money(result.discount)}</span></li>}
             {result.lines.map((a) => <li key={a.id}><span>{a.name}{a.qty > 1 ? ` × ${a.qty}` : ""}</span><span>{a.credited ? "Included · credited" : charge({ ...a, unit: undefined, min: a.min === null ? null : a.min * a.qty, max: a.max === null ? null : a.max * a.qty })}</span></li>)}
@@ -165,9 +192,106 @@ function Planner({ initial }: { initial: Selection }) {
         {(result.buildQuote.length > 0 || result.recurringQuotes.length > 0) && <div className={styles.pending}><h3>Still to quote</h3><ul>{[...result.buildQuote, ...result.recurringQuotes].map((text) => <li key={text}>{text}</li>)}</ul><p>Unquoted costs are not zero and are not included in the subtotal.</p></div>}
         {result.usage.length > 0 && <div className={styles.usage}><h3>Fees when you use a service</h3><ul>{result.usage.map((text) => <li key={text}>{text}</li>)}</ul><p>Usage and transaction fees sit outside these fixed-cost illustrations.</p></div>}
         <p className={styles.hint}>Supplier examples dated 10 September 2026. Any applicable taxes, paid assets and unselected work will be identified in the written quote. This is an estimate, not an order.</p>
-        <a className={`solid-button ${styles.quoteButton}`} href={enquiryUrl(raw)}>Request this quote on WhatsApp</a>
-        <p className={styles.hint}>Your selected features and estimate are added to a message for you to review and send.</p>
+          </div>
+        </details>
       </aside>
     </div>
   );
+}
+
+function quantityUnit(unit: string) {
+  if (unit === "hour") return "hours";
+  if (unit === "provider") return "providers";
+  if (unit === "content section") return "content sections";
+  if (unit === "product record") return "product records";
+  return `${unit}s`;
+}
+
+function JourneyPreview({ selection, update }: { selection: Selection; update: (change: Partial<Selection>) => void }) {
+  const active: JourneyGoal = selection.path === "store" ? "payments" : ["catalogue", "links"].includes(selection.path) ? "orders" : "enquiries";
+  const [name, setName] = useState("Ama");
+  const [message, setMessage] = useState("Can you help with my event next month?");
+  const [enquiry, setEnquiry] = useState("");
+  const [tote, setTote] = useState(1);
+  const [mug, setMug] = useState(0);
+  const [orderReady, setOrderReady] = useState(false);
+  const [checkoutEmail, setCheckoutEmail] = useState("ama@example.com");
+  const [paymentReady, setPaymentReady] = useState(false);
+
+  const chooseGoal = (goal: JourneyGoal) => update(selectJourney(selection, goal));
+  const chooseOrder = (variant: "catalogue" | "links" | "faq") => {
+    update(selectOrderVariant(selection, variant));
+  };
+  const submitEnquiry = (event: FormEvent) => {
+    event.preventDefault();
+    if (name.trim() && message.trim()) setEnquiry(`${name.trim()} asks:\n“${message.trim()}”`);
+  };
+  const orderLines = [["Linen tote", tote], ["Studio mug", mug]] as const;
+  const orderCount = tote + mug;
+
+  return <div className={styles.journey}>
+    <p className={styles.eyebrow}>Try a customer journey</p>
+    <h2>What should your website do?</h2>
+    <div className={styles.goalTabs} role="group" aria-label="Choose a website goal">
+      <button type="button" aria-pressed={active === "enquiries"} onClick={() => chooseGoal("enquiries")}><ArrowUpRight aria-hidden="true" /><strong>Receive enquiries</strong><small>Someone asks for help.</small></button>
+      <button type="button" aria-pressed={active === "orders"} onClick={() => chooseGoal("orders")}><ShoppingBag aria-hidden="true" /><strong>Build product orders</strong><small>Someone chooses items.</small></button>
+      <button type="button" aria-pressed={active === "payments"} onClick={() => chooseGoal("payments")}><CreditCard aria-hidden="true" /><strong>Take payments online</strong><small>Someone checks out.</small></button>
+    </div>
+
+    <div className={styles.demoStage}>
+      <div className={styles.demoTop}><span>Your business</span><span>Interactive example · nothing is sent</span></div>
+      {active === "enquiries" && <section className={styles.enquiryDemo} aria-labelledby="enquiry-demo-title">
+        <p className={styles.flow}>Enquiry → your inbox → your reply</p>
+        <h3 id="enquiry-demo-title">Start a conversation.</h3>
+        <form className={styles.demoForm} onSubmit={submitEnquiry}>
+          <label>Your name<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} required /></label>
+          <label>What do you need?<textarea value={message} onChange={(event) => setMessage(event.target.value)} maxLength={500} required /></label>
+          <button type="submit">Preview enquiry</button>
+        </form>
+        {enquiry && <div className={styles.receipt} role="status"><strong><Inbox aria-hidden="true" size={17} /> Enquiry received · example</strong><p>{enquiry}</p><small>You reply to discuss the job and give a quote.</small></div>}
+      </section>}
+
+      {active === "orders" && <section className={styles.orderDemo} aria-labelledby="order-demo-title">
+        <p className={styles.flow}>Products + quantities → WhatsApp → you confirm</p>
+        <h3 id="order-demo-title">Pick products. Build an order.</h3>
+        <div className={styles.orderVariants} aria-label="Order website options">
+          <button type="button" aria-pressed={selection.path === "catalogue"} onClick={() => chooseOrder("catalogue")}>WhatsApp order</button>
+          <button type="button" aria-pressed={selection.path === "links" && selection.assistant !== "faq"} onClick={() => chooseOrder("links")}>+ payment links</button>
+          <button type="button" aria-pressed={selection.path === "links" && selection.assistant === "faq"} onClick={() => chooseOrder("faq")}>+ fixed FAQs</button>
+        </div>
+        <div className={styles.productList}>
+          <ProductQuantity name="Linen tote" symbol={<ShoppingBag />} quantity={tote} setQuantity={setTote} />
+          <ProductQuantity name="Studio mug" symbol={<Coffee />} quantity={mug} setQuantity={setMug} />
+        </div>
+        <p className={styles.orderCount} aria-live="polite">{orderCount ? `${orderCount} ${orderCount === 1 ? "item" : "items"} in your order` : "Choose an item to start"}</p>
+        <button className={styles.demoAction} type="button" disabled={!orderCount} onClick={() => setOrderReady(true)}>Preview WhatsApp order</button>
+        {orderReady && orderCount > 0 && <div className={styles.messageReceipt} role="status"><strong><MessageCircle aria-hidden="true" size={17} /> Your ready-to-send order</strong><p>Hello! I’d like to order:{"\n"}{orderLines.filter(([, quantity]) => quantity).map(([product, quantity]) => `${quantity} × ${product}`).join("\n")}{"\n"}Please confirm availability and how to pay.</p></div>}
+        <p className={styles.demoNoteText}>{selection.path === "links" ? "Hosted payment links are included; you check and match each payment to its order manually. This preview sends nothing and takes no payment." : "You confirm stock, delivery and payment in the chat. This preview sends nothing and takes no payment."}</p>
+      </section>}
+
+      {active === "payments" && <section className={styles.checkoutDemo} aria-labelledby="checkout-demo-title">
+        <p className={styles.flow}>Products → guest checkout → payment confirmation</p>
+        <h3 id="checkout-demo-title">Complete the purchase.</h3>
+        <form className={styles.checkoutCard} onSubmit={(event) => { event.preventDefault(); if (checkoutEmail.trim()) setPaymentReady(true); }}>
+          <div><span className={styles.checkoutMark} aria-hidden="true"><ShoppingBag /></span><span>Linen tote × 1<small>Guest checkout · no account required</small></span><strong>Example</strong></div>
+          <label>Email for receipt<input type="email" value={checkoutEmail} onChange={(event) => setCheckoutEmail(event.target.value)} required /></label>
+          <button type="submit">Preview confirmation</button>
+        </form>
+        {paymentReady && <div className={styles.paymentReceipt} role="status"><strong><CircleCheck aria-hidden="true" size={17} /> Payment confirmed · example</strong><p>A customer confirmation and paid order are ready.</p><small>Demo only. No payment is taken.</small></div>}
+        <p className={styles.demoNoteText}>Payment methods depend on the chosen provider. Merchant approval, transaction fees and specialist infrastructure are quoted separately.</p>
+      </section>}
+    </div>
+  </div>;
+}
+
+function ProductQuantity({ name, symbol, quantity, setQuantity }: { name: string; symbol: ReactNode; quantity: number; setQuantity: (quantity: number) => void }) {
+  return <div className={styles.product}>
+    <span className={styles.productArt} aria-hidden="true">{symbol}</span>
+    <span>{name}</span>
+    <div role="group" aria-label={`${name} quantity`}>
+      <button type="button" aria-label={`Remove one ${name}`} disabled={quantity === 0} onClick={() => setQuantity(Math.max(0, quantity - 1))}><Minus aria-hidden="true" size={16} /></button>
+      <output aria-label={`${name} quantity`}>{quantity}</output>
+      <button type="button" aria-label={`Add one ${name}`} disabled={quantity === 9} onClick={() => setQuantity(Math.min(9, quantity + 1))}><Plus aria-hidden="true" size={16} /></button>
+    </div>
+  </div>;
 }

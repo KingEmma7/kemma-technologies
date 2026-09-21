@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addons, catalogue, estimate, initialSelection, normalise, extraAvailability, enquiryUrl } from "../lib/pricing/estimate";
+import { addons, catalogue, estimate, initialSelection, normalise, extraAvailability, enquiryUrl, selectJourney, selectOrderVariant } from "../lib/pricing/estimate";
 
 describe("website pricing contract", () => {
   it.each([["starter", 1500, 2000], ["catalogue", 2000, 2500], ["links", 2300, 2800], ["faq", 2800, 3300], ["store", 3500, 4000], ["three", 3250, 3750], ["ai", 2250, 2750]] as const)("matches launch and standard %s floors", (path, launch, standard) => {
@@ -8,13 +8,20 @@ describe("website pricing contract", () => {
     expect(estimate(s, false).packageMin).toBe(standard);
     expect(estimate(s, false).discount).toBe(0);
     expect(estimate(s, true).standardPackageMin).toBe(standard);
+    const launchEstimate = estimate(s, true);
+    expect(launchEstimate.standardPackageMin - launchEstimate.packageMin).toBe(catalogue.launch.discount);
+    if (launchEstimate.packageMax !== null && launchEstimate.standardPackageMax !== null) expect(launchEstimate.standardPackageMax - launchEstimate.packageMax).toBe(catalogue.launch.discount);
     const example = catalogue.examples.find((e) => e.id === path)!;
     expect(example.launch_package_from).toBe(launch);
     expect(example.standard_package_from).toBe(standard);
   });
-  it("includes five pages and preserves the remaining starter limits", () => {
-    expect(catalogue.starter).toMatchObject({ pages_max: 5, supplied_words_max: 2000, supplied_images_max: 15, form_fields_max: 5, revision_rounds: 1, defect_correction_days: 30 });
-    expect(addons.find((a) => a.id === "page")?.scope).toContain("beyond the five included pages");
+  it("has no fixed page, product, word or image cap while preserving agreed-scope labour", () => {
+    expect(catalogue.starter).toMatchObject({ form_fields_max: 5, revision_rounds: 1, defect_correction_days: 30 });
+    expect(catalogue.starter).not.toHaveProperty("pages_max");
+    expect(catalogue.starter).not.toHaveProperty("supplied_words_max");
+    expect(catalogue.starter).not.toHaveProperty("supplied_images_max");
+    expect(addons.find((a) => a.id === "page")?.scope).toContain("page count itself is not capped");
+    expect(addons.find((a) => a.id === "product_entry")?.scope).toContain("capacity is not capped");
     expect(catalogue.launch.booking_limit).toBe(5);
   });
   it("includes first-year standard services without adding a second domain charge or inventing renewals", () => {
@@ -86,7 +93,7 @@ describe("website pricing contract", () => {
     expect(e.buildMin).toBe(2700); expect(e.buildMax).toBeNull(); expect(e.buildQuote.join()).toContain("3D model");
     s.modelReady = true; expect(estimate(s).buildMax).toBe(4000);
   });
-  it("handles additional-page, product and provider quantities", () => {
+  it("preserves content-preparation and provider quantity arithmetic", () => {
     const s = initialSelection("catalogue"); s.extras = { page: 2, product_entry: 5, accounts: 1, social_login: 2 };
     const e = estimate(s);
     expect(e.buildMin).toBe(3400); expect(e.buildMax).toBe(4900); expect(e.lines.find((a) => a.id === "social_login")?.qty).toBe(2);
@@ -146,10 +153,26 @@ describe("website pricing contract", () => {
   it("falls back safely for unknown presets and domains", () => {
     expect(initialSelection("unknown", "unknown")).toMatchObject({ path: "starter", demo: "", offer: "package", domain: "standard" });
   });
+  it("uses guest checkout for the top-level payment journey without changing existing additions", () => {
+    const current = initialSelection(); current.extras.analytics = 1;
+    const payment = selectJourney(current, "payments");
+    expect(payment.path).toBe("store"); expect(payment.extras).toEqual({ analytics: 1 }); expect(payment.extras.accounts).toBeUndefined();
+    expect(estimate(selectJourney(initialSelection(), "payments")).packageMin).toBe(3000);
+    expect(estimate(initialSelection("store")).packageMin).toBe(3500);
+  });
+  it("keeps all product-order variants reachable without dropping unrelated choices", () => {
+    const current = initialSelection(); current.presentation = "scroll";
+    const order = selectJourney(current, "orders");
+    const links = selectOrderVariant(order, "links");
+    const faq = selectOrderVariant(links, "faq");
+    expect(order.path).toBe("catalogue"); expect(links.path).toBe("links");
+    expect(faq).toMatchObject({ path: "links", assistant: "faq", presentation: "scroll" });
+    expect(selectOrderVariant(faq, "catalogue")).toMatchObject({ path: "catalogue", assistant: "none", presentation: "scroll" });
+  });
   it.each(["pace", "sill", "afram"])("carries %s and the actual offer into a visitor-controlled enquiry", (demo) => {
     const s = initialSelection("starter", demo), url = new URL(enquiryUrl(s)), text = url.searchParams.get("text")!;
-    expect(url.origin + url.pathname).toBe("https://wa.me/233545559070");
-    expect(text).toContain("not an order"); expect(text).toContain("Demo reference"); expect(text).toContain("5 short pages");
+    expect(url.origin + url.pathname).toBe("https://wa.me/233203781818");
+    expect(text).toContain("not an order"); expect(text).toContain("Demo reference"); expect(text).toContain("No fixed page or product cap");
     expect(text).toContain("renewal"); expect(text).toContain("before your deposit");
     if (catalogue.launch.enabled) { expect(text).toContain("Launch discount: GHS 500 once"); expect(text).toContain("confirmed by deposit"); }
     s.offer = "build_only";
