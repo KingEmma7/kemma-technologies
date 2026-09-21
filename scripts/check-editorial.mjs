@@ -1,9 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.kemmatechnologies.com';
 const routes = ['blog', 'blog/series/open-source-everyday', 'blog/two-weeks-of-open-source-everyday'];
 for (const route of routes) {
   const html = await readFile(`.next/server/app/${route}.html`, 'utf8');
-  assert.ok(html.includes(`https://www.kemmatechnologies.com/${route}`), `${route}: canonical missing`);
+  assert.ok(html.includes(new URL(`/${route}`, siteUrl).toString()), `${route}: canonical missing`);
   assert.ok(!/<meta[^>]*name="robots"[^>]*noindex/.test(html), `${route}: still noindex`);
   assert.ok(!html.includes('Local preview') && !html.includes('Cover portrait awaiting review'), `${route}: preview label`);
 }
