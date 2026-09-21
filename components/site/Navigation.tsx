@@ -12,6 +12,7 @@ const links = [
   { href: "/pricing", label: "Pricing" },
   { href: "/services", label: "Capabilities" },
   { href: "/about", label: "Studio" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export function Navigation() {

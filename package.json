@@ -10,9 +10,10 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "check:no-js": "node scripts/check-no-js.mjs",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:no-js && npm run check:demos",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:no-js && npm run check:demos && npm run check:editorial",
     "demos:import": "node scripts/import-demos.mjs",
-    "check:demos": "node scripts/check-demos.mjs"
+    "check:demos": "node scripts/check-demos.mjs",
+    "check:editorial": "node scripts/check-editorial.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
