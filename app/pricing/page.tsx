@@ -30,7 +30,7 @@ export default function PricingPage() {
     <PageIntro label="Website pricing" title="Try what your website could do." description="Choose a customer journey. See the experience and starting estimate together." />
     <section className={`wrap ${styles.section}`} id="estimate" aria-labelledby="estimate-title">
       <h2 id="estimate-title" className="sr-only">Interactive website estimate</h2>
-      <Suspense fallback={<p className={styles.loading}>Interactive controls need JavaScript. Open “Full scope, costs and practical details” below for server-rendered launch and standard prices.</p>}><PricingPlanner /></Suspense>
+      <Suspense fallback={<p className={styles.loading}>Interactive controls need JavaScript. Open “Full scope, costs and practical details” below for starting and standard prices.</p>}><PricingPlanner /></Suspense>
     </section>
     <details className={`wrap ${styles.reference}`}>
       <summary>Full scope, costs and practical details</summary>
