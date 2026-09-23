@@ -25,6 +25,14 @@ export const projectPresentation: Record<
     domain: "esteesbakery.com",
     tone: "bakery",
   },
+  "57republic": {
+    name: "57REPUBLIC",
+    headline: "A storefront for 57REPUBLIC.",
+    image: "/design/57republic.jpg",
+    alt: "57REPUBLIC storefront featuring a Trosky graphic T-shirt",
+    domain: "57republic.com",
+    tone: "republic",
+  },
   constract: {
     name: "Constract",
     headline: "The Constract marketplace.",
