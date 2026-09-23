@@ -115,6 +115,35 @@ export function SelectedWork() {
             <span className="project-action">View case study</span>
           </div>
         </Link>
+        <Link
+          className="project project-republic"
+          href="/work/57republic"
+          aria-label="Explore 57REPUBLIC case study"
+        >
+          <div className="project-stage">
+            <div className="stage-top">
+              <span>57REPUBLIC</span>
+              <span className="stage-discipline">Fashion commerce</span>
+            </div>
+            <div className="browser-frame">
+              <Image
+                src="/design/57republic.jpg"
+                alt="57REPUBLIC storefront featuring a Trosky graphic T-shirt"
+                width={1265}
+                height={712}
+                loading="lazy"
+                sizes="(max-width: 760px) 90vw, (max-width: 1100px) 45vw, 30vw"
+              />
+            </div>
+          </div>
+          <div className="project-info">
+            <div>
+              <h3>A storefront for 57REPUBLIC.</h3>
+              <p>57REPUBLIC <span>·</span> Website &amp; commerce</p>
+            </div>
+            <span className="project-action">View case study</span>
+          </div>
+        </Link>
       </div>
       <details className="more-work">
         <summary className="more-work-bar">
