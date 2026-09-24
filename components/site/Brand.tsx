@@ -6,16 +6,16 @@ export function Brand() {
     <Link href="/" className="brand" aria-label="Kemma Technologies home">
       <span className="brand-lockup" aria-hidden="true">
         <Image
-          className="brand-day"
-          src="/design/kemma-graphite.png"
+          className="brand-full-color"
+          src="/design/kemma-original.png"
           width={581}
           height={467}
           alt=""
           sizes="108px"
         />
         <Image
-          className="brand-night"
-          src="/design/kemma-original.png"
+          className="brand-light-wordmark"
+          src="/design/kemma-graphite.png"
           width={581}
           height={467}
           alt=""

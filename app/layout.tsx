@@ -61,6 +61,7 @@ export default function RootLayout({
     <html
       lang="en-GB"
       data-theme="light"
+      data-palette="powder"
       suppressHydrationWarning
       className={instrument.variable}
     >

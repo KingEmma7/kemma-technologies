@@ -8,7 +8,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function OpenGraphImage() {
-  const logo = await readFile(join(process.cwd(), "public", "logo.png"), "base64");
+  const logo = await readFile(join(process.cwd(), "public", "design", "kemma-original.png"), "base64");
 
   return new ImageResponse(
     (
@@ -19,8 +19,8 @@ export default async function OpenGraphImage() {
           display: "flex",
           position: "relative",
           overflow: "hidden",
-          background: "#040406",
-          color: "#ffffff",
+          background: "#192338",
+          color: "#f4f3ef",
           padding: "62px 72px",
           fontFamily: "Arial, sans-serif",
         }}
@@ -33,7 +33,7 @@ export default async function OpenGraphImage() {
             right: -180,
             top: -250,
             borderRadius: 620,
-            background: "rgba(0, 123, 148, 0.20)",
+            background: "rgba(240, 107, 80, 0.65)",
           }}
         />
         <div
@@ -44,7 +44,7 @@ export default async function OpenGraphImage() {
             left: -220,
             bottom: -320,
             borderRadius: 520,
-            background: "rgba(200, 155, 60, 0.18)",
+            background: "rgba(185, 200, 218, 0.15)",
           }}
         />
 
@@ -59,9 +59,9 @@ export default async function OpenGraphImage() {
           <img
             src={`data:image/png;base64,${logo}`}
             alt=""
-            width={292}
-            height={219}
-            style={{ objectFit: "contain", objectPosition: "left center", marginLeft: -34 }}
+            width={236}
+            height={190}
+            style={{ objectFit: "contain", objectPosition: "left center", marginLeft: -22 }}
           />
 
           <div
@@ -83,7 +83,7 @@ export default async function OpenGraphImage() {
               display: "flex",
               marginTop: 34,
               fontSize: 25,
-              color: "#C8C8C8",
+              color: "#b9c8da",
               letterSpacing: "0.2px",
             }}
           >
@@ -95,7 +95,7 @@ export default async function OpenGraphImage() {
               display: "flex",
               marginTop: "auto",
               alignItems: "center",
-              color: "#C89B3C",
+              color: "#ff9277",
               fontSize: 20,
               letterSpacing: "3px",
               textTransform: "uppercase",
