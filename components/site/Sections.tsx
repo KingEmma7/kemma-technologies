@@ -6,7 +6,6 @@ export function Hero() {
   return (
     <section id="home" className="hero wrap" aria-labelledby="hero-title">
       <div className="hero-copy">
-        <p className="context-label">Independent design and engineering</p>
         <h1 id="hero-title">
           Thoughtful design.
           <br />
@@ -26,11 +25,6 @@ export function Hero() {
         </Link>
       </div>
       <Sculpture />
-      <div className="hero-foot">
-        <p>
-          Based in Accra. <span>Working everywhere.</span>
-        </p>
-      </div>
     </section>
   );
 }

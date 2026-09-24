@@ -13,7 +13,7 @@ export default function GlobalError({
     console.error("[app/global-error]", error);
   }, [error]);
   return (
-    <html lang="en-GB" data-theme="light" suppressHydrationWarning>
+    <html lang="en-GB" data-theme="light" data-palette="powder" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

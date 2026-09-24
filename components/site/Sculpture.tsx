@@ -34,15 +34,14 @@ export function Sculpture() {
   }, []);
   return (
     <div className="sculpture-area">
-      <div className="sculpture-ambient" aria-hidden="true" />
       <div
         id="sculpture"
         ref={host}
         role={available ? "group" : "img"}
         aria-label={
           available
-            ? "Interactive metal sculpture"
-            : "A continuous sculptural metal ribbon"
+            ? "Interactive layered color sculpture"
+            : "Three layered color lenses"
         }
         aria-describedby={available ? "sculpture-help" : undefined}
         tabIndex={available ? 0 : undefined}
@@ -52,30 +51,17 @@ export function Sculpture() {
           viewBox="0 0 600 600"
           aria-hidden="true"
         >
-          <defs>
-            <linearGradient id="metal">
-              <stop stopColor="#c6c7c0" />
-              <stop offset=".2" stopColor="#f9faf6" />
-              <stop offset=".45" stopColor="#747972" />
-              <stop offset=".65" stopColor="#d7d9d0" />
-              <stop offset="1" stopColor="#444c43" />
-            </linearGradient>
-          </defs>
-          <g
-            fill="none"
-            stroke="url(#metal)"
-            strokeWidth="45"
-            transform="translate(300 280) rotate(-28)"
-          >
-            <ellipse rx="162" ry="115" transform="rotate(42)" />
-            <ellipse rx="162" ry="115" transform="rotate(-42)" />
+          <g transform="translate(300 300)" strokeWidth="5">
+            <ellipse className="lens-one" cx="-104" rx="104" ry="162" opacity=".72" transform="rotate(-13 -104 0)" />
+            <ellipse className="lens-two" cx="0" rx="104" ry="162" opacity=".8" />
+            <ellipse className="lens-three" cx="104" rx="104" ry="162" opacity=".78" transform="rotate(13 104 0)" />
+            <ellipse className="lens-glint" cx="104" rx="93" ry="151" opacity=".35" transform="rotate(13 104 0)" />
           </g>
         </svg>
       </div>
       <p id="sculpture-help" className="sr-only">
-        Drag to rotate. On touch, swipe sideways to rotate or vertically to
-        scroll. Use arrow keys to rotate, Home to reset, and Space to pause or
-        resume.
+        Drag sideways or use arrow keys to turn the sculpture. Press Home to
+        reset the view. Motion follows your device setting.
       </p>
     </div>
   );

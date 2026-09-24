@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Brand } from "./Brand";
 import { Appearance } from "./Appearance";
+import { PaletteSwitcher } from "./PaletteSwitcher";
 
 const links = [
   { href: "/work", label: "Work" },
@@ -33,6 +34,7 @@ export function Navigation() {
         ))}
       </nav>
       <div className="header-actions">
+        <PaletteSwitcher />
         <Appearance />
         <Link className="contact-link" href="/contact">
           Let’s talk
@@ -59,7 +61,7 @@ function MobileMenu() {
         button.current?.focus();
       }
     };
-    const desktop = matchMedia("(min-width: 761px)");
+    const desktop = matchMedia("(min-width: 1001px)");
     const resize = () => {
       if (desktop.matches) setOpen(false);
     };
