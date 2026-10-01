@@ -31,7 +31,7 @@ const sections = [
     id: "notifications",
     title: "Notifications",
     paragraphs: [
-      "Daily-reading and prayer-time reminders are optional and scheduled on the device. If you enable them, ARS Pocket asks for notification permission where Android requires it. The app does not upload the chosen schedule or notification activity. Reminders use no sound or vibration.",
+      "Daily-reading and prayer-time reminders are optional and scheduled on the device. If you enable them, ARS Pocket asks for notification permission where Android requires it. The app does not upload the chosen schedule or notification activity. Reminders use a local bell sound, which you can turn off in Notifications. They do not vibrate.",
     ],
   },
   {
