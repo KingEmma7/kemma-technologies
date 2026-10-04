@@ -23,4 +23,13 @@ export const articles = [{
   image: "/editorial/open-source-weekly-2026-09-21-27-v6.png",
   imageAlt: "Open Source Everyday, Week 3: Building, learning and contributing with AI. Codex and Cursor (Grok Bot). Total through 27 September 2026: 18 PRs submitted and 14 merged.",
   recordDate: "Record checked 28 September 2026",
+}, {
+  number: "03",
+  title: "What maintainers noticed that I missed",
+  subtitle: "Weekly notes, 28 September–4 October 2026.",
+  description: "Three questions maintainer feedback changed about tests, scope and the right size of a contribution.",
+  href: "/blog/what-maintainers-noticed-that-i-missed",
+  image: "/editorial/open-source-week4-cover.png",
+  imageAlt: "Open Source Everyday, Week 4: What maintainers noticed that I missed. Emmanuel Tagbor's portrait and a 4 October record of 25 PRs submitted, 20 merged.",
+  recordDate: "Record checked 4 October 2026",
 }];
