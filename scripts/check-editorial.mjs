@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.kemmatechnologies.com';
-const routes = ['blog', 'blog/series/open-source-everyday', 'blog/two-weeks-of-open-source-everyday', 'blog/testing-the-behaviour-behind-the-fix'];
+const routes = ['blog', 'blog/series/open-source-everyday', 'blog/two-weeks-of-open-source-everyday', 'blog/testing-the-behaviour-behind-the-fix', 'blog/what-maintainers-noticed-that-i-missed'];
 for (const route of routes) {
   const html = await readFile(`.next/server/app/${route}.html`, 'utf8');
   assert.ok(html.includes(new URL(`/${route}`, siteUrl).toString()), `${route}: canonical missing`);
@@ -19,7 +19,12 @@ assert.equal((weeklyVisible.match(/<tr>/g) || []).length, 8, 'expected header an
 for (const text of ['18 PRs submitted and 14 merged', 'Six new pull requests', 'Four of the six new PRs remain open', '106 ms', 'maintainer']) assert.ok(weeklyVisible.includes(text), `missing weekly article detail: ${text}`);
 assert.ok(weeklyVisible.includes('/editorial/open-source-weekly-2026-09-21-27-v6.png'), 'weekly cover missing');
 assert.ok(!weeklyVisible.includes('Unpublished preview'), 'weekly preview label remains');
+const weekFour = await readFile('.next/server/app/blog/what-maintainers-noticed-that-i-missed.html', 'utf8');
+const weekFourVisible = weekFour.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+for (const text of ['What maintainers noticed that I missed', '25 submitted', '20 merged', 'What does this test actually prove?', 'Have I fixed everything I said I fixed?', 'What belongs in this contribution?']) assert.ok(weekFourVisible.includes(text), `missing Week 4 detail: ${text}`);
+assert.ok(weekFourVisible.includes('/editorial/open-source-week4-cover.png'), 'Week 4 cover missing');
+assert.ok(!weekFourVisible.includes('Unpublished draft'), 'Week 4 preview label remains');
 const sitemap = await readFile('.next/server/app/sitemap.xml.body','utf8');
 for (const route of routes) assert.ok(sitemap.includes(`/${route}`), `sitemap missing ${route}`);
 assert.ok(!sitemap.includes('/drafts/'), 'draft URL in sitemap');
-console.log('Editorial release checks passed: four indexable routes, canonical URLs, contribution records, essential detail, covers and sitemap.');
+console.log('Editorial release checks passed: five indexable routes, canonical URLs, contribution records, essential detail, covers and sitemap.');
