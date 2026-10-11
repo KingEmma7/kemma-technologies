@@ -2,6 +2,7 @@
   "name": "kemma-website",
   "version": "0.1.0",
   "private": true,
+  "workspaces": ["tooling/next-root-glob"],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +11,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "check:no-js": "node scripts/check-no-js.mjs",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:no-js && npm run check:demos && npm run check:editorial",
+    "check": "npm run lint && npm run test:lint-tooling && npm run typecheck && npm run test && npm run build && npm run check:no-js && npm run check:demos && npm run check:editorial",
+    "test:lint-tooling": "node --test tests/lint-tooling.test.mjs",
     "demos:import": "node scripts/import-demos.mjs",
     "check:demos": "node scripts/check-demos.mjs",
     "check:editorial": "node scripts/check-editorial.mjs"
@@ -21,7 +23,7 @@
     "framer-motion": "^12.42.0",
     "lenis": "^1.3.25",
     "lucide-react": "^1.27.0",
-    "next": "16.3.6",
+    "next": "16.3.8",
     "next-mdx-remote": "^6.0.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -38,7 +40,8 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.185.0",
     "eslint": "^9",
-    "eslint-config-next": "16.3.6",
+    "eslint-config-next": "16.3.8",
+    "fast-glob": "3.3.1-kemma.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
@@ -46,6 +49,10 @@
   "overrides": {
     "nanoid": "3.3.18",
     "postcss": "8.5.25",
-    "sharp": "0.35.4"
+    "sharp": "0.35.5",
+    "source-map-js": "1.2.2",
+    "@next/eslint-plugin-next@16.3.8": {
+      "fast-glob": "$fast-glob"
+    }
   }
 }
