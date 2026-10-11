@@ -74,7 +74,7 @@ export default function ArsPocketPrivacyPage() {
         <p className="privacy-date">Effective 19 August 2026</p>
         <p className="privacy-intro">
           ARS Pocket is developed and maintained by {SITE.name} for the Apostles
-          Revelation Society, Wovenu Memorial Chapel.
+          Revelation Society worldwide.
         </p>
       </header>
 
