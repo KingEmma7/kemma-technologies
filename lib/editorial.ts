@@ -32,4 +32,13 @@ export const articles = [{
   image: "/editorial/open-source-week4-cover.png",
   imageAlt: "Open Source Everyday, Week 4: What maintainers noticed that I missed. Emmanuel Tagbor's portrait and a 4 October record of 25 PRs submitted, 20 merged.",
   recordDate: "Record checked 4 October 2026",
+}, {
+  number: "04",
+  title: "How do you fix one case without breaking another?",
+  subtitle: "Weekly notes, 5–11 October 2026.",
+  description: "Three contributions that changed what I check when a fix must preserve nearby behaviour.",
+  href: "/blog/how-do-you-fix-one-case-without-breaking-another",
+  image: "/editorial/open-source-week5-cover.png",
+  imageAlt: "Open Source Everyday Week 5 cover: How do you fix one case without breaking another? Emmanuel Tagbor's portrait and cumulative totals of 32 submitted pull requests and 25 merged as of 12 October 2026.",
+  recordDate: "Record checked 12 October 2026",
 }];
