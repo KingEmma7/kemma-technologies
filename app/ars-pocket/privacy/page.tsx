@@ -4,7 +4,7 @@ import { SITE } from "@/lib/site";
 export const metadata = pageMetadata({
   title: "ARS Pocket Privacy Notice",
   description:
-    "How ARS Pocket handles on-device settings, optional feedback and reminders.",
+    "How ARS Pocket handles on-device settings, optional feedback, reminders and Google Play app updates.",
   path: "/ars-pocket/privacy",
 });
 
@@ -14,7 +14,28 @@ const sections = [
     title: "What stays on your device",
     paragraphs: [
       "The daily readings, calendars, Library content, reading rhythm, reminder choices, appearance settings and unsent feedback drafts stay on your device. Scripture and calendar content is packaged in the app and is not fetched from a server. Android app-data backup is disabled.",
-      "ARS Pocket has no accounts, advertising or analytics in version 1.0.0.",
+      "ARS Pocket has no accounts, advertising or analytics in this release.",
+    ],
+  },
+  {
+    id: "app-updates",
+    title: "App updates",
+    paragraphs: [
+      "On Android, ARS Pocket checks Google Play for an available app update after the Today screen opens. You can also check in More. You choose whether to download an update and when to restart the app.",
+      "Google Play processes device metadata, the app version, and information about the ARS Pocket modules and asset packs installed on your device to determine whether an update is available and its expected size. Google's in-app update documentation states that this information is encrypted, is not transferred to other third parties, and is deleted after a fixed retention period.",
+      <>
+        Google Play handles these checks and installations under its{" "}
+        <a className="text-link" href="https://play.google.com/about/play-terms/index.html">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a className="text-link" href="https://policies.google.com/privacy">
+          Google Privacy Policy
+        </a>
+        . ARS Pocket does not send reading history, favourites, book progress,
+        notes, or reminder choices for update checks. Scripture, calendars,
+        books, and hymns remain available offline.
+      </>,
     ],
   },
   {
@@ -71,7 +92,9 @@ export default function ArsPocketPrivacyPage() {
       <header className="privacy-header">
         <p className="context-label">ARS Pocket App</p>
         <h1 className="privacy-title">Privacy notice</h1>
-        <p className="privacy-date">Effective 19 August 2026</p>
+        <p className="privacy-date">
+          Effective 19 August 2026 · Updated 13 October 2026
+        </p>
         <p className="privacy-intro">
           ARS Pocket is developed and maintained by {SITE.name} for the Apostles
           Revelation Society worldwide.
@@ -83,8 +106,8 @@ export default function ArsPocketPrivacyPage() {
           <section key={section.id} aria-labelledby={section.id}>
             <h2 id={section.id}>{section.title}</h2>
             <div className="privacy-paragraphs">
-              {section.paragraphs.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+              {section.paragraphs.map((paragraph, index) => (
+                <p key={`${section.id}-${index}`}>{paragraph}</p>
               ))}
             </div>
           </section>
