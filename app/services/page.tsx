@@ -65,7 +65,7 @@ export default function ServicesPage() {
                   ))}
                 </ul>
               </details>
-              {service.id === "web" && <Link className="text-link" href="/pricing">Explore website scope and pricing</Link>}
+              <Link className="text-link" href="/pricing">Request a personalised quote</Link>
               <div className="service-evidence">
                 <p className="context-label">Related projects</p>
                 {service.evidence.map((slug) => (
@@ -100,14 +100,14 @@ export default function ServicesPage() {
               <h3>A defined project</h3>
               <p>
                 A website, platform or system with a clear scope, timeline and
-                price agreed before work begins.
+                a personalised quote from Emmanuel before work begins.
               </p>
             </div>
             <div>
               <h3>An ongoing collaboration</h3>
               <p>
                 Feature work, maintenance and improvements for a product we’ve
-                built or taken over.
+                built or taken over, quoted for the support you need.
               </p>
             </div>
             <div>
