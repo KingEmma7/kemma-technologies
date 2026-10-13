@@ -36,8 +36,8 @@ export function Navigation() {
       <div className="header-actions">
         <PaletteSwitcher />
         <Appearance />
-        <Link className="contact-link" href="/contact">
-          Request a quote
+        <Link className="contact-link" href="/contact" aria-label="Request a quote">
+          Quote
         </Link>
         <MobileMenu key={pathname} />
       </div>
