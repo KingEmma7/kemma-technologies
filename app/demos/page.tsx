@@ -43,8 +43,7 @@ export default function DemosPage() {
               </ul>
               <div className={styles.actions}>
                 <a className="solid-button" href={`/demo-sites/${demo.id}/index.html#/`}>Try {demo.name}</a>
-                <Link className="text-link" href={`/pricing?demo=${demo.id}#estimate`}>Explore scope & pricing</Link>
-                <a className="text-link" href={demoEnquiry(demo.name)}>Discuss a similar site</a>
+                <a className="text-link" href={demoEnquiry(demo.name)}>Request a quote for a similar site</a>
               </div>
             </div>
           </article>
@@ -52,8 +51,8 @@ export default function DemosPage() {
       </section>
       <section className={`wrap ${styles.enquiry}`}>
         <h2>Make it yours.</h2>
-        <p>Your business will have its own needs. Tell us what you’d like people to do on your website, and we’ll work through the right approach together.</p>
-        <Link className="text-link" href="/contact">Start a conversation</Link>
+        <p>Tell us what you’d like people to do on your website. Emmanuel will review your requirements and send you a personalised quote.</p>
+        <Link className="text-link" href="/contact">Request a quote</Link>
       </section>
     </>
   );

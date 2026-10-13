@@ -10,7 +10,7 @@ export function Footer() {
       <div>
         <a href={`mailto:${SITE.email}`}>Email</a>
         <Link href="/demos">Demos</Link>
-        <Link href="/pricing">Pricing</Link>
+        <Link href="/pricing">Quotes</Link>
         <Link href="/blog">Blog</Link>
         <Link href="/contact">Contact</Link>
         <a href="#top">Back to top</a>

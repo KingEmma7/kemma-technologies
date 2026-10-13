@@ -5,7 +5,6 @@ import { useForm, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SITE } from "@/lib/site";
 import {
-  BUDGET_RANGES,
   CONTACT_METHODS,
   PROJECT_STAGES,
   PROJECT_TYPES,
@@ -91,7 +90,8 @@ export function ContactForm() {
         aria-busy={status === "loading"}
       >
         <p className="form-intro">
-          A rough idea is a good place to start. Fields marked * are required.
+          Emmanuel reviews each request personally. Scope, cost and payment
+          terms are agreed before work begins. Fields marked * are required.
         </p>
         <fieldset disabled={status === "loading"}>
           <legend className="sr-only">Your project enquiry</legend>
@@ -179,10 +179,7 @@ export function ContactForm() {
               {select("stage", "Current stage", PROJECT_STAGES)}
               {select("timeline", "Desired timeline", TIMELINES)}
             </div>
-            <div className="field-row">
-              {select("budget", "Approximate budget", BUDGET_RANGES)}
-              {select("preferredContact", "Preferred contact", CONTACT_METHODS)}
-            </div>
+            {select("preferredContact", "Preferred contact", CONTACT_METHODS)}
             <p className="form-note">
               If you prefer a call or WhatsApp, include your number in the
               project description.
@@ -192,18 +189,18 @@ export function ContactForm() {
             Your details are used to respond to this enquiry.
           </p>
           <button className="solid-button" type="submit">
-            {status === "loading" ? "Sending enquiry…" : "Send enquiry"}
+            {status === "loading" ? "Sending request…" : "Request a quote"}
           </button>
         </fieldset>
         {status === "success" && (
           <p className="form-status" role="status">
-            Thank you. Your enquiry has been sent. We’ll read it and get back to
-            you by email.
+            Thank you. Your request has been sent. Emmanuel will review your
+            requirements and get back to you with a personalised quote.
           </p>
         )}
         {status === "error" && (
           <p className="form-status form-error" role="alert">
-            Your enquiry couldn’t be sent. Your details are still here, so you
+            Your request couldn’t be sent. Your details are still here, so you
             can try again or{" "}
             <a href={`mailto:${SITE.email}`}>email us directly</a>.
           </p>
@@ -212,8 +209,8 @@ export function ContactForm() {
       <aside className="contact-aside">
         <h2>Contact Kemma directly</h2>
         <p>
-          Tell us what matters to your business, where you are now, and what
-          you’d like to change.
+          Prefer to talk first? Contact Emmanuel to discuss your project and
+          request a quote.
         </p>
         <dl>
           <div>

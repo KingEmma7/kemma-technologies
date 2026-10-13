@@ -1,20 +1,24 @@
 import { ContactForm } from "@/components/site/ContactForm";
 import { PageIntro } from "@/components/site/PageIntro";
 import { pageMetadata } from "@/lib/seo";
+
 export const metadata = pageMetadata({
-  title: "Contact",
+  title: "Request a quote",
   description:
-    "Tell us what you are trying to launch, improve or automate. Start a conversation with Kemma Technologies.",
+    "Every project is quoted individually by Emmanuel. Tell us what you would like to build, improve or automate and request a personalised quote.",
   path: "/contact",
 });
+
 export default function ContactPage() {
   return (
     <>
       <PageIntro
         title="Tell us about your project."
-        description="A new product. A better website. A complicated problem worth untangling. Let’s work out the next step together."
+        description="Every project is quoted individually by Emmanuel. Share what you need, and he’ll review the scope and send you a personalised quote."
       />
-      <ContactForm />
+      <section data-quote-only="true" aria-label="Request a personalised quote">
+        <ContactForm />
+      </section>
     </>
   );
 }

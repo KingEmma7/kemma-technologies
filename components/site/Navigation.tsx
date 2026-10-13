@@ -10,7 +10,7 @@ import { PaletteSwitcher } from "./PaletteSwitcher";
 const links = [
   { href: "/work", label: "Work" },
   { href: "/demos", label: "Demos" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/pricing", label: "Quotes" },
   { href: "/services", label: "Capabilities" },
   { href: "/about", label: "Studio" },
   { href: "/blog", label: "Blog" },
@@ -36,8 +36,8 @@ export function Navigation() {
       <div className="header-actions">
         <PaletteSwitcher />
         <Appearance />
-        <Link className="contact-link" href="/contact">
-          Let’s talk
+        <Link className="contact-link" href="/contact" aria-label="Request a quote">
+          Quote
         </Link>
         <MobileMenu key={pathname} />
       </div>
@@ -94,7 +94,7 @@ function MobileMenu() {
           </Link>
         ))}
         <Link href="/contact" onClick={() => setOpen(false)}>
-          Let’s talk
+          Request a quote
         </Link>
       </nav>
     </div>
