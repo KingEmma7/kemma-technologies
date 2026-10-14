@@ -37,6 +37,18 @@ const answers = () => ({ businessName: "Shalom Crotchets", email: "client@exampl
 const request = () => new Request("http://localhost:4190/api/brief/submit");
 
 describe("cumulative invitation allowances", () => {
+  it("issues compact per-file upload credentials for a 45-file manifest", async () => {
+    const link=invite(), files=Array.from({length:45},(_,index)=>({...file(),name:`diagnostic-image-${index}-with-a-long-name.png`}));
+    const session=await beginSession({invite:link.token,files});
+    expect(session.sessionToken.length).toBeGreaterThan(16*1024);
+    expect(verifyCapability(session.sessionToken,"session").files).toHaveLength(45);
+    for(const specification of session.files){
+      expect(specification.uploadToken.length).toBeLessThan(512);
+      expect(verifyCapability(specification.uploadToken,"upload")).toEqual({kind:"upload",id:link.id,exp:verifyCapability(session.sessionToken,"session").exp,fileId:specification.id});
+    }
+    expect((await readDocument<{files:FileSpec[]}>(allocationPath(link.id)))?.value.files.every(specification=>!("uploadToken" in specification))).toBe(true);
+  });
+
   it("counts orphan allocations across sessions instead of resetting the quota", async () => {
     const link = invite();
     const first = Array.from({ length: 30 }, () => file());
@@ -65,6 +77,22 @@ describe("cumulative invitation allowances", () => {
 });
 
 describe("immutable submissions and original files", () => {
+  it("binds compact upload authorization to one allocated project and file", async () => {
+    const link=invite(), bytes=Buffer.from("exact-file"), session=await beginSession({invite:link.token,files:[file(bytes.length),file(bytes.length)]});
+    const [first,second]=session.files;
+    const upload=(authorization:string,fileId=first.id)=>uploadOriginal(new Request(`http://localhost:4190/api/brief/local-upload?file=${fileId}`,{method:"POST",headers:{Origin:"http://localhost:4190",Authorization:`Bearer ${authorization}`},body:Uint8Array.from(bytes).buffer}));
+    expect((await upload(first.uploadToken,second.id)).status).toBe(403);
+    expect((await upload(signCapability({kind:"upload",id:randomUUID(),fileId:first.id,exp:Date.now()+60_000}))).status).toBe(403);
+    expect((await upload(signCapability({kind:"upload",id:link.id,fileId:first.id,exp:Date.now()-1}))).status).toBe(401);
+    const [body,signature]=first.uploadToken.split(".");
+    expect((await upload(`${body[0]==="a"?"b":"a"}${body.slice(1)}.${signature}`)).status).toBe(401);
+    expect((await upload(link.token)).status).toBe(401);
+    expect(await fileStream(first.pathname)).toBeNull();
+    expect((await upload(first.uploadToken)).status).toBe(200);
+    expect(Buffer.from(await new Response(await fileStream(first.pathname)).arrayBuffer())).toEqual(bytes);
+    expect(await fileStream(second.pathname)).toBeNull();
+  });
+
   it("accepts concurrent identical retries as one immutable submission and one preview email", async () => {
     const link = invite(), originalBytes = Buffer.from("crochet-original-file\u0000\u00ff", "utf8"), specification = file(originalBytes.byteLength);
     const session = await beginSession({ invite: link.token, files: [specification] });

@@ -1,5 +1,5 @@
 import { sessionSchema, fileSpec, MAX_FILES, MAX_TOTAL_BYTES, validateAnswers } from "./schema";
-import { BriefError, signCapability, verifyCapability, publicBase, r2StorageConfig, storageMode, type FileSpec, type Session } from "./config";
+import { BriefError, signCapability, verifyCapability, publicBase, r2StorageConfig, storageMode, type FileSpec, type Session, type Upload } from "./config";
 import { Conflict, digest, readDocument, writeDocument, fileHead } from "./storage";
 import { sendNotification } from "./email";
 
@@ -22,13 +22,22 @@ export async function beginSession(body:unknown){
     if(allocated.length>MAX_FILES||allocated.reduce((s,f)=>s+f.size,0)>MAX_TOTAL_BYTES)throw new BriefError("This project link has reached its file allowance. Use a folder link or contact Kemma.",413);
     if(!old||allocated.length!==old.value.files.length){try{await writeDocument(allocationPath(invite.id),{createdAt:old?.value.createdAt||new Date().toISOString(),files:allocated},old?.etag??null)}catch(e){if(e instanceof Conflict)continue;throw e}}
     const session:Session={kind:"session",id:invite.id,exp:Math.min(invite.exp,Date.now()+30*60*1000),files};
-    const uploaded=await Promise.all(files.map(async f=>{const existing=await fileHead(f.pathname);return {...f,uploaded:!!existing&&existing.size===f.size&&(storageMode()==="local"||existing.type.split(";")[0]===f.type)}}));
+    const uploaded=await Promise.all(files.map(async f=>{const existing=await fileHead(f.pathname);return {...f,uploadToken:signCapability({kind:"upload",id:invite.id,exp:session.exp,fileId:f.id}),uploaded:!!existing&&existing.size===f.size&&(storageMode()==="local"||existing.type.split(";")[0]===f.type)}}));
     const mode=storageMode();
     return {submissionId:invite.id,sessionToken:signCapability(session),uploadMode:mode,...(mode==="r2"?{uploadUrl:r2StorageConfig().url+"/v1/upload"}:{}),files:uploaded,preview:mode==="local"};
   }
   throw new BriefError("Another save is in progress. Please try again.",409);
 }
 export async function getSubmission(id:string){return (await readDocument<Submission>(recordPath(id)))?.value||null}
+/** Resolve immutable file metadata from storage; upload headers contain no manifest. */
+export async function authorizedUploadFile(token:string,fileId:string|null){
+  let capability:Upload|Session;
+  try{capability=verifyCapability(token,"upload")}catch(error){if(!(error instanceof BriefError)||error.status!==401)throw error;capability=verifyCapability(token,"session")}
+  const allocation=await readDocument<Allocation>(allocationPath(capability.id));
+  const file=allocation?.value.files.find(candidate=>candidate.id===fileId);
+  if(!file||(capability.kind==="upload"?capability.fileId!==fileId:!capability.files.some(candidate=>canonical(candidate)===canonical(file))))throw new BriefError("This file is not part of your project.",403);
+  return {projectId:capability.id,file};
+}
 export async function acceptSubmission(sessionToken:string,answers:Record<string,unknown>,products:Record<string,unknown>[],request:Request){
   const session=verifyCapability(sessionToken,"session");validateAnswers(answers,products,session.files);
   const allocation=await readDocument<Allocation>(allocationPath(session.id));

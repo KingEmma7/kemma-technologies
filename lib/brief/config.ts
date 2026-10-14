@@ -2,9 +2,10 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export type Invite = { kind: "invite"; id: string; exp: number };
 export type Session = { kind: "session"; id: string; exp: number; files: FileSpec[] };
+export type Upload = { kind: "upload"; id: string; exp: number; fileId: string };
 export type Review = { kind: "review"; id: string; exp: number };
 export type FileSpec = { id: string; name: string; type: string; size: number; scope: string; role: string; pathname: string };
-export type Capability = Invite | Session | Review;
+export type Capability = Invite | Session | Upload | Review;
 export class BriefError extends Error {
   constructor(message: string, public status = 400) { super(message); }
 }
@@ -46,6 +47,7 @@ export function verifyCapability<T extends Capability["kind"]>(token: string, ki
   let value: Capability;
   try { value = JSON.parse(Buffer.from(parts[0], "base64url").toString()); } catch { throw new BriefError("Use your project link from Kemma.", 401); }
   if (value.kind !== kind || !/^[0-9a-f-]{36}$/.test(value.id) || !Number.isFinite(value.exp) || value.exp <= Date.now()) throw new BriefError("This project link has expired. Ask Kemma for a new one.", 401);
+  if (value.kind === "upload" && (Object.keys(value).length !== 4 || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value.fileId))) throw new BriefError("Use your project link from Kemma.", 401);
   return value as Extract<Capability, {kind: T}>;
 }
 export function getBriefPageConfig() {

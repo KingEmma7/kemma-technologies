@@ -1,5 +1,6 @@
 type FileSpec = { id: string; name: string; type: string; size: number; scope: string; role: string; pathname: string };
 type Session = { kind: "session"; id: string; exp: number; files: FileSpec[] };
+type Upload = { kind: "upload"; id: string; exp: number; fileId: string };
 type Allocation = { createdAt: string; files: FileSpec[] };
 type Budget = { version: 1; totalBytes: number; projects: Record<string, number> };
 
@@ -77,7 +78,7 @@ function decodeBase64Url(value: string) {
   try { return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), char => char.charCodeAt(0)); }
   catch { throw new GatewayError(401, "Use your project link from Kemma."); }
 }
-async function authorizeSession(request: Request, env: Env): Promise<Session> {
+async function authorizeUpload(request: Request, env: Env): Promise<Session | Upload> {
   const token = bearer(request, 48_000);
   const parts = token.split(".");
   if (parts.length !== 2) throw new GatewayError(401, "Use your project link from Kemma.");
@@ -87,7 +88,10 @@ async function authorizeSession(request: Request, env: Env): Promise<Session> {
   let payload: unknown;
   try { payload = JSON.parse(new TextDecoder("utf-8", { fatal: true, ignoreBOM: false }).decode(decodeBase64Url(parts[0]))); }
   catch { throw new GatewayError(401, "Use your project link from Kemma."); }
-  if (!object(payload) || !exactKeys(payload, ["kind", "id", "exp", "files"]) || payload.kind !== "session" || typeof payload.id !== "string" || !UUID.test(payload.id) || typeof payload.exp !== "number" || !Number.isFinite(payload.exp) || payload.exp <= Date.now()) throw new GatewayError(401, "This project link has expired. Ask Kemma for a new one.");
+  if (!object(payload) || typeof payload.id !== "string" || !UUID.test(payload.id) || typeof payload.exp !== "number" || !Number.isFinite(payload.exp) || payload.exp <= Date.now()) throw new GatewayError(401, "This project link has expired. Ask Kemma for a new one.");
+  if (payload.kind === "upload" && exactKeys(payload, ["kind", "id", "exp", "fileId"]) && typeof payload.fileId === "string" && UUID.test(payload.fileId)) return { kind: "upload", id: payload.id, exp: payload.exp, fileId: payload.fileId };
+  // Existing open pages can finish with their previously issued session token.
+  if (payload.kind !== "session" || !exactKeys(payload, ["kind", "id", "exp", "files"])) throw new GatewayError(401, "Use your project link from Kemma.");
   return { kind: "session", id: payload.id, exp: payload.exp, files: validateFiles(payload.files, payload.id) };
 }
 function storageKey(url: URL) {
@@ -279,9 +283,11 @@ export default {
           return secureResponse(new Response(null, { status: 204, headers: { "Access-Control-Allow-Methods": "PUT", "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Brief-File-Id", "Access-Control-Max-Age": "600" } }), origin, true);
         }
         if (request.method !== "PUT") throw new GatewayError(405, "Method not allowed.");
-        const session = await authorizeSession(request, env);
+        const session = await authorizeUpload(request, env);
         const fileId = request.headers.get("x-brief-file-id") || "";
-        const file = session.files.find(candidate => candidate.id === fileId);
+        const file = session.kind === "upload"
+          ? session.fileId === fileId ? (await readAllocation(env, session.id))?.files.find(candidate => candidate.id === fileId) : undefined
+          : session.files.find(candidate => candidate.id === fileId);
         if (!UUID.test(fileId) || !file) throw new GatewayError(403, "This upload is not part of your project.");
         return secureResponse(await saveFile(request, env, session.id, file), origin, true);
       }

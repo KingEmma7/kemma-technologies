@@ -1,14 +1,13 @@
 import { assertSameOrigin } from "@/lib/brief/schema";
-import { BriefError, storageMode, verifyCapability } from "@/lib/brief/config";
+import { BriefError, storageMode } from "@/lib/brief/config";
 import { Conflict, fileHead, writeBytes } from "@/lib/brief/storage";
-import { getSubmission } from "@/lib/brief/service";
+import { authorizedUploadFile, getSubmission } from "@/lib/brief/service";
 import { briefFailure, briefResponse } from "@/lib/brief/http";
 export const runtime="nodejs";
 export async function POST(request:Request){try{
   assertSameOrigin(request);if(storageMode()!=="local")throw new BriefError("Not found.",404);
-  const session=verifyCapability((request.headers.get("authorization")||"").replace(/^Bearer /,""),"session");
-  const file=session.files.find(f=>f.id===new URL(request.url).searchParams.get("file"));if(!file)throw new BriefError("This file is not part of your project.",403);
-  if(await getSubmission(session.id))throw new BriefError("This brief has already been sent.",409);
+  const {projectId,file}=await authorizedUploadFile((request.headers.get("authorization")||"").replace(/^Bearer /,""),new URL(request.url).searchParams.get("file"));
+  if(await getSubmission(projectId))throw new BriefError("This brief has already been sent.",409);
   const reader=request.body?.getReader();if(!reader)throw new BriefError("Empty upload.");let size=0;const chunks:Uint8Array[]=[];
   while(true){const {value,done}=await reader.read();if(done)break;size+=value.byteLength;if(size>file.size){await reader.cancel();throw new BriefError("This upload is larger than expected.",413)}chunks.push(value)}
   if(size!==file.size)throw new BriefError("The file upload is incomplete.",409);

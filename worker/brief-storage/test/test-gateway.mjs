@@ -45,6 +45,10 @@ function signed(id, files, overrides = {}) {
   const body = Buffer.from(JSON.stringify({ kind: "session", id, exp: Date.now() + 60000, files, ...overrides })).toString("base64url");
   return body + "." + createHmac("sha256", SIGNING_SECRET).update(body).digest("base64url");
 }
+function signedUpload(id, fileId, overrides = {}) {
+  const body = Buffer.from(JSON.stringify({ kind: "upload", id, exp: Date.now() + 60000, fileId, ...overrides })).toString("base64url");
+  return body + "." + createHmac("sha256", SIGNING_SECRET).update(body).digest("base64url");
+}
 function objectRequest(instance, pathname, method = "GET", value, extra = {}) {
   return instance.dispatchFetch(`https://storage.test/v1/object?key=${encodeURIComponent(pathname)}`, { method, headers: { Authorization: `Bearer ${STORAGE_SECRET}`, ...(value === undefined ? {} : { "Content-Type": "application/json" }), ...extra }, ...(value === undefined ? {} : { body: JSON.stringify(value) }) });
 }
@@ -172,6 +176,44 @@ test("signed upload rejects bad signatures, purposes, expiration and mismatched 
   assert.equal((await upload(instance, id, spec, undefined, {}, signed(id, [{ ...spec, role: "Main product photo" }]))).status, 403);
   assert.equal((await upload(instance, id, spec, undefined, { "X-Brief-File-Id": randomUUID() })).status, 403);
   assert.equal((await objectRequest(instance, spec.pathname)).status, 404);
+});
+
+test("compact upload capabilities bind one allocated project and file without exposing the manifest", async () => {
+  const instance = gateway();
+  const id = randomUUID(), first = file(id), second = file(id);
+  assert.equal((await allocate(instance, id, [first, second])).status, 200);
+  const token = signedUpload(id, first.id);
+  assert.ok(token.length < 512);
+  const [body, signature] = token.split(".");
+  const tampered = `${body[0] === "a" ? "b" : "a"}${body.slice(1)}.${signature}`;
+  assert.equal((await upload(instance, id, first, undefined, {}, tampered)).status, 401);
+  assert.equal((await upload(instance, id, first, undefined, {}, signedUpload(id, first.id, { exp: Date.now() - 1 }))).status, 401);
+  assert.equal((await upload(instance, id, first, undefined, {}, signedUpload(id, first.id, { kind: "invite" }))).status, 401);
+  assert.equal((await upload(instance, id, second, undefined, {}, token)).status, 403);
+  assert.equal((await upload(instance, id, first, undefined, {}, signedUpload(randomUUID(), first.id))).status, 403);
+  assert.equal((await upload(instance, id, first, undefined, {}, signedUpload(id, randomUUID()))).status, 403);
+  assert.equal((await objectRequest(instance, first.pathname)).status, 404);
+  assert.equal((await upload(instance, id, first, undefined, {}, token)).status, 200);
+  assert.equal((await objectRequest(instance, first.pathname)).status, 200);
+  assert.equal((await objectRequest(instance, second.pathname)).status, 404);
+  assert.equal((await upload(instance, id, first, undefined, {}, token)).status, 412);
+});
+
+test("45-file uploads use small credentials even when the full session exceeds ordinary header limits", async () => {
+  const instance = gateway(), id = randomUUID();
+  const files = Array.from({ length: 45 }, (_, index) => {
+    const spec = file(id), name = `diagnostic-image-${index}-with-a-long-name.png`;
+    return { ...spec, name, pathname: key(id, `files/${spec.id}/${name}`) };
+  });
+  assert.equal((await allocate(instance, id, files)).status, 200);
+  assert.ok(signed(id, files).length > 16 * 1024);
+  for (const spec of files) {
+    const token = signedUpload(id, spec.id);
+    assert.ok(token.length < 512);
+    const response = await upload(instance, id, spec, undefined, {}, token);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { ok: true });
+  }
 });
 
 test("CORS allows exact configured origins and the expected upload headers only", async () => {
