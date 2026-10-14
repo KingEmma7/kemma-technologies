@@ -1,0 +1,14 @@
+.morph-status-control{display:grid;justify-items:start;gap:9px;max-width:100%}
+.morph-status-button{--morph-width:176px;display:inline-flex;align-items:center;justify-content:center;gap:9px;width:var(--morph-width);min-width:108px;min-height:46px;padding:0 16px;border:1px solid #173d38;border-radius:11px;background:#173d38;color:#fff;font:600 12px/1 var(--font-body,system-ui,sans-serif);cursor:pointer;touch-action:manipulation;transition:width 320ms cubic-bezier(.22,1,.36,1),border-radius 320ms cubic-bezier(.22,1,.36,1),background-color 180ms ease,color 180ms ease,box-shadow 180ms ease}
+.morph-status-button:hover:not([aria-disabled=true]){background:#24534b}
+.morph-status-button:focus-visible{outline:3px solid #568477;outline-offset:3px}
+.morph-status-button[aria-disabled=true]{cursor:default}
+.morph-status-button[data-state=pending]{--morph-width:144px;border-radius:999px;background:#355e55;border-color:#355e55}
+.morph-status-button[data-state=success]{--morph-width:116px;border-radius:999px;background:#176f67;border-color:#176f67}
+.morph-status-button[data-state=error]{--morph-width:148px;border-radius:11px;background:#8c443b;border-color:#8c443b}
+.morph-status-button__mark{display:inline-flex;flex:0 0 16px;align-items:center;justify-content:center;width:16px;height:16px;font-size:15px;font-weight:700}
+.morph-status-spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.42);border-top-color:#fff;border-radius:50%;animation:morph-status-spin 850ms linear infinite}
+.morph-status-button__label{white-space:nowrap}
+.morph-status-message{max-width:42ch;color:#4d5d54;font-size:12px;line-height:1.5}
+@keyframes morph-status-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.morph-status-button,.morph-status-control *,.morph-status-control *::before,.morph-status-control *::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}.morph-status-spinner{animation:none!important;border-top-color:currentColor}}

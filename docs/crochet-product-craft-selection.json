@@ -1,0 +1,68 @@
+{
+  "stage": "Approved native Next.js form with Cloudflare Worker/private R2 storage; production activation verified separately",
+  "selected": [
+    {
+      "id": "morph-status",
+      "region": "Finish preview with real local persistence outcome",
+      "sourceHash": "b748628ec06dfe07e61ec865f9a880c2692f84444a27f41aa62117b80d22cc52",
+      "adaptation": "Send my brief resolves only after saved server receipt. Failure retains draft and uploads; provider-pending state is distinct from saved record."
+    }
+  ],
+  "unmatched": [
+    {
+      "region": "One question at a time, branching product mini-flow, native inputs and uploads",
+      "gap": "Approved tabs/sidebar/tour APIs serve panel navigation or modal demonstrations, not an editable branching interview. User explicitly rejected dashboard layout and requested Typeform-style flow. Native form controls and caller-owned flow/persistence used."
+    },
+    {
+      "region": "True 3D animated mascot above questions",
+      "gap": "Approved Blob provides gaze and expression inspiration but is SVG. User requested actual 3D and then authorized mascot-only animation above questions. Original procedural Three.js character uses 30fps gentle sway, blink, and field-aware peeking. Reduced-motion, offscreen and hidden-tab pause included. Crown direction remains provisional."
+    },
+    {
+      "region": "Visited-question breadcrumb navigation",
+      "gap": "Approved FluidTabs controls ARIA tab panels; SidebarRail provides route/drawer chrome; IntroDisclosure is modal onboarding. None models editable interview steps, visited-question return or paused product mini-flows. Native nav, ordered list and buttons implement those semantics without dashboard chrome.",
+      "verification": "Current aria-current step, unavailable future steps, current mobile scroll position, product editor resume, required-field validation before send and immutable accepted receipt."
+    }
+  ],
+  "design": "One focused question per view; details optional; no sidebar, file tree, category overview, checklist or client-facing reference directory; reduced-motion alternative",
+  "storage": "Per-invite browser draft plus private server record and original uploads. Local preview uses the file adapter; cloud storage uses an authenticated Cloudflare Worker with a private R2 binding. Browser upload capabilities never expose the management secret.",
+  "mascot": {
+    "status": "Form appearance approved by user; varied touch reactions authorized; global Q&A remains separate",
+    "sourceFiles": [
+      {
+        "path": "src/vendor/three/three.module.js",
+        "sha256": "bbf5ed13fe4373f5bd38b14ea8e62e9f157327da5638edc6d3863e08b167c9c7"
+      },
+      {
+        "path": "src/vendor/three/LICENSE",
+        "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+      },
+      {
+        "path": "src/vendor/three/three.core.js",
+        "sha256": "78b2c4218834ca8670547ed2315bfc21a00ff4dc3403bbffc8c31493d31d14de"
+      }
+    ],
+    "threeVersion": "0.185.0",
+    "license": "MIT, full license retained",
+    "typingPrivacy": "Reads field rectangles only, never answer values. Click, tap and keyboard reactions stay local; no chat or answer-reading service is connected.",
+    "motion": "Animated above questions; logo and other page elements static. Reduced-motion neutral; offscreen or hidden tab stops loop."
+  },
+  "additionalQuestion": {
+    "id": "extra",
+    "position": "Immediately before send",
+    "answers": [
+      "additionalTopics",
+      "additionalNotes"
+    ],
+    "purpose": "Capture omitted client detail and improve future intake questions."
+  },
+  "consumingSourceHashes": {
+    "components/brief/THREE-LICENSE.txt": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc",
+    "components/brief/brief.module.css": "297429142a7d579b18b159a54106e91908c1e0bb3a6421eb354c451b76922f72",
+    "components/brief/SendBriefButton.tsx": "494ab5546e06e5bce78e7741bd3ef72f79f9e7f77b289e39d1f8b6a7fc57bbfe",
+    "components/brief/product-craft-selection.json": "75c6d03ffa69dc7e1cd96aeea34741535fe780c661efa798be82ea543c4d5bfa",
+    "components/brief/CrochetBrief.jsx": "5ed6a5e1a7fe28004d8b2374af48ed3b949b98f66c9783a4a9512f4bc6d67084",
+    "components/brief/submit.ts": "6762dd8972dfa8c12852bb4e3bc7c482547012eb5087d689cbfc6561b2f7ea0e",
+    "components/brief/storage.js": "8b5e70d7defac34bab95561d7a33e9abb41e627bc8d823ffb33b21aa5572195e",
+    "components/brief/Mascot3D.jsx": "7ab9643b510e2516e264b7f76dccfd0f4b2681719b30523ace11ae892b1a304b"
+  }
+}

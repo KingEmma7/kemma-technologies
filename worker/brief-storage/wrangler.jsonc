@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "kemma-brief-storage",
+  "main": "src/index.ts",
+  "account_id": "867f4f17b20a72f7857be9b1b621ee54",
+  "compatibility_date": "2026-10-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "upload_source_maps": true,
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "kemma-private-briefs" }],
+  "vars": {
+    "ALLOWED_ORIGINS": "https://www.kemmatechnologies.com,http://127.0.0.1:4190,http://localhost:4190",
+    "MAX_RESERVED_BYTES": "5000000000"
+  },
+  "secrets": { "required": ["BRIEF_STORAGE_SECRET", "BRIEF_SIGNING_SECRET"] },
+  "observability": { "enabled": false }
+}

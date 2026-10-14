@@ -10,6 +10,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Don't advertise the framework via the X-Powered-By response header.
   poweredByHeader: false,
+  devIndicators: false,
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [],
@@ -22,6 +23,14 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        source: "/brief/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
       },
       {
         source: "/demo-sites/:path*",

@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "id": "morph-status-preview",
+  "createdAt": "2026-10-05",
+  "family": "Buttons",
+  "status": "accepted-library-available",
+  "approved": true,
+  "approvedCollectionEntry": true,
+  "source": {
+    "library": "Evil Buttons \u00b7 MorphStatusButton",
+    "officialReference": "https://www.evilbuttons.com/docs/morph-status-button",
+    "repository": "https://github.com/radiumcoders/Evil-Buttons",
+    "commit": "ec0fa86f8d06a9a6482962ffd7a19fb838a425e7",
+    "componentPath": "components/evil-buttons/morph-status-button.tsx",
+    "license": "Apache-2.0",
+    "licenseUrl": "https://github.com/radiumcoders/Evil-Buttons/blob/ec0fa86f8d06a9a6482962ffd7a19fb838a425e7/LICENSE",
+    "relationship": "original-implementation-informed-by-reference",
+    "inspection": "The completed pinned source analysis identified four async states and promise-driven outcomes as useful mechanisms. No upstream source, assets, package or Motion dependency were copied."
+  },
+  "adoptedMechanisms": [
+    "Keep one action control across idle, pending, success and error states.",
+    "Derive the visible result from the supplied asynchronous Promise outcome."
+  ],
+  "originalChanges": [
+    "Implement original Product Craft React, CSS and portable HTML; no upstream implementation or visual asset is reused.",
+    "Use a Promise<void> contract: only resolution becomes success; rejection or a synchronous throw becomes a persistent retry state.",
+    "Guard duplicate activation, keep keyboard focus on the native control while pending and ignore stale settlement after unmount.",
+    "Give each instance its own status-description ID and isolate observer callbacks from the action's Promise outcome.",
+    "Use a 46px target, Product Craft palette and shape, and a reduced-motion mode with no transition or spinner rotation.",
+    "Keep the fictional fixture explicit: the Promise never writes files, accounts, projects, invoices or service data."
+  ],
+  "baseline": "Interactive plain Save changes action in the same fictional Wren Studio Launch note. It reports activation only and has no simulated save state; the baseline is not a screenshot of an existing product.",
+  "previewUrl": "/?view=morph-status-preview",
+  "componentPath": "components/buttons/MorphStatusButton.tsx",
+  "previewStoryPath": "components/previews/MorphStatusPreview.tsx",
+  "stylesPath": "components/buttons/morph-status-button.css",
+  "storyStylesPath": "components/previews/morph-status-preview.css",
+  "simulationModelPath": "components/buttons/morph-status-demo-model.ts",
+  "demoPath": "components/buttons/MorphStatusExample.tsx",
+  "collectionPath": "components/buttons/MorphStatusCollection.tsx",
+  "collectionUrl": "/?view=components#morph-status-component",
+  "portableArtifact": {
+    "path": "public/components/morph-status-preview.html",
+    "fileName": "morph-status-preview.html",
+    "mimeType": "text/html",
+    "libraryFileId": "libfile_1a2dfc50b7c48191ae7ebaaba43ddf5e",
+    "libraryVersion": 1,
+    "libraryVersionId": "1",
+    "fileId": "file_0000000010ac8210b7b87a59d81d2b33",
+    "libraryPath": "/morph-status-preview.html",
+    "sizeBytes": 11307,
+    "localLibraryIdentityPersisted": true,
+    "status": "Approved artifact replaced in the same Library item; current version 1 confirmed by read"
+  },
+  "usageApi": {
+    "reactExport": "MorphStatusButton",
+    "onSave": "Required callback returning Promise<void>; resolve only after the actual operation succeeds and reject on failure.",
+    "successMessage": "Optional confirmation shown only after Promise resolution.",
+    "errorMessage": "Optional persistent, actionable error copy shown after rejection or synchronous throw.",
+    "onStateChange": "Optional observer notified for pending, success and error transitions only; the initial idle state is not emitted. Observer errors must not alter the action outcome or block completion.",
+    "reset": "Success remains terminal for the mounted instance. Remount with a new React key to begin a new action; the demo's Reset simulation control uses this contract.",
+    "cancellation": "The caller owns cancellation of its operation. Ignoring settlement after unmount prevents stale UI updates and does not cancel a request or undo an action.",
+    "storyOnly": "The Promise fixture, comparison baseline, fictional content, retry scenario and reset control belong to the demonstration, not a live product integration."
+  },
+  "demoBoundaries": [
+    "Both samples are fictional; no financial, invoice, file, account, project or product service is connected.",
+    "The success label says Resolved and the live message says that nothing was written.",
+    "The baseline confirms activation only and never claims that a save occurred.",
+    "Approved for reusable local Product Craft Components / Buttons library availability; production integration is not approved or performed.",
+    "Physical device, zoom, assistive technology and screen-reader checks are not represented by Chrome emulation."
+  ],
+  "verification": {
+    "browserRendered": "Approved Components / Buttons catalog and the standalone approved HTML rendered in installed Chrome. Desktop catalog screenshot inspected; heading, sample, usage and provenance remain readable.",
+    "browserKeyboard": "Tab reached the action with a visible 3px focus outline. Space and Enter activated the local fixtures; rejection persisted, Space retry resolved, and focus remained on the button. Repeated pending activation remained one attempt.",
+    "browserPromiseStates": "Resolved fixture showed Resolved only after its Promise settled. Reject-once fixture exposed a persistent Retry save state, then a second Space activation resolved successfully.",
+    "browserMobile": "At 390 CSS px, document width was 390 and component width 366. At requested 320 CSS px, Chrome reported effective innerWidth/document width 322 and component width 296; the control fit. The portable HTML also fit its requested 320px emulation. This is emulation, not a physical-device session.",
+    "browserReducedMotion": "In the catalog and portable HTML, prefers-reduced-motion emulation yielded transition-duration 0s and spinner animation-name none while result labels remained available.",
+    "browserPageErrors": "Zero runtime exceptions in the final fresh-page pass. Six intentional observer exceptions were caught and logged during the observer-isolation test.",
+    "typeScript": "Passed: npx tsc --noEmit --incremental false",
+    "localBuild": "Passed: npm run workflow:build -- --outDir /tmp/product-craft-morph-status-approved-20261005-dist --emptyOutDir",
+    "workflowTests": "Passed: all 44 workflow tests, including six Morph Status fixture, accessible-instance, route, portable and approval cases",
+    "physicalDeviceScreenReader": "Not tested; physical device, screen reader, assistive technology and zoom sessions remain outside this verification.",
+    "browserReuse": "Two mounted reusable controls had unique status-description IDs and independent outcomes. Duplicate activation called onSave once; rejection then retry called it twice. Throwing observers during pending/success/error did not alter Promise resolution, rejection or synchronous-throw outcomes. Late resolve and reject after unmount emitted no terminal observer notification.",
+    "evidencePath": "records/verification/morph-status-approval-browser-20261005.json",
+    "catalogScreenshot": "/tmp/morph-status-approved-catalog.png"
+  },
+  "verificationScope": "Approval promotion verified in installed Chrome with local simulated fixtures, type checking, local build and workflow tests. No actual save/service, production integration, physical-device or screen-reader result is claimed.",
+  "reviewGate": "Explicitly approved for the local Product Craft Components / Buttons library. At most one unreviewed preview may be active; production integration remains separate and unapproved.",
+  "approval": {
+    "reviewer": "Emmanuel",
+    "at": "2026-10-05 02:18 UTC",
+    "source": "Direct approval relay Sentinel_520b086283ec819187ad192b5cebcf61",
+    "text": "looks great - selected. lets go ultra now",
+    "scope": "Approved visual design and reusable local Product Craft Components / Buttons entry with async action feedback. No production integration.",
+    "productionIntegrationApprovedOrPerformed": false
+  },
+  "history": [
+    {
+      "at": "2026-10-05",
+      "event": "original-preview-prepared",
+      "text": "One focused MorphStatusButton-inspired async-state proposal prepared from the existing source study; no second preview or collection addition."
+    },
+    {
+      "at": "2026-10-05",
+      "event": "blank-preview-route-repaired-and-opened",
+      "text": "Connected the route to Product Craft navigation and opened it in Chrome. The local link should use 127.0.0.1 because Vite binds IPv4 loopback."
+    },
+    {
+      "at": "2026-10-05 02:18 UTC",
+      "event": "explicit-user-approval-and-local-component-library-promotion",
+      "sourceMessage": "Sentinel_520b086283ec819187ad192b5cebcf61",
+      "text": "looks great - selected. lets go ultra now",
+      "scope": "The approved Morph Status design becomes original reusable local Product Craft React/CSS with a live Buttons demonstration; exact Apache-2.0 inspiration remains attributed. Library version 0 is preserved until the approved artifact replacement is confirmed. No production integration or new verification is claimed by this record update."
+    },
+    {
+      "at": "2026-10-05",
+      "event": "approved-catalog-and-portable-artifact-verified",
+      "text": "Canonical reusable Buttons code and shared live demo added; unique instance IDs and isolated observers fixed. Catalog/portable browser checks and 44 tests passed. The same Library item was replaced with approved version 1 (11,307 bytes), read back, and local identity metadata persisted."
+    }
+  ]
+}
