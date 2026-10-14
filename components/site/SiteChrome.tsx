@@ -9,7 +9,7 @@ export function SiteChrome({ children, navigation, footer }: {
   footer: ReactNode;
 }) {
   const pathname = usePathname();
-  if (pathname === "/brief" || pathname.startsWith("/brief/")) {
+  if (pathname === "/brief" || pathname.startsWith("/brief/") || pathname === "/b" || pathname.startsWith("/b/")) {
     return <div id="main">{children}</div>;
   }
   return <>{navigation}<main id="main">{children}</main>{footer}</>;
