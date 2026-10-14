@@ -90,6 +90,7 @@ test("private object responses forbid transformations and retain strong R2 ETags
   const value = { state: "pending", detail: "compressible-content-".repeat(100) };
   const written = await objectRequest(instance, path, "PUT", value);
   const read = await objectRequest(instance, path, "GET", undefined, { "Accept-Encoding": "br, gzip" });
+  const readText = await read.text();
   const head = await objectRequest(instance, path, "HEAD", undefined, { "Accept-Encoding": "br, gzip" });
   const stored = await (await instance.getR2Bucket("BUCKET")).head(path);
   for (const response of [written, read, head]) {
@@ -100,7 +101,7 @@ test("private object responses forbid transformations and retain strong R2 ETags
     assert.equal(response.headers.get("content-encoding"), null);
   }
   assert.equal(stored.httpMetadata.cacheControl, "private, no-store, no-transform");
-  assert.equal(await read.text(), JSON.stringify(value));
+  assert.equal(readText, JSON.stringify(value));
 });
 
 test("allocation reserves a global budget idempotently and cannot remove or mutate files", async () => {
