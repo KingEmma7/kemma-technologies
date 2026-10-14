@@ -13,6 +13,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "public/demo-sites/**",
+    // Local verification artifacts are ignored by Git and never deployed.
+    "qa/**",
+    // Cloudflare runtime has its own package and standalone checks.
+    "worker/brief-storage/**",
   ]),
 ]);
 

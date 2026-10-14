@@ -1,0 +1,4 @@
+# Server-only shared secret used by the Next.js website.
+BRIEF_STORAGE_SECRET=
+# The SAME server-only signing secret used by the Next.js website.
+BRIEF_SIGNING_SECRET=

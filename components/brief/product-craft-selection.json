@@ -1,0 +1,55 @@
+{
+  "stage": "Native Kemma brief integration before deployment",
+  "selected": [
+    {
+      "id": "morph-status",
+      "region": "Send my brief with real server persistence outcome",
+      "sourceHash": "b748628ec06dfe07e61ec865f9a880c2692f84444a27f41aa62117b80d22cc52",
+      "adaptation": "Accepted promise-driven action adapted to Send my brief. Resolves only after server confirms saved answers and original uploads. Preview explicitly does not email."
+    }
+  ],
+  "unmatched": [
+    {
+      "region": "One question at a time, branching product mini-flow, native inputs and uploads",
+      "gap": "Approved tabs/sidebar/tour APIs serve panel navigation or modal demonstrations, not an editable branching interview. User explicitly rejected dashboard layout and requested Typeform-style flow. Native form controls and caller-owned flow/persistence used."
+    },
+    {
+      "region": "True 3D animated mascot above questions",
+      "gap": "Approved Blob provides gaze and expression inspiration but is SVG. User requested actual 3D and then authorized mascot-only animation above questions. Original procedural Three.js character uses 30fps gentle sway, blink, and field-aware peeking. Reduced-motion, offscreen and hidden-tab pause included. Crown direction remains provisional."
+    },
+    {
+      "region": "Visited-question breadcrumb navigation",
+      "gap": "Approved FluidTabs controls ARIA tab panels; SidebarRail provides route/drawer chrome; IntroDisclosure is modal onboarding. None models editable interview steps, visited-question return or paused product mini-flows. Native nav, ordered list and buttons implement those semantics without dashboard chrome.",
+      "verification": "Current aria-current step, unavailable future steps, current mobile scroll position, product editor resume, required-field validation before send and immutable accepted receipt."
+    }
+  ],
+  "design": "One focused question per view; details optional; no sidebar, file tree, category overview, checklist or client-facing reference directory; reduced-motion alternative",
+  "storage": "Per-invitation local IndexedDB retains original File bytes. Cloud uploads use a short-lived signed capability through the private Cloudflare Worker/R2 gateway; success requires a confirmed server receipt.",
+  "mascot": {
+    "status": "local provisional concept; global Q&A unimplemented",
+    "sourceFiles": [
+      {
+        "path": "components/brief/Mascot3D.jsx",
+        "source": "Original approved local form mascot; imports existing three dependency"
+      },
+      {
+        "path": "components/brief/THREE-LICENSE.txt",
+        "source": "Three.js MIT license preserved"
+      }
+    ],
+    "threeVersion": "0.185.0",
+    "license": "MIT, full license retained",
+    "typingPrivacy": "Reads field rectangles only, never answer values. Form mascot has no touch handlers or chat.",
+    "motion": "Animated above questions; logo and other page elements static. Reduced-motion neutral; offscreen or hidden tab stops loop."
+  },
+  "frontendScope": "CSS Module scopes every rule to the brief wrapper. Site chrome hides only on /brief routes; all other routes retain original navigation, main and footer.",
+  "additionalQuestion": {
+    "id": "extra",
+    "position": "Immediately before send",
+    "answers": [
+      "additionalTopics",
+      "additionalNotes"
+    ],
+    "purpose": "Capture omitted client detail and improve future intake questions."
+  }
+}

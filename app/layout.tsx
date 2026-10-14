@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Navigation } from "@/components/site/Navigation";
 import { Footer } from "@/components/site/Footer";
+import { SiteChrome } from "@/components/site/SiteChrome";
 import { SITE } from "@/lib/site";
 import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { themeScript } from "@/components/site/theme";
@@ -82,9 +83,9 @@ export default function RootLayout({
         <a href="#main" className="skip-link">
           Skip to main content
         </a>
-        <Navigation />
-        <main id="main">{children}</main>
-        <Footer />
+        <SiteChrome navigation={<Navigation />} footer={<Footer />}>
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );
