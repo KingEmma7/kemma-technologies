@@ -29,8 +29,6 @@ export type BriefReceipt = {
 };
 
 const IDLE_TIMEOUT = 120_000;
-const FILE_READ_TIMEOUT = 60_000;
-const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const MAX_RETRIES = 2;
 const SESSION_RENEWAL_MARGIN = 120_000;
 
@@ -88,53 +86,14 @@ async function request<T>(url: string, body: unknown, signal: AbortSignal): Prom
   }
 }
 
-/** Safari can send an empty body for a disk-backed File, even when its size is correct. */
-function uploadBody(file: File, type: string, signal: AbortSignal): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    ensureActive(signal);
-    if (file.size <= 0 || file.size > MAX_FILE_BYTES) {
-      reject(new TransferError("Use an original file up to 25 MB."));
-      return;
-    }
-    let settled = false;
-    const finish = (error?: Error, body?: Blob) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      signal.removeEventListener("abort", cancel);
-      if (error) reject(error); else resolve(body!);
-    };
-    const cancel = () => finish(stopped());
-    const timer = setTimeout(() => finish(new TransferError("Reading the original file took too long. Keep this page open and try again.")), FILE_READ_TIMEOUT);
-    signal.addEventListener("abort", cancel, { once: true });
-    try {
-      file.arrayBuffer().then(buffer => {
-        if (settled || signal.aborted) return;
-        if (buffer.byteLength !== file.size) {
-          finish(new TransferError("This browser couldn’t read the complete original file. Keep this page open and try again."));
-          return;
-        }
-        try { finish(undefined, new Blob([buffer], { type })); }
-        catch { finish(new TransferError("This browser couldn’t prepare the original file. Keep this page open and try again.")); }
-      }, () => finish(new TransferError("This browser couldn’t read the original file. Keep this page open and try again.")));
-    } catch {
-      finish(new TransferError("This browser couldn’t read the original file. Keep this page open and try again."));
-    }
-  });
-}
-
 /** Browser events report actual bytes; a slow but moving upload stays alive. */
-async function uploadFile(
+function uploadFile(
   session: BriefSession,
   entry: BriefFile,
   specification: BriefSession["files"][number],
   signal: AbortSignal,
   progress: (loaded: number) => void,
 ): Promise<void> {
-  const local = session.uploadMode === "local";
-  if (!local && (session.uploadMode !== "r2" || !session.uploadUrl)) throw new TransferError("The upload link is unavailable. Please try again.");
-  // Only the two active uploads are materialized; never buffer the entire collection.
-  const body = await uploadBody(entry.file, local ? "application/octet-stream" : specification.type, signal);
   return new Promise((resolve, reject) => {
     ensureActive(signal);
     const xhr = new XMLHttpRequest();
@@ -181,12 +140,14 @@ async function uploadFile(
     xhr.onabort = () => finish(stopped());
     signal.addEventListener("abort", cancel, { once: true });
     try {
+      const local = session.uploadMode === "local";
+      if (!local && (session.uploadMode !== "r2" || !session.uploadUrl)) throw new TransferError("The upload link is unavailable. Please try again.");
       xhr.open(local ? "POST" : "PUT", local ? `/api/brief/local-upload?file=${encodeURIComponent(entry.id)}` : session.uploadUrl!);
       xhr.setRequestHeader("Authorization", `Bearer ${specification.uploadToken || session.sessionToken}`);
       xhr.setRequestHeader("Content-Type", local ? "application/octet-stream" : specification.type);
       if (!local) xhr.setRequestHeader("X-Brief-File-Id", entry.id);
       keepAlive();
-      xhr.send(body);
+      xhr.send(entry.file);
     } catch (error) {
       finish(error instanceof Error ? error : new TransferError("The upload could not start."));
     }
