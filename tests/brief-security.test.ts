@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { BriefError, signCapability, storageMode, verifyCapability } from "../lib/brief/config";
-import { assertSameOrigin, fileSchema, fileSpec, MAX_FILE_BYTES, readJson, validateAnswers } from "../lib/brief/schema";
+import { assertSameOrigin, fileSchema, fileSpec, readJson, validateAnswers } from "../lib/brief/schema";
 
 beforeEach(() => {
   vi.stubEnv("BRIEF_SIGNING_SECRET", "test-only-signing-secret-with-at-least-32-bytes");
@@ -53,8 +53,9 @@ describe("private brief capabilities", () => {
 describe("upload and request boundaries", () => {
   const specification = () => ({ id: randomUUID(), name: "logo.png", size: 10, type: "image/png", scope: "brand", role: "Additional file" as const });
 
-  it("rejects oversize files, unknown types and external upload paths", () => {
-    expect(fileSchema.safeParse({ ...specification(), size: MAX_FILE_BYTES + 1 }).success).toBe(false);
+  it("accepts larger originals while rejecting invalid sizes, unknown types and external paths", () => {
+    expect(fileSchema.safeParse({ ...specification(), size: 256 * 1024 * 1024 }).success).toBe(true);
+    expect(fileSchema.safeParse({ ...specification(), size: 0 }).success).toBe(false);
     expect(fileSchema.safeParse({ ...specification(), pathname: "https://outside.example/file" }).success).toBe(false);
     expect(() => fileSpec({ ...specification(), name: "script.exe" }, randomUUID())).toThrow(BriefError);
   });

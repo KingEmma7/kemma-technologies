@@ -1,14 +1,13 @@
 import { z } from "zod";
 import { BriefError, type FileSpec } from "./config";
 
-export const MAX_FILES = 60, MAX_FILE_BYTES = 25 * 1024 * 1024, MAX_TOTAL_BYTES = 150 * 1024 * 1024;
 const types: Record<string, string> = { jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",heic:"image/heic",svg:"image/svg+xml",pdf:"application/pdf",mp4:"video/mp4",mov:"video/quicktime",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",csv:"text/csv",txt:"text/plain",zip:"application/zip",ai:"application/postscript",eps:"application/postscript" };
 export const fileSchema = z.object({
-  id: z.uuid(), name: z.string().trim().min(1).max(180), type: z.string().max(150), size: z.number().int().positive().max(MAX_FILE_BYTES),
+  id: z.uuid(), name: z.string().trim().min(1).max(180), type: z.string().max(150), size: z.number().int().positive(),
   scope: z.string().regex(/^(logo|brand|catalogue|policies|product:[0-9a-f-]{36}|paid:[0-9a-f-]{36})$/),
   role: z.enum(["Additional file", "Main product photo", "Private paid download"]),
 }).strict();
-export const sessionSchema = z.object({invite:z.string().min(1).max(2000),files:z.array(fileSchema).max(MAX_FILES),checkpoint:z.object({answers:z.record(z.string(),z.unknown()),products:z.array(z.record(z.string(),z.unknown())).max(60)}).strict().optional()}).strict();
+export const sessionSchema = z.object({invite:z.string().min(1).max(2000),files:z.array(fileSchema),checkpoint:z.object({answers:z.record(z.string(),z.unknown()),products:z.array(z.record(z.string(),z.unknown())).max(60)}).strict().optional()}).strict();
 export function fileSpec(value: z.infer<typeof fileSchema>, id: string): FileSpec {
   const ext = value.name.toLowerCase().split(".").pop() || "";
   if (!types[ext]) throw new BriefError("Use an image, document or video file.");
@@ -24,7 +23,7 @@ function safeJson(value: unknown, depth=0): boolean {
   if (value && typeof value === "object") {const entries=Object.entries(value);return entries.length<=120 && entries.every(([k,v])=>k.length<=100 && !["__proto__","prototype","constructor"].includes(k) && safeJson(v,depth+1));}
   return false;
 }
-export const submitSchema = z.object({sessionToken:z.string().min(1).max(48_000),schemaVersion:z.literal(2),answers:z.record(z.string(),z.unknown()),products:z.array(z.record(z.string(),z.unknown())).max(60)}).strict();
+export const submitSchema = z.object({sessionToken:z.string().min(1),schemaVersion:z.literal(2),answers:z.record(z.string(),z.unknown()),products:z.array(z.record(z.string(),z.unknown())).max(60)}).strict();
 export function validateAnswers(answers: Record<string,unknown>, products: Record<string,unknown>[], files: FileSpec[]) {
   if (!safeJson(answers) || !safeJson(products)) throw new BriefError("Some answers are too long. Shorten them or upload a document.");
   if (typeof answers.businessName!=="string" || !answers.businessName.trim() || answers.businessName.length>200) throw new BriefError("Add your business name.");

@@ -35,7 +35,7 @@ export class BriefUploadError extends Error {
 
 const IDLE_TIMEOUT = 120_000;
 const FILE_READ_TIMEOUT = 60_000;
-const MAX_FILE_BYTES = 25 * 1024 * 1024;
+const FILE_READ_CHUNK_BYTES = 8 * 1024 * 1024;
 const MAX_RETRIES = 2;
 const SESSION_RENEWAL_MARGIN = 120_000;
 
@@ -124,10 +124,12 @@ function reportReadFailure(stage: "create" | "start" | "read" | "result" | "prep
 function uploadBody(file: File, type: string, signal: AbortSignal): Promise<Blob> {
   return new Promise((resolve, reject) => {
     ensureActive(signal);
-    if (file.size <= 0 || file.size > MAX_FILE_BYTES) {
-      reject(new TransferError("Use an original file up to 25 MB."));
+    if (file.size <= 0) {
+      reject(new TransferError("Choose a non-empty original file."));
       return;
     }
+    // Blob-backed originals stream through XHR without a whole-file ArrayBuffer.
+    if (file.size > FILE_READ_CHUNK_BYTES) { resolve(file.slice(0, file.size, type)); return; }
     let reader: FileReader;
     try { reader = new FileReader(); }
     catch (error) {

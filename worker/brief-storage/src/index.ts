@@ -2,25 +2,18 @@ type FileSpec = { id: string; name: string; type: string; size: number; scope: s
 type Session = { kind: "session"; id: string; exp: number; files: FileSpec[] };
 type Upload = { kind: "upload"; id: string; exp: number; fileId: string };
 type Allocation = { createdAt: string; files: FileSpec[] };
-type Budget = { version: 1; totalBytes: number; projects: Record<string, number> };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const DOCUMENTS = new Set(["allocation.json", "submission.json", "notification.json", "email-payload.json", "email-sender.json", "email-preview.json", "answers-checkpoint.json", "upload-status.json"]);
-const MAX_FILE_BYTES = 25 * 1024 * 1024;
-const MAX_TOTAL_BYTES = 150 * 1024 * 1024;
 const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
-// Their sum remains below the 10 MiB project overhead reservation, even if all exist.
 const DOCUMENT_LIMITS: Record<string, number> = {
-  "allocation.json": 128 * 1024, "submission.json": 1024 * 1024, "notification.json": 16 * 1024,
+  "allocation.json": MAX_DOCUMENT_BYTES, "submission.json": MAX_DOCUMENT_BYTES, "notification.json": 16 * 1024,
   "email-payload.json": MAX_DOCUMENT_BYTES, "email-sender.json": 4 * 1024, "email-preview.json": 512 * 1024,
-  "answers-checkpoint.json": 256 * 1024,
+  "answers-checkpoint.json": MAX_DOCUMENT_BYTES,
   "upload-status.json": 32 * 1024,
 };
-const PROJECT_OVERHEAD_BYTES = 10 * 1024 * 1024;
-const BUDGET_KEY = "system/budget.json";
 // Keep the stored bytes and strong R2 ETag intact across Cloudflare's edge.
 const PRIVATE_CACHE_CONTROL = "private, no-store, no-transform";
-const QUOTA_MESSAGE = "This form has reached its storage allowance. Contact Kemma to share a folder link.";
 const MIME_TYPES: Record<string, string> = {
   jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", heic: "image/heic", svg: "image/svg+xml",
   pdf: "application/pdf", mp4: "video/mp4", mov: "video/quicktime", doc: "application/msword",
@@ -62,7 +55,7 @@ async function authorizeServer(request: Request, env: Env) {
 function validateFile(value: unknown, projectId: string): FileSpec {
   if (!object(value) || !exactKeys(value, ["id", "name", "type", "size", "scope", "role", "pathname"])) throw new GatewayError(400, "Check the selected files and try again.");
   const { id, name, type, size, scope, role, pathname } = value;
-  if (typeof id !== "string" || !UUID.test(id) || typeof name !== "string" || !name.trim() || name.length > 180 || typeof type !== "string" || typeof size !== "number" || !Number.isSafeInteger(size) || size < 1 || size > MAX_FILE_BYTES || typeof scope !== "string" || typeof role !== "string" || typeof pathname !== "string") throw new GatewayError(400, "Check the selected files and try again.");
+  if (typeof id !== "string" || !UUID.test(id) || typeof name !== "string" || !name.trim() || name.length > 180 || typeof type !== "string" || typeof size !== "number" || !Number.isSafeInteger(size) || size < 1 || typeof scope !== "string" || typeof role !== "string" || typeof pathname !== "string") throw new GatewayError(400, "Check the selected files and try again.");
   const extension = name.toLowerCase().split(".").pop() || "";
   const safeName = name.normalize("NFKC").replace(/[^a-zA-Z0-9._-]/g, "-").replace(/^\.+/, "").slice(0, 180) || `file.${extension}`;
   if (!MIME_TYPES[extension] || type !== MIME_TYPES[extension] || pathname !== `briefs/${projectId}/files/${id}/${safeName}` || !/^(logo|brand|catalogue|policies|product:[0-9a-f-]{36}|paid:[0-9a-f-]{36})$/.test(scope) || !["Additional file", "Main product photo", "Private paid download"].includes(role)) throw new GatewayError(400, "Check the selected files and try again.");
@@ -70,9 +63,9 @@ function validateFile(value: unknown, projectId: string): FileSpec {
   return { id, name, type, size, scope, role, pathname };
 }
 function validateFiles(value: unknown, projectId: string): FileSpec[] {
-  if (!Array.isArray(value) || value.length > 60) throw new GatewayError(413, "This project has reached its file allowance.");
+  if (!Array.isArray(value)) throw new GatewayError(413, "Invalid file allocation.");
   const files = value.map(file => validateFile(file, projectId));
-  if (new Set(files.map(file => file.id)).size !== files.length || files.reduce((sum, file) => sum + file.size, 0) > MAX_TOTAL_BYTES) throw new GatewayError(413, "This project has reached its file allowance.");
+  if (new Set(files.map(file => file.id)).size !== files.length) throw new GatewayError(413, "Invalid file allocation.");
   return files;
 }
 function decodeBase64Url(value: string) {
@@ -137,38 +130,6 @@ async function readAllocation(env: Env, projectId: string): Promise<Allocation |
 function validateAllocation(value: unknown, projectId: string): Allocation {
   if (!object(value) || !exactKeys(value, ["createdAt", "files"]) || typeof value.createdAt !== "string" || value.createdAt.length > 100 || !Number.isFinite(Date.parse(value.createdAt))) throw new GatewayError(400, "Invalid file allocation.");
   return { createdAt: value.createdAt, files: validateFiles(value.files, projectId) };
-}
-function validateBudget(value: unknown): Budget {
-  if (!object(value) || value.version !== 1 || !Number.isSafeInteger(value.totalBytes) || typeof value.totalBytes !== "number" || value.totalBytes < 0 || !object(value.projects)) throw new GatewayError(503, "The form is temporarily unavailable. Please contact Kemma.");
-  const projects: Record<string, number> = {};
-  for (const [id, reserved] of Object.entries(value.projects)) {
-    if (!UUID.test(id) || typeof reserved !== "number" || !Number.isSafeInteger(reserved) || reserved < PROJECT_OVERHEAD_BYTES || reserved > MAX_TOTAL_BYTES + PROJECT_OVERHEAD_BYTES) throw new GatewayError(503, "The form is temporarily unavailable. Please contact Kemma.");
-    projects[id] = reserved;
-  }
-  if (Object.values(projects).reduce((sum, bytes) => sum + bytes, 0) !== value.totalBytes) throw new GatewayError(503, "The form is temporarily unavailable. Please contact Kemma.");
-  return { version: 1, totalBytes: value.totalBytes, projects };
-}
-async function reserveBudget(env: Env, projectId: string, fileBytes: number) {
-  const cap = Number(env.MAX_RESERVED_BYTES);
-  if (!Number.isSafeInteger(cap) || cap <= 0 || cap > 5_000_000_000) throw new GatewayError(503, "The form is temporarily unavailable. Please contact Kemma.");
-  const requested = fileBytes + PROJECT_OVERHEAD_BYTES;
-  for (let attempt = 0; attempt < 8; attempt++) {
-    const old = await env.BUCKET.get(BUDGET_KEY);
-    if (old && old.size > 1024 * 1024) throw new GatewayError(503, "The form is temporarily unavailable. Please contact Kemma.");
-    const budget = old ? validateBudget(parseJson(await boundedBytes(old.body, 1024 * 1024))) : { version: 1 as const, totalBytes: 0, projects: {} as Record<string, number> };
-    const previous = budget.projects[projectId] || 0;
-    if (previous >= requested) return;
-    const total = budget.totalBytes + requested - previous;
-    if (total > cap) throw new GatewayError(507, QUOTA_MESSAGE);
-    budget.projects[projectId] = requested;
-    budget.totalBytes = total;
-    const written = await env.BUCKET.put(BUDGET_KEY, JSON.stringify(budget), {
-      onlyIf: new Headers(old ? { "If-Match": old.httpEtag } : { "If-None-Match": "*" }),
-      httpMetadata: { contentType: "application/json", cacheControl: PRIVATE_CACHE_CONTROL }, storageClass: "Standard",
-    });
-    if (written) return;
-  }
-  throw new GatewayError(409, "Another save is in progress. Please try again.");
 }
 function conditions(request: Request) {
   const match = request.headers.get("if-match");
@@ -242,8 +203,6 @@ async function handleObject(request: Request, env: Env, url: URL) {
     const allocation = validateAllocation(value, path.projectId);
     const prior = await readAllocation(env, path.projectId);
     if (prior && (prior.createdAt !== allocation.createdAt || prior.files.some(file => !allocation.files.some(candidate => canonical(candidate) === canonical(file))))) throw new GatewayError(409, "A saved file allocation cannot be removed or changed.");
-    // Reserve first. A losing allocation CAS may over-reserve, which safely reduces capacity.
-    await reserveBudget(env, path.projectId, allocation.files.reduce((sum, file) => sum + file.size, 0));
   }
   const stored = await env.BUCKET.put(path.key, bytes, { onlyIf: conditional, httpMetadata: { contentType: "application/json", cacheControl: PRIVATE_CACHE_CONTROL }, storageClass: "Standard" });
   if (!stored) throw new GatewayError(412, "Another save is in progress. Please try again.");

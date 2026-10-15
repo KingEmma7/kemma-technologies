@@ -38,7 +38,6 @@ export function signCapability(payload: Capability): string {
   return body + "." + createHmac("sha256", secret()).update(body).digest("base64url");
 }
 export function verifyCapability<T extends Capability["kind"]>(token: string, kind: T): Extract<Capability, {kind: T}> {
-  if (token.length > 48_000) throw new BriefError("Use your project link from Kemma.", 401);
   const parts = token.split(".");
   if (parts.length !== 2) throw new BriefError("Use your project link from Kemma.", 401);
   const expected = createHmac("sha256", secret()).update(parts[0]).digest();

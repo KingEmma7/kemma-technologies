@@ -13,7 +13,7 @@ export function replaceOriginalFiles<T extends Draft>(draft: T, originals: File[
     const identity = JSON.stringify([file.name, file.size]);
     if (selected.has(identity)) throw new FileRecoveryError("Choose each original file once.");
     selected.add(identity);
-    if (file.size <= 0 || file.size > 25 * 1024 * 1024) throw new FileRecoveryError("Choose the original files, with matching names and sizes.");
+    if (file.size <= 0) throw new FileRecoveryError("Choose the original files, with matching names and sizes.");
     const matches = draft.files.filter(entry => entry.file.name === file.name && entry.file.size === file.size);
     const match = matches.length === 1 ? matches[0] : matches.find(entry => entry.id === failedFileId);
     if (!matches.length) throw new FileRecoveryError("Choose the original files, with matching names and sizes.");
