@@ -1,4 +1,4 @@
-type FileEntry = { id: string; scope: string; role: string; file: File };
+type FileEntry = { id: string; scope: string; role: string; file: File; byteKey?: string; needsOriginal?: boolean };
 type Draft = { files: FileEntry[] };
 
 export class FileRecoveryError extends Error {
@@ -22,7 +22,13 @@ export function replaceOriginalFiles<T extends Draft>(draft: T, originals: File[
   }
   if (!replacements.size) return { draft, replacedIds: [] };
   return {
-    draft: { ...draft, files: draft.files.map(entry => replacements.has(entry.id) ? { ...entry, file: replacements.get(entry.id)! } : entry) },
+    draft: { ...draft, files: draft.files.map(entry => {
+      if (!replacements.has(entry.id)) return entry;
+      const replaced = { ...entry, file: replacements.get(entry.id)! };
+      delete replaced.byteKey;
+      delete replaced.needsOriginal;
+      return replaced;
+    }) },
     replacedIds: [...replacements.keys()],
   };
 }

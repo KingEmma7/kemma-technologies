@@ -1,12 +1,15 @@
 const databaseName=invite=>{let hash=2166136261;for(const char of invite||'missing'){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619)}return 'kemma-crochet-brief-v2-'+(hash>>>0).toString(16)};
+const STORAGE_TIMEOUT=15000;
 
 async function open(invite) {
  return new Promise((resolve,reject)=>{
   const request=indexedDB.open(databaseName(invite),1);
   let rejected=false;
-  const fail=error=>{rejected=true;reject(error||new Error('Couldn’t open the saved brief.'))};
+  const timer=setTimeout(()=>fail(new Error('Opening the saved brief took too long.')),STORAGE_TIMEOUT);
+  const fail=error=>{rejected=true;clearTimeout(timer);reject(error||new Error('Couldn’t open the saved brief.'))};
   request.onupgradeneeded=()=>request.result.createObjectStore('drafts');
   request.onsuccess=()=>{
+   clearTimeout(timer);
    // A blocked request can succeed after we have already shown the retry screen.
    if(rejected){request.result.close();return}
    request.result.onversionchange=()=>request.result.close();
@@ -20,17 +23,62 @@ async function open(invite) {
 export async function readDraft(invite) {
  const db=await open(invite);
  try {
-  return await new Promise((resolve,reject)=>{
+  const saved=await new Promise((resolve,reject)=>{
    const transaction=db.transaction('drafts','readonly');
+   const timer=setTimeout(()=>{try{transaction.abort()}catch{}reject(new Error('Opening the saved brief took too long.'))},STORAGE_TIMEOUT);
    const request=transaction.objectStore('drafts').get('current');
    let saved;
    request.onsuccess=()=>{saved=request.result};
    request.onerror=()=>reject(request.error||new Error('Couldn’t read the saved brief.'));
-   transaction.oncomplete=()=>resolve(saved);
-   transaction.onerror=()=>reject(transaction.error||new Error('Couldn’t read the saved brief.'));
-   transaction.onabort=()=>reject(transaction.error||new Error('Opening the saved brief was interrupted.'));
+   transaction.oncomplete=()=>{clearTimeout(timer);resolve(saved)};
+   transaction.onerror=()=>{clearTimeout(timer);reject(transaction.error||new Error('Couldn’t read the saved brief.'))};
+   transaction.onabort=()=>{clearTimeout(timer);reject(transaction.error||new Error('Opening the saved brief was interrupted.'))};
   });
+  if(!saved?.files?.some(entry=>entry.byteKey))return saved;
+  // Older File-only records remain readable. New records carry actual bytes,
+  // which do not depend on a photo-picker handle.
+  const files=[];
+  for(const entry of saved.files){
+   if(!entry.byteKey){files.push(entry);continue}
+   let bytes;try{bytes=await readFileBytes(db,entry.byteKey)}catch{/* Answers must remain accessible even if an original is unavailable. */}
+   if(!(bytes instanceof ArrayBuffer)||bytes.byteLength!==entry.file.size){files.push({...entry,needsOriginal:true});continue}
+   files.push({...entry,needsOriginal:false,file:new File([bytes],entry.file.name,{type:entry.file.type,lastModified:entry.file.lastModified})});
+  }
+  return {...saved,files};
  } finally {db.close()}
+}
+
+function readFileBytes(db,key){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction('drafts','readonly'),request=tx.objectStore('drafts').get(key);let bytes;
+  const timer=setTimeout(()=>{try{tx.abort()}catch{}reject(new Error('Reading the saved original took too long.'))},STORAGE_TIMEOUT);
+  request.onsuccess=()=>{bytes=request.result};
+  tx.oncomplete=()=>{clearTimeout(timer);resolve(bytes)};
+  tx.onerror=tx.onabort=()=>{clearTimeout(timer);reject(tx.error||new Error('Couldn’t read the saved original.'))};
+ });
+}
+
+/** Copy while the native picker still grants access, before clearing its input. */
+export async function preserveOriginalFile(file,invite){
+ if(!file.size||file.size>25*1024*1024)throw new Error('Use an original file up to 25 MB.');
+ const bytes=await new Promise((resolve,reject)=>{
+  const reader=new FileReader();let settled=false;
+  const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timer);reader.onload=reader.onerror=reader.onabort=null;if(error)reject(error);else resolve(value)};
+  const timer=setTimeout(()=>{finish(new Error('Couldn’t copy the original file.'));if(reader.readyState===FileReader.LOADING)reader.abort()},30000);
+  reader.onload=()=>reader.result instanceof ArrayBuffer&&reader.result.byteLength===file.size?finish(null,reader.result):finish(new Error('The original file was incomplete.'));
+  reader.onerror=reader.onabort=()=>finish(new Error('Couldn’t copy the original file.'));
+  try{reader.readAsArrayBuffer(file)}catch(error){finish(error)}
+ });
+ const key='original:'+crypto.randomUUID(),db=await open(invite);
+ try{
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction('drafts','readwrite');
+   const timer=setTimeout(()=>{try{tx.abort()}catch{}reject(new Error('Saving the original took too long.'))},STORAGE_TIMEOUT);
+   tx.oncomplete=()=>{clearTimeout(timer);resolve()};tx.onerror=tx.onabort=()=>{clearTimeout(timer);reject(tx.error||new Error('Couldn’t save the original file.'))};
+   tx.objectStore('drafts').put(bytes,key);
+  });
+ }finally{db.close()}
+ return {file:new File([bytes],file.name,{type:file.type,lastModified:file.lastModified}),byteKey:key,needsOriginal:false};
 }
 
 export class DraftConflictError extends Error {
@@ -51,9 +99,10 @@ async function commitDraft(snapshot,invite,expectedRevision,active,transactions)
    const revision=crypto.randomUUID();
    let failure,written=false;
    const abort=error=>{failure=error;try{transaction.abort()}catch{reject(error)}};
-   transaction.oncomplete=()=>{transactions.delete(transaction);if(written)resolve(revision);else reject(failure||new Error('Save interrupted.'))};
+   const timer=setTimeout(()=>abort(new Error('Saving the brief took too long. Keep this page open.')),STORAGE_TIMEOUT);
+   transaction.oncomplete=()=>{clearTimeout(timer);transactions.delete(transaction);if(written)resolve(revision);else reject(failure||new Error('Save interrupted.'))};
    transaction.onerror=()=>{failure=failure||transaction.error||new Error('Couldn’t save the brief.')};
-   transaction.onabort=()=>{transactions.delete(transaction);reject(!active()?inactiveDraft():failure||transaction.error||new Error('Save interrupted.'))};
+   transaction.onabort=()=>{clearTimeout(timer);transactions.delete(transaction);reject(!active()?inactiveDraft():failure||transaction.error||new Error('Save interrupted.'))};
    const request=store.get('current');
    request.onerror=()=>abort(request.error||new Error('Couldn’t read the saved brief.'));
    request.onsuccess=()=>{
@@ -61,7 +110,8 @@ async function commitDraft(snapshot,invite,expectedRevision,active,transactions)
     if(localRevision(request.result)!==expectedRevision){abort(new DraftConflictError());return}
     try {
      // The revision check and replacement share one transaction, which excludes other writers.
-     store.put({...snapshot,_localRevision:revision},'current');
+     const files=snapshot.files.map(entry=>entry.byteKey?{...entry,file:{name:entry.file.name,size:entry.file.size,type:entry.file.type,lastModified:entry.file.lastModified}}:entry);
+     store.put({...snapshot,files,_localRevision:revision},'current');
      written=true;
     } catch(error){abort(error)}
    };

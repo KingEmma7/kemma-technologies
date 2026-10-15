@@ -11,6 +11,7 @@ import { buildEmail, sendNotification } from "../lib/brief/email";
 import { SITE } from "../lib/site";
 import { GET as downloadOriginal } from "../app/api/brief/download/[id]/[file]/route";
 import { POST as uploadOriginal } from "../app/api/brief/local-upload/route";
+import { POST as uploadStatus } from "../app/api/brief/upload-status/route";
 import { POST as submitBrief } from "../app/api/brief/submit/route";
 import { GET as retryNotifications } from "../app/api/brief/retry-notifications/route";
 
@@ -299,5 +300,45 @@ describe("immutable submissions and original files", () => {
     const response = await retryNotifications(new Request(url, { headers: { Authorization: "Bearer test-cron-secret-with-at-least-32-characters" } }));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ retried: 1, sent: 1, pending: 0, needsReview: 0 });
+  });
+});
+
+
+describe("answers checkpoint before original uploads", () => {
+  it("saves answers and file identities without accepting an incomplete submission", async () => {
+    const link=invite(), files=[file()], checkpoint={answers:answers(),products:[]};
+    const session=await beginSession({invite:link.token,files,checkpoint});
+    expect(session.answersBackedUp).toBe(true);
+    const path=`briefs/${link.id}/answers-checkpoint.json`;
+    expect((await readDocument(path))?.value).toMatchObject({...checkpoint,files:session.files.map(spec=>({id:spec.id,name:spec.name,type:spec.type,size:spec.size,scope:spec.scope,role:spec.role,pathname:spec.pathname}))});
+    expect(await getSubmission(link.id)).toBeNull();
+    expect(await readDocument(`briefs/${link.id}/notification.json`)).toBeNull();
+    await expect(acceptSubmission(session.sessionToken,checkpoint.answers,[],request())).rejects.toMatchObject({status:409});
+    // Another tab cannot replace the recovery snapshot with stale or empty answers.
+    await beginSession({invite:link.token,files,checkpoint:{answers:{...answers(),businessName:"Older tab"},products:[]}});
+    expect((await readDocument<{answers:{businessName:string}}>(path))?.value.answers.businessName).toBe(checkpoint.answers.businessName);
+  });
+  it("rejects invalid checkpoint answers before allocating or saving data",async()=>{
+    const link=invite();
+    await expect(beginSession({invite:link.token,files:[],checkpoint:{answers:{},products:[]}})).rejects.toThrow("business name");
+    expect(await readDocument(allocationPath(link.id))).toBeNull();
+    expect(await readDocument(`briefs/${link.id}/answers-checkpoint.json`)).toBeNull();
+  });
+});
+
+
+describe("private bounded upload diagnostics",()=>{
+  const status=(token:string,stage:string,extra={})=>uploadStatus(new Request("http://localhost:4190/api/brief/upload-status",{method:"POST",headers:{Origin:"http://localhost:4190","Content-Type":"application/json"},body:JSON.stringify({token,stage,...extra})}));
+  it("records stages for only the signed file and never accepts arbitrary diagnostic text",async()=>{
+    const link=invite(),session=await beginSession({invite:link.token,files:[file()]});
+    expect((await status(session.files[0].uploadToken,"reading")).status).toBe(200);
+    expect((await status(session.files[0].uploadToken,"read_failed",{code:"NotReadableError"})).status).toBe(200);
+    const path=`briefs/${link.id}/upload-status.json`, record=await readDocument(path);
+    expect(record?.value).toMatchObject({files:{[session.files[0].id]:{reading:{at:expect.any(String)},read_failed:{code:"NotReadableError"}}}});
+    expect((await status(session.files[0].uploadToken,"read_failed",{code:"private filename.png"})).status).toBe(400);
+    expect((await status(link.token,"reading")).status).toBe(401);
+    expect((await status(session.sessionToken,"reading")).status).toBe(401);
+    expect((await status(signCapability({kind:"upload",id:link.id,fileId:randomUUID(),exp:Date.now()+60000}),"reading")).status).toBe(403);
+    expect((await readDocument(path))?.value).toEqual(record?.value);
   });
 });

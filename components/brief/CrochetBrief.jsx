@@ -3,7 +3,7 @@ import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {MorphStatusButton} from './SendBriefButton';
 import {submitBrief,BriefUploadError} from './submit';
 import {replaceOriginalFiles,FileRecoveryError} from './recovery';
-import {createDraftPersistence,DraftConflictError,fileDataURL,download} from './storage';
+import {createDraftPersistence,DraftConflictError,preserveOriginalFile,fileDataURL,download} from './storage';
 import styles from './brief.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,6 +21,8 @@ export default function CrochetBrief(props){return <CrochetBriefForm key={props.
 function CrochetBriefForm({invite,preview=false,contactHref}){
  const [draft,setDraft]=useState(fresh),[restoreState,setRestoreState]=useState('loading'),[restoreAttempt,setRestoreAttempt]=useState(0),[saveState,setSaveState]=useState(''),[error,setError]=useState(''),[finished,setFinished]=useState(false),[exporting,setExporting]=useState(false),[sending,setSending]=useState(false),[sendProgress,setSendProgress]=useState(''),[receipt,setReceipt]=useState(null),[failedFileId,setFailedFileId]=useState(null),[replacing,setReplacing]=useState(false),[recoveryNeedsSave,setRecoveryNeedsSave]=useState(false),[recoveryNote,setRecoveryNote]=useState('');
  const loaded=restoreState==='ready';
+ const [preparingFiles,setPreparingFiles]=useState(false);
+ const filePreparation=useRef(false);
  const persistence=useMemo(()=>createDraftPersistence(invite),[invite]);
  const latest=useRef(draft),lastSaved=useRef(null),revision=useRef(0),section=useRef(null),breadcrumb=useRef(null),recoveryInFlight=useRef(false),recoveryPending=useRef(false);
  latest.current=draft;
@@ -85,16 +87,26 @@ function CrochetBriefForm({invite,preview=false,contactHref}){
  const back=()=>{setError('');if(product){setDraft(d=>({...d,editor:editor.stage>0?{...editor,stage:editor.stage-1}:null}));return}if(index>0)goto(questions[index-1].id)};
  const choose=value=>{setDraft(d=>({...d,question:questions[index+1].id,visited:[...new Set([...(d.visited||questionIds.slice(0,index+1)),question.id,questions[index+1].id])],answers:{...d.answers,goal:value}}));setError('')};
  const addProduct=()=>{const p={id:crypto.randomUUID(),name:'',priceLabel:'',type:'Ready-made',details:'',customNotes:''};setDraft(d=>({...d,products:[...d.products,p],editor:{id:p.id,stage:0},suspendedEditor:null}));setError('')};
- const addFiles=(list,scope)=>{
+ const addFiles=async(list,scope)=>{
+  if(filePreparation.current)return;
   const files=Array.from(list||[]);if(!files.length)return;
   if(files.some(f=>!allowed.test(f.name)||f.size===0||f.size>25*1048576)){setError('Use an image, document or video up to 25 MB per file.');return}
   if(latest.current.files.reduce((s,f)=>s+f.file.size,0)+files.reduce((s,f)=>s+f.size,0)>150*1048576){setError('For a larger collection, use the shared-folder link instead.');return}
-  setDraft(d=>{let main=d.files.some(f=>f.scope===scope&&f.role==='Main product photo');return {...d,files:[...d.files,...files.map(file=>{const hero=scope.startsWith('product:')&&!main&&file.type.startsWith('image/');if(hero)main=true;return {id:crypto.randomUUID(),scope,role:scope.startsWith('paid:')?'Private paid download':hero?'Main product photo':'Additional file',file}})]}});setError('')
+  let main=latest.current.files.some(f=>f.scope===scope&&f.role==='Main product photo');
+  const entries=files.map(file=>{const hero=scope.startsWith('product:')&&!main&&file.type.startsWith('image/');if(hero)main=true;return {id:crypto.randomUUID(),scope,role:scope.startsWith('paid:')?'Private paid download':hero?'Main product photo':'Additional file',file}});
+  setDraft(d=>({...d,files:[...d.files,...entries]}));setError('');
+  filePreparation.current=true;setPreparingFiles(true);
+  const preserved=new Map();
+  try{
+   // Sequential copying limits temporary memory to one original (at most 25 MB).
+   for(const entry of entries)preserved.set(entry.id,await preserveOriginalFile(entry.file,invite));
+  }catch{setError('Your selections are still here, but this browser couldn’t keep a full copy. Keep this page open until sending finishes.')}
+  finally{if(preserved.size)setDraft(d=>({...d,files:d.files.map(entry=>preserved.has(entry.id)?{...entry,...preserved.get(entry.id)}:entry)}));filePreparation.current=false;setPreparingFiles(false)}
  };
  const removeFile=id=>setDraft(d=>{const removed=d.files.find(f=>f.id===id);let files=d.files.filter(f=>f.id!==id);if(removed?.role==='Main product photo'){const replacement=files.find(f=>f.scope===removed.scope&&f.file.type.startsWith('image/'));if(replacement)files=files.map(f=>f.id===replacement.id?{...f,role:'Main product photo'}:f)}return {...d,files}});
  const upload=(scope,label)=>{
   const files=draft.files.filter(f=>f.scope===scope);
-  return <div className="upload-group"><label className="upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();addFiles(e.dataTransfer.files,scope)}}><span>{label}</span><span className="upload-action">Choose files</span><input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.svg,.pdf,.mp4,.mov,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.ai,.eps" aria-label={label} onChange={e=>{addFiles(e.target.files,scope);e.target.value=''}}/></label>{files.length>0&&<div className="file-list">{files.slice(0,2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}{files.length>2&&<details><summary>{files.length-2} more files</summary>{files.slice(2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}</details>}</div>}</div>
+  return <div className="upload-group"><label className="upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();addFiles(e.dataTransfer.files,scope)}}><span>{label}</span><span className="upload-action">{preparingFiles?'Keeping your originals…':'Choose files'}</span><input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.svg,.pdf,.mp4,.mov,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.ai,.eps" aria-label={label} disabled={preparingFiles} onChange={async e=>{const target=e.target;await addFiles(target.files,scope);target.value=''}}/></label>{files.length>0&&<div className="file-list">{files.slice(0,2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}{files.length>2&&<details><summary>{files.length-2} more files</summary>{files.slice(2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}</details>}</div>}</div>
  };
  const input=(key,{label,placeholder,type='text',small=false}={})=>{const value=product?product[key]:a[key];return <label className={small?'small-field':'answer-field'}>{label&&<span>{label}</span>}{type==='textarea'?<textarea rows={2} aria-label={label||question.title} value={value||''} placeholder={placeholder||''} onChange={e=>product?pAnswer(key,e.target.value):answer(key,e.target.value)}/>:<input type={type} aria-label={label||question.title} aria-invalid={!!error||undefined} aria-describedby={error?'form-error':undefined} value={value||''} placeholder={placeholder||''} onChange={e=>product?pAnswer(key,e.target.value):answer(key,e.target.value)}/>}</label>};
  const pick=(key,label,options,single=false)=>{const value=(product?product[key]:a[key])||(single?'':[]);return <fieldset className="pick"><legend>{label}</legend><div>{options.map(option=>{const selected=single?value===option:Array.isArray(value)&&value.includes(option);return <button type="button" key={option} aria-pressed={selected} className={selected?'picked':''} onClick={()=>{const nextValue=single?option:selected?value.filter(v=>v!==option):[...(Array.isArray(value)?value:[]),option];if(product)pAnswer(key,nextValue);else answer(key,nextValue)}}>{option}</button>})}</div></fieldset>};
@@ -107,7 +119,11 @@ function CrochetBriefForm({invite,preview=false,contactHref}){
   try{
    const recovered=replaceOriginalFiles(latest.current,files,failedFileId);
    recoveryPending.current=true;setRecoveryNeedsSave(true);latest.current=recovered.draft;setDraft(recovered.draft);setSaveState('Saving…');
-   await persist(recovered.draft);
+   const preserved=new Map();
+   for(const entry of recovered.draft.files)if(recovered.replacedIds.includes(entry.id))preserved.set(entry.id,await preserveOriginalFile(entry.file,invite));
+   const durable={...recovered.draft,files:recovered.draft.files.map(entry=>preserved.has(entry.id)?{...entry,...preserved.get(entry.id)}:entry)};
+   latest.current=durable;setDraft(durable);
+   await persist(durable);
    recoveryPending.current=false;setRecoveryNeedsSave(false);setSaveState('Saved on this device');setError('');
    if(recovered.replacedIds.includes(failedFileId))setFailedFileId(null);
    setRecoveryNote(`${files.length} ${files.length===1?'original file':'original files'} reselected. Send your brief again.`);
@@ -115,7 +131,7 @@ function CrochetBriefForm({invite,preview=false,contactHref}){
   finally{recoveryInFlight.current=false;setReplacing(false)}
  };
  const finish=async()=>{
-  if(recoveryInFlight.current)throw new Error('Your replacement files are still being saved. Please wait.');
+  if(recoveryInFlight.current||filePreparation.current)throw new Error('Your original files are still being saved. Please wait.');
   const snap=latest.current;
   const mustSaveRecovery=recoveryPending.current;
   const requiredError=validateRequired();if(requiredError)throw new Error(requiredError);
@@ -139,7 +155,7 @@ function CrochetBriefForm({invite,preview=false,contactHref}){
  const failedFile=draft.files.find(file=>file.id===failedFileId);
 
  if(!loaded)return <div className={styles.shell} data-brief-flow><main><section className="question">{restoreState==='failed'?<><h1>Let’s reopen your saved brief.</h1><p className="question-hint" role="alert">This browser couldn’t read your saved answers yet. We haven’t replaced or cleared them. Keep this page open and try again.</p><div className="actions"><button type="button" className="continue" onClick={()=>{setRestoreState('loading');setRestoreAttempt(attempt=>attempt+1)}}>Try opening again</button></div></>:<p className="loading" role="status">Opening your brief…</p>}</section></main></div>;
- return <div className={styles.shell} data-brief-flow>{preview&&<div className="preview-note">Preview · Test submissions are saved here · No email sent</div>}<header><Link className="brand branded-logo" href="/" aria-label="Kemma Technologies"><Image src="/brief/brand/kemma-logo.png" alt="Kemma Technologies" width={118} height={88}/></Link><span>Crochet website brief</span><span className="save-state" role="status">{saveState}</span></header><div className="progress" role="progressbar" aria-label="Position in the form" aria-valuemin="0" aria-valuemax={questions.length-1} aria-valuenow={index}><div style={{width:`${100*index/(questions.length-1)}%`}}/></div>
+ return <div className={styles.shell} data-brief-flow>{preview&&<div className="preview-note">Preview · Test submissions are saved here · No email sent</div>}<header><Link className="brand branded-logo" href="/" aria-label="Kemma Technologies"><Image src="/brief/brand/kemma-logo.png" alt="Kemma Technologies" width={118} height={88}/></Link><span>Crochet website brief</span><span className="save-state" role="status">{preparingFiles?'Keeping your originals…':saveState}</span></header><div className="progress" role="progressbar" aria-label="Position in the form" aria-valuemin="0" aria-valuemax={questions.length-1} aria-valuenow={index}><div style={{width:`${100*index/(questions.length-1)}%`}}/></div>
  <nav className="question-breadcrumbs" aria-label="Brief questions" ref={breadcrumb}><ol>{questions.map(q=>{const current=q.id===question.id;return <li key={q.id}><button type="button" className={current?'breadcrumb-current':visited.has(q.id)?'breadcrumb-visited':'breadcrumb-upcoming'} aria-current={current?'step':undefined} disabled={finished||sending||replacing||recoveryNeedsSave||(!current&&!visited.has(q.id))} onClick={()=>goto(q.id)}>{questionLabels[q.id]}</button></li>})}</ol></nav>
  <main><div className="question-stage"><div className="question-mascot"><React.Suspense fallback={<span className="mascot-placeholder"/>}><Mascot3D interactive className="form-mascot"/></React.Suspense></div><section key={screenKey} ref={section} className="question"><form aria-busy={sending} onSubmit={e=>{e.preventDefault();if(!sending&&!isFinish&&!isChoice)next()}} onKeyDown={e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&e.target.tagName==='TEXTAREA'&&!isFinish){e.preventDefault();next()}}}><h1 tabIndex="-1">{finished?(receipt?.preview?'Your test brief is saved.':'Your brief is saved.'):title}</h1><p className="question-hint">{finished?(receipt?.preview?'Your answers and original uploads are saved in this preview. No email was sent.':receipt?.notification==='sent'?'Your answers and uploads are saved and sent to Kemma. We’ll follow up on anything missing.':'Your answers and uploads are saved. Kemma’s email notification is pending.'):hint}</p>
  {error&&<p id="form-error" className="error" role="alert">{error}</p>}

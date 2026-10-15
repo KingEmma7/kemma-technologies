@@ -253,3 +253,16 @@ test("trusted list exposes project keys without the internal budget namespace", 
   assert.deepEqual(await listing.json(), { objects: [{ key: key(id, "allocation.json") }], truncated: false });
   assert.equal((await instance.dispatchFetch("https://storage.test/v1/list?prefix=system%2F", { headers: { Authorization: `Bearer ${STORAGE_SECRET}` } })).status, 400);
 });
+
+
+test("answer checkpoints and diagnostics are private, conditional and bounded",async()=>{
+  const instance=gateway(),id=randomUUID();
+  for(const name of ["answers-checkpoint.json","upload-status.json"]){
+    const path=key(id,name);
+    assert.equal((await instance.dispatchFetch(`https://storage.test/v1/object?key=${encodeURIComponent(path)}`)).status,401);
+    assert.equal((await objectRequest(instance,path,"PUT",{ok:true})).status,200);
+    assert.equal((await objectRequest(instance,path,"PUT",{ok:false})).status,412);
+  }
+  assert.equal((await objectRequest(instance,key(id,"answers-checkpoint.json"),"PUT",{value:"x".repeat(256*1024)})).status,413);
+  assert.equal((await objectRequest(instance,key(id,"upload-status.json"),"PUT",{value:"x".repeat(32*1024)})).status,413);
+});
