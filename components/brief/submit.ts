@@ -28,6 +28,10 @@ export type BriefReceipt = {
   preview: boolean;
 };
 
+export class BriefUploadError extends Error {
+  constructor(message: string, readonly fileId: string) { super(message); this.name = "BriefUploadError"; }
+}
+
 const IDLE_TIMEOUT = 120_000;
 const FILE_READ_TIMEOUT = 60_000;
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
@@ -343,7 +347,7 @@ export async function submitBrief(
     } catch (error) {
       if (signal.aborted) throw error;
       const reason = error instanceof Error ? ` ${error.message}` : "";
-      throw new Error(`Couldn’t upload ${entry.file.name}.${reason} Your draft and files stay on this device. Please try again.`);
+      throw new BriefUploadError(`Couldn’t upload ${entry.file.name}.${reason} Your draft and files stay on this device. Please try again.`, entry.id);
     }
   };
   let tasks: Promise<void>[] = [];
@@ -382,6 +386,7 @@ export async function submitBrief(
   } catch (error) {
     controller.abort();
     await Promise.allSettled(tasks);
+    if (error instanceof BriefUploadError) throw error;
     const message = error instanceof Error ? error.message : "Couldn’t send your brief.";
     throw new Error(message.includes("draft") ? message : `${message} Your draft stays here. Please try again.`);
   } finally {

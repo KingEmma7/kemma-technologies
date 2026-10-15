@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { submitBrief } from "../components/brief/submit";
+import { submitBrief, BriefUploadError } from "../components/brief/submit";
 
 const fetchMock = vi.fn<typeof fetch>();
 class ReadFile {
@@ -217,7 +217,9 @@ describe("direct private R2 uploads", () => {
     const other = UploadRequest.instances[1];
     const lateProgress = other.upload.onprogress!;
     UploadRequest.instances[0].respond({ error: "This upload budget is full. Contact Kemma to share your files." }, 507);
-    expect(await result).toMatchObject({ message: expect.stringContaining("This upload budget is full. Contact Kemma") });
+    const failure = await result;
+    expect(failure).toBeInstanceOf(BriefUploadError);
+    expect(failure).toMatchObject({ fileId: original.files[0].id, message: expect.stringContaining("This upload budget is full. Contact Kemma") });
     expect(other.aborted).toBe(true);
     const messageCount = messages.length;
     lateProgress({ loaded: 1024 });
