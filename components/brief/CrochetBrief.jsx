@@ -3,7 +3,7 @@ import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {MorphStatusButton} from './SendBriefButton';
 import {submitBrief,BriefUploadError} from './submit';
 import {replaceOriginalFiles,FileRecoveryError} from './recovery';
-import {createDraftPersistence,DraftConflictError,preserveOriginalFile,fileDataURL,download} from './storage';
+import {createDraftPersistence,DraftConflictError,preserveOriginalFile,keepOriginalSelection,fileDataURL,download} from './storage';
 import styles from './brief.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -95,25 +95,27 @@ function CrochetBriefForm({invite,preview=false,contactHref}){
   const entries=files.map(file=>{const hero=scope.startsWith('product:')&&!main&&file.type.startsWith('image/');if(hero)main=true;return {id:crypto.randomUUID(),scope,role:scope.startsWith('paid:')?'Private paid download':hero?'Main product photo':'Additional file',file}});
   setDraft(d=>({...d,files:[...d.files,...entries]}));setError('');
   filePreparation.current=true;setPreparingFiles(true);
-  const preserved=new Map();
+  const preserved=new Map();let complete=false;
   try{
    // Preserve originals sequentially, using bounded chunks for large files.
-   for(const entry of entries)preserved.set(entry.id,await preserveOriginalFile(entry.file,invite));
+   for(const entry of entries){try{preserved.set(entry.id,await preserveOriginalFile(entry.file,invite))}catch{/* Keep the picker and continue preserving the other originals. */}}
+   complete=preserved.size===entries.length;
+   if(!complete)throw new Error('An original could not be copied.');
   }catch{setError('Your selections are still here, but this browser couldn’t keep a full copy. Keep this page open until sending finishes.')}
   finally{if(preserved.size)setDraft(d=>({...d,files:d.files.map(entry=>preserved.has(entry.id)?{...entry,...preserved.get(entry.id)}:entry)}));filePreparation.current=false;setPreparingFiles(false)}
+  return complete;
  };
  const removeFile=id=>setDraft(d=>{const removed=d.files.find(f=>f.id===id);let files=d.files.filter(f=>f.id!==id);if(removed?.role==='Main product photo'){const replacement=files.find(f=>f.scope===removed.scope&&f.file.type.startsWith('image/'));if(replacement)files=files.map(f=>f.id===replacement.id?{...f,role:'Main product photo'}:f)}return {...d,files}});
  const upload=(scope,label)=>{
   const files=draft.files.filter(f=>f.scope===scope);
-  return <div className="upload-group"><label className="upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();addFiles(e.dataTransfer.files,scope)}}><span>{label}</span><span className="upload-action">{preparingFiles?'Keeping your originals…':'Choose files'}</span><input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.svg,.pdf,.mp4,.mov,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.ai,.eps" aria-label={label} disabled={preparingFiles} onChange={async e=>{const target=e.target;await addFiles(target.files,scope);target.value=''}}/></label>{files.length>0&&<div className="file-list">{files.slice(0,2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}{files.length>2&&<details><summary>{files.length-2} more files</summary>{files.slice(2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}</details>}</div>}</div>
+  return <div className="upload-group"><label className="upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();addFiles(e.dataTransfer.files,scope)}}><span>{label}</span><span className="upload-action">{preparingFiles?'Keeping your originals…':'Choose files'}</span><input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.svg,.pdf,.mp4,.mov,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.ai,.eps" aria-label={label} disabled={preparingFiles} onChange={e=>keepOriginalSelection(e.target,files=>addFiles(files,scope))}/></label>{files.length>0&&<div className="file-list">{files.slice(0,2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}{files.length>2&&<details><summary>{files.length-2} more files</summary>{files.slice(2).map(f=><div key={f.id}><button type="button" className="file-download" onClick={()=>download(f.file,f.file.name)}>{f.file.name}<small>{formatSize(f.file.size)}</small></button><button type="button" className="remove-file" aria-label={`Remove ${f.file.name}`} onClick={()=>removeFile(f.id)}>Remove</button></div>)}</details>}</div>}</div>
  };
  const input=(key,{label,placeholder,type='text',small=false}={})=>{const value=product?product[key]:a[key];return <label className={small?'small-field':'answer-field'}>{label&&<span>{label}</span>}{type==='textarea'?<textarea rows={2} aria-label={label||question.title} value={value||''} placeholder={placeholder||''} onChange={e=>product?pAnswer(key,e.target.value):answer(key,e.target.value)}/>:<input type={type} aria-label={label||question.title} aria-invalid={!!error||undefined} aria-describedby={error?'form-error':undefined} value={value||''} placeholder={placeholder||''} onChange={e=>product?pAnswer(key,e.target.value):answer(key,e.target.value)}/>}</label>};
  const pick=(key,label,options,single=false)=>{const value=(product?product[key]:a[key])||(single?'':[]);return <fieldset className="pick"><legend>{label}</legend><div>{options.map(option=>{const selected=single?value===option:Array.isArray(value)&&value.includes(option);return <button type="button" key={option} aria-pressed={selected} className={selected?'picked':''} onClick={()=>{const nextValue=single?option:selected?value.filter(v=>v!==option):[...(Array.isArray(value)?value:[]),option];if(product)pAnswer(key,nextValue);else answer(key,nextValue)}}>{option}</button>})}</div></fieldset>};
  const note=(key,label='Add a short note (optional)')=><details className="optional"><summary>{label}</summary>{input(key,{label:'Anything specific?',type:'textarea',small:true})}</details>;
  const exportCopy=async()=>{setExporting(true);setError('');try{const snap=latest.current;const files=await Promise.all(snap.files.map(async f=>({id:f.id,scope:f.scope,role:f.role,name:f.file.name,type:f.file.type,size:f.file.size,data:await fileDataURL(f.file)})));download(new Blob([JSON.stringify({...snap,files},null,2)],{type:'application/json'}),'crochet-website-brief.json')}catch{setError('Couldn’t download. Keep the page open and try again.')}finally{setExporting(false)}};
- const reselectOriginals=async event=>{
-  const files=Array.from(event.target.files||[]);event.target.value='';
-  if(!files.length||sending||recoveryInFlight.current)return;
+ const reselectOriginals=event=>keepOriginalSelection(event.target,async files=>{
+  if(sending||recoveryInFlight.current)return false;
   recoveryInFlight.current=true;setReplacing(true);setRecoveryNote('');
   try{
    const recovered=replaceOriginalFiles(latest.current,files,failedFileId);
@@ -126,9 +128,10 @@ function CrochetBriefForm({invite,preview=false,contactHref}){
    recoveryPending.current=false;setRecoveryNeedsSave(false);setSaveState('Saved on this device');setError('');
    if(recovered.replacedIds.includes(failedFileId))setFailedFileId(null);
    setRecoveryNote(`${files.length} ${files.length===1?'original file':'original files'} reselected. Send your brief again.`);
-  }catch(cause){if(!(cause instanceof FileRecoveryError))setSaveState('Couldn’t save locally. Keep this page open and try again.');setError(cause instanceof FileRecoveryError||cause instanceof DraftConflictError?cause.message:'Couldn’t save those files. Your selections are still here. Keep this page open and try again.')}
+   return true;
+  }catch(cause){if(!(cause instanceof FileRecoveryError))setSaveState('Couldn’t save locally. Keep this page open and try again.');setError(cause instanceof FileRecoveryError||cause instanceof DraftConflictError?cause.message:'Couldn’t save those files. Your selections are still here. Keep this page open and try again.');return false}
   finally{recoveryInFlight.current=false;setReplacing(false)}
- };
+ });
  const finish=async()=>{
   if(recoveryInFlight.current||filePreparation.current)throw new Error('Your original files are still being saved. Please wait.');
   const snap=latest.current;

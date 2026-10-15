@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDraftPersistence, readDraft, preserveOriginalFile } from "../components/brief/storage";
+import { createDraftPersistence, readDraft, preserveOriginalFile, keepOriginalSelection } from "../components/brief/storage";
 import { replaceOriginalFiles } from "../components/brief/recovery";
 
 const invite = "test-invite-for-saved-client";
@@ -404,4 +404,35 @@ describe("bounded browser storage waits",()=>{
     expect(records.get(database)).toBe(original);
     expect(writes).toEqual([]);
   });
+});
+
+
+describe("native picker lifetime during original recovery",()=>{
+ it("copies and saves originals before clearing a picker that revokes access when cleared",async()=>{
+  let accessible=true,cleared=false;
+  class Reader{
+   result:ArrayBuffer|null=null;onload?:()=>void;onerror?:()=>void;
+   readAsArrayBuffer(file:Blob){queueMicrotask(async()=>{if(!accessible){this.onerror?.();return}this.result=await Blob.prototype.arrayBuffer.call(file);this.onload?.()})}
+  }
+  vi.stubGlobal("FileReader",Reader);
+  const original=savedDraft(),persistence=createDraftPersistence(invite);await persistence.restore();
+  const input={files:[original.files[0].file],set value(_value:string){accessible=false;cleared=true}};
+  await keepOriginalSelection(input,async(files:File[])=>{
+   const preserved=await preserveOriginalFile(files[0],invite);
+   await persistence.save({...original,files:[{...original.files[0],...preserved}]});
+   expect(cleared).toBe(false);
+   return true;
+  });
+  expect(cleared).toBe(true);
+  const restored=await readDraft(invite);
+  expect(restored.answers).toEqual(original.answers);
+  expect(Buffer.from(await restored.files[0].file.arrayBuffer()).equals(Buffer.alloc(1024,1))).toBe(true);
+ });
+ it("keeps the native selection if a copy or local save fails",async()=>{
+  const input={files:[savedDraft().files[0].file],value:"selected"};
+  await keepOriginalSelection(input,async()=>false);
+  expect(input.value).toBe("selected");
+  await expect(keepOriginalSelection(input,async()=>{throw Error("copy failed")})).rejects.toThrow("copy failed");
+  expect(input.value).toBe("selected");
+ });
 });

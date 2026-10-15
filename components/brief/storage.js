@@ -110,6 +110,14 @@ export async function preserveOriginalFile(file,invite){
  return {file:new File([original],file.name,{type:file.type,lastModified:file.lastModified}),byteKey:key,needsOriginal:false};
 }
 
+/** Clearing a mobile file picker can revoke its native originals. Keep it until copying succeeds. */
+export async function keepOriginalSelection(input,copy){
+ const originals=Array.from(input.files||[]);
+ if(!originals.length)return;
+ const kept=await copy(originals);
+ if(kept!==false)input.value='';
+}
+
 export class DraftConflictError extends Error {
  constructor(){super('Another tab has newer answers. Keep this page open and contact Kemma before continuing.');this.name='DraftConflictError'}
 }
