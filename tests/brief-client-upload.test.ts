@@ -11,7 +11,7 @@ class UploadRequest {
   method = "";
   url = "";
   headers = new Headers();
-  body?: File;
+  body?: Blob;
   status = 0;
   responseText = "";
   aborted = false;
@@ -24,7 +24,7 @@ class UploadRequest {
   constructor() { UploadRequest.instances.push(this); }
   open(method: string, url: string) { this.method = method; this.url = url; }
   setRequestHeader(key: string, value: string) { this.headers.set(key, value); }
-  send(body: File) {
+  send(body: Blob) {
     this.body = body;
     this.pending = true;
     UploadRequest.maximumActive = Math.max(UploadRequest.maximumActive, ++UploadRequest.active);
@@ -82,7 +82,11 @@ describe("direct private R2 uploads", () => {
     fetchMock.mockResolvedValueOnce(json(session(original))).mockResolvedValueOnce(json(receipt));
     expect(await submitBrief("project-invite", original, message => messages.push(message))).toEqual(receipt);
     const upload = UploadRequest.instances[0];
-    expect(upload).toMatchObject({ method: "PUT", url: uploadUrl, body: original.files[0].file });
+    expect(upload).toMatchObject({ method: "PUT", url: uploadUrl });
+    expect(upload.body).toBeInstanceOf(Blob);
+    expect(upload.body).not.toBeInstanceOf(File);
+    expect(upload.body).not.toBe(original.files[0].file);
+    expect(upload.body?.type).toBe("image/png");
     expect(Object.fromEntries(upload.headers)).toEqual({
       authorization: "Bearer signed-project-capability", "content-type": "image/png", "x-brief-file-id": "file-0",
     });
@@ -101,7 +105,10 @@ describe("direct private R2 uploads", () => {
     expect(new Set(UploadRequest.instances.map(upload => upload.headers.get("X-Brief-File-Id"))).size).toBe(45);
     expect(UploadRequest.instances.every(upload => upload.headers.get("Authorization") === `Bearer compact-token-${upload.headers.get("X-Brief-File-Id")}`)).toBe(true);
     expect(messages).toContain("Uploading files: 45 of 45 saved · 45 KB of 45 KB transferred.");
-    expect(UploadRequest.instances.every((upload, index) => upload.body === original.files[index].file)).toBe(true);
+    for (const [index, upload] of UploadRequest.instances.entries()) {
+      expect(upload.body).not.toBe(original.files[index].file);
+      expect(new Uint8Array(await upload.body!.arrayBuffer())).toEqual(new Uint8Array(1024).fill(index + 1));
+    }
     expect(fetchMock.mock.calls.at(-1)?.[0]).toBe("/api/brief/submit");
   });
 
@@ -110,7 +117,7 @@ describe("direct private R2 uploads", () => {
     fetchMock.mockResolvedValueOnce(json(session(original, { uploaded: ["file-0"] }))).mockResolvedValueOnce(json(receipt));
     await submitBrief("same-project-invite", original, message => messages.push(message));
     expect(UploadRequest.instances).toHaveLength(1);
-    expect(UploadRequest.instances[0].body).toBe(original.files[1].file);
+    expect(new Uint8Array(await UploadRequest.instances[0].body!.arrayBuffer())).toEqual(new Uint8Array(1024).fill(2));
     expect(messages).toContain("Uploading files: 1 of 2 saved · 1 KB of 2 KB transferred.");
   });
 
@@ -245,5 +252,83 @@ describe("direct private R2 uploads", () => {
     await submitBrief("project-invite", draft(), () => {});
     expect(UploadRequest.instances[0]).toMatchObject({ url: "/api/brief/local-upload?file=file-0", method: "POST" });
     expect(UploadRequest.instances[0].headers.get("Content-Type")).toBe("application/octet-stream");
+    expect(UploadRequest.instances[0].body?.type).toBe("application/octet-stream");
+  });
+
+  it("reads only the active files into memory, rather than materializing all 45 originals", async () => {
+    UploadRequest.automatic = false;
+    const original = draft(45);
+    const reads = original.files.map(entry => vi.spyOn(entry.file, "arrayBuffer"));
+    fetchMock.mockResolvedValueOnce(json(session(original)));
+    const sending = submitBrief("project-invite", original, () => {}).catch(error => error);
+    await flush();
+    expect(reads.map(read => read.mock.calls.length)).toEqual([1, 1, ...Array(43).fill(0)]);
+    UploadRequest.instances[0].respond();
+    await flush();
+    expect(reads.map(read => read.mock.calls.length)).toEqual([1, 1, 1, ...Array(42).fill(0)]);
+    UploadRequest.instances[1].respond({ error: "Storage is full." }, 507);
+    await sending;
+    expect(reads.slice(3).every(read => read.mock.calls.length === 0)).toBe(true);
+    expect(original.files).toHaveLength(45);
+  });
+
+  it("rejects a truncated local read without sending or finalizing an incomplete file", async () => {
+    const original = draft();
+    const read = vi.spyOn(original.files[0].file, "arrayBuffer").mockResolvedValue(new ArrayBuffer(512));
+    fetchMock.mockResolvedValueOnce(json(session(original)));
+    await expect(submitBrief("project-invite", original, () => {})).rejects.toThrow("read the complete original file");
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(UploadRequest.instances).toHaveLength(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(original.files[0].file).toMatchObject({ name: "logo-0.png", size: 1024, type: "application/octet-stream" });
+  });
+
+  it.each(["sync", "async"])("reports a %s file-read failure without network retries or removing the draft", async mode => {
+    const original = draft();
+    const read = vi.spyOn(original.files[0].file, "arrayBuffer");
+    if (mode === "sync") read.mockImplementation(() => { throw new DOMException("File unavailable", "NotReadableError"); });
+    else read.mockRejectedValue(new DOMException("File unavailable", "NotReadableError"));
+    fetchMock.mockResolvedValueOnce(json(session(original)));
+    await expect(submitBrief("project-invite", original, () => {})).rejects.toThrow("couldn’t read the original file");
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(UploadRequest.instances).toHaveLength(0);
+    expect(original.files).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("bounds a stalled local read and ignores its eventual completion", async () => {
+    vi.useFakeTimers();
+    const original = draft();
+    let completeRead: (buffer: ArrayBuffer) => void = () => {};
+    vi.spyOn(original.files[0].file, "arrayBuffer").mockImplementation(() => new Promise(resolve => { completeRead = resolve; }));
+    fetchMock.mockResolvedValueOnce(json(session(original)));
+    const sending = submitBrief("project-invite", original, () => {}).catch(error => error);
+    await flush();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await sending).toMatchObject({ message: expect.stringContaining("Reading the original file took too long") });
+    completeRead(new ArrayBuffer(1024));
+    await flush();
+    expect(UploadRequest.instances).toHaveLength(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels a pending read when another upload fails, with no late request or progress", async () => {
+    UploadRequest.automatic = false;
+    const original = draft(2), messages: string[] = [];
+    let completeRead: (buffer: ArrayBuffer) => void = () => {};
+    vi.spyOn(original.files[1].file, "arrayBuffer").mockImplementation(() => new Promise(resolve => { completeRead = resolve; }));
+    fetchMock.mockResolvedValueOnce(json(session(original)));
+    const sending = submitBrief("project-invite", original, message => messages.push(message)).catch(error => error);
+    await flush();
+    expect(UploadRequest.instances).toHaveLength(1);
+    UploadRequest.instances[0].respond({ error: "Storage is full." }, 507);
+    await sending;
+    const messageCount = messages.length;
+    completeRead(new ArrayBuffer(1024));
+    await flush();
+    expect(UploadRequest.instances).toHaveLength(1);
+    expect(messages).toHaveLength(messageCount);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(original.files).toHaveLength(2);
   });
 });
