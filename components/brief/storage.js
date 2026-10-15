@@ -1,5 +1,6 @@
 const databaseName=invite=>{let hash=2166136261;for(const char of invite||'missing'){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619)}return 'kemma-crochet-brief-v2-'+(hash>>>0).toString(16)};
 const STORAGE_TIMEOUT=15000;
+const ORIGINAL_CHUNK_BYTES=8*1024*1024;
 
 async function open(invite) {
  return new Promise((resolve,reject)=>{
@@ -41,8 +42,20 @@ export async function readDraft(invite) {
   for(const entry of saved.files){
    if(!entry.byteKey){files.push(entry);continue}
    let bytes;try{bytes=await readFileBytes(db,entry.byteKey)}catch{/* Answers must remain accessible even if an original is unavailable. */}
-   if(!(bytes instanceof ArrayBuffer)||bytes.byteLength!==entry.file.size){files.push({...entry,needsOriginal:true});continue}
-   files.push({...entry,needsOriginal:false,file:new File([bytes],entry.file.name,{type:entry.file.type,lastModified:entry.file.lastModified})});
+   let original;
+   try{
+    if(bytes instanceof ArrayBuffer&&bytes.byteLength===entry.file.size)original=new Blob([bytes]);
+    else if(bytes?.format==='chunks-v1'&&bytes.size===entry.file.size&&Number.isSafeInteger(bytes.chunks)&&bytes.chunks===Math.ceil(bytes.size/ORIGINAL_CHUNK_BYTES)){
+     original=new Blob([]);
+     for(let index=0;index<bytes.chunks;index++){
+      const chunk=await readFileBytes(db,entry.byteKey+':'+index);
+      if(!(chunk instanceof ArrayBuffer)||chunk.byteLength!==Math.min(ORIGINAL_CHUNK_BYTES,bytes.size-index*ORIGINAL_CHUNK_BYTES))throw new Error('Incomplete original');
+      original=new Blob([original,chunk]);
+     }
+    }
+   }catch{original=null}
+   if(!original||original.size!==entry.file.size){files.push({...entry,needsOriginal:true});continue}
+   files.push({...entry,needsOriginal:false,file:new File([original],entry.file.name,{type:entry.file.type,lastModified:entry.file.lastModified})});
   }
   return {...saved,files};
  } finally {db.close()}
@@ -58,27 +71,43 @@ function readFileBytes(db,key){
  });
 }
 
-/** Copy while the native picker still grants access, before clearing its input. */
-export async function preserveOriginalFile(file,invite){
- if(!file.size||file.size>25*1024*1024)throw new Error('Use an original file up to 25 MB.');
- const bytes=await new Promise((resolve,reject)=>{
+function copyChunk(chunk){
+ return new Promise((resolve,reject)=>{
   const reader=new FileReader();let settled=false;
   const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timer);reader.onload=reader.onerror=reader.onabort=null;if(error)reject(error);else resolve(value)};
   const timer=setTimeout(()=>{finish(new Error('Couldn’t copy the original file.'));if(reader.readyState===FileReader.LOADING)reader.abort()},30000);
-  reader.onload=()=>reader.result instanceof ArrayBuffer&&reader.result.byteLength===file.size?finish(null,reader.result):finish(new Error('The original file was incomplete.'));
+  reader.onload=()=>reader.result instanceof ArrayBuffer&&reader.result.byteLength===chunk.size?finish(null,reader.result):finish(new Error('The original file was incomplete.'));
   reader.onerror=reader.onabort=()=>finish(new Error('Couldn’t copy the original file.'));
-  try{reader.readAsArrayBuffer(file)}catch(error){finish(error)}
+  try{reader.readAsArrayBuffer(chunk)}catch(error){finish(error)}
  });
+}
+function writeOriginal(db,key,value){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction('drafts','readwrite');
+  const timer=setTimeout(()=>{try{tx.abort()}catch{}reject(new Error('Saving the original took too long.'))},STORAGE_TIMEOUT);
+  tx.oncomplete=()=>{clearTimeout(timer);resolve()};tx.onerror=tx.onabort=()=>{clearTimeout(timer);reject(tx.error||new Error('Couldn’t save the original file.'))};
+  tx.objectStore('drafts').put(value,key);
+ });
+}
+/** Preserve bytes while the native picker grants access, without buffering a whole large file. */
+export async function preserveOriginalFile(file,invite){
+ if(!file.size)throw new Error('Choose a non-empty original file.');
  const key='original:'+crypto.randomUUID(),db=await open(invite);
+ let original=new Blob([]);
  try{
-  await new Promise((resolve,reject)=>{
-   const tx=db.transaction('drafts','readwrite');
-   const timer=setTimeout(()=>{try{tx.abort()}catch{}reject(new Error('Saving the original took too long.'))},STORAGE_TIMEOUT);
-   tx.oncomplete=()=>{clearTimeout(timer);resolve()};tx.onerror=tx.onabort=()=>{clearTimeout(timer);reject(tx.error||new Error('Couldn’t save the original file.'))};
-   tx.objectStore('drafts').put(bytes,key);
-  });
+  if(file.size<=ORIGINAL_CHUNK_BYTES){
+   const bytes=await copyChunk(file);await writeOriginal(db,key,bytes);original=new Blob([bytes]);
+  }else{
+   let chunks=0;
+   for(let offset=0;offset<file.size;offset+=ORIGINAL_CHUNK_BYTES){
+    const bytes=await copyChunk(file.slice(offset,Math.min(offset+ORIGINAL_CHUNK_BYTES,file.size)));
+    await writeOriginal(db,key+':'+chunks,bytes);original=new Blob([original,bytes]);chunks++;
+   }
+   // Publish the descriptor only after every byte chunk has committed.
+   await writeOriginal(db,key,{format:'chunks-v1',size:file.size,chunks});
+  }
  }finally{db.close()}
- return {file:new File([bytes],file.name,{type:file.type,lastModified:file.lastModified}),byteKey:key,needsOriginal:false};
+ return {file:new File([original],file.name,{type:file.type,lastModified:file.lastModified}),byteKey:key,needsOriginal:false};
 }
 
 export class DraftConflictError extends Error {

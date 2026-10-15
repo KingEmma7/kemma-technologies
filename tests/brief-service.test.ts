@@ -4,7 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { signCapability, verifyCapability, type FileSpec } from "../lib/brief/config";
-import { MAX_FILE_BYTES, MAX_FILES, MAX_TOTAL_BYTES } from "../lib/brief/schema";
+
 import { acceptSubmission, allocationPath, beginSession, getSubmission, recordPath } from "../lib/brief/service";
 import { fileStream, readDocument, writeBytes, writeDocument } from "../lib/brief/storage";
 import { buildEmail, sendNotification } from "../lib/brief/email";
@@ -37,7 +37,7 @@ const file = (size = 10) => ({ id: randomUUID(), name: "logo.txt", size, type: "
 const answers = () => ({ businessName: "Shalom Crotchets", email: "client@example.com", permission: true, socials: { instagram: "@shalom" }, policyTexts: { shipping: "Delivery in Accra." }, domain: "shalomcrotchets.com" });
 const request = () => new Request("http://localhost:4190/api/brief/submit");
 
-describe("cumulative invitation allowances", () => {
+describe("persistent file allocations", () => {
   it("issues compact per-file upload credentials for a 45-file manifest", async () => {
     const link=invite(), files=Array.from({length:45},(_,index)=>({...file(),name:`diagnostic-image-${index}-with-a-long-name.png`}));
     const session=await beginSession({invite:link.token,files});
@@ -50,20 +50,23 @@ describe("cumulative invitation allowances", () => {
     expect((await readDocument<{files:FileSpec[]}>(allocationPath(link.id)))?.value.files.every(specification=>!("uploadToken" in specification))).toBe(true);
   });
 
-  it("counts orphan allocations across sessions instead of resetting the quota", async () => {
+  it("accepts more than 60 cumulative allocations while preserving earlier files", async () => {
     const link = invite();
     const first = Array.from({ length: 30 }, () => file());
-    const second = Array.from({ length: MAX_FILES - first.length + 1 }, () => file());
+    const second = Array.from({ length: 150 }, () => file());
     await beginSession({ invite: link.token, files: first });
-    await expect(beginSession({ invite: link.token, files: second })).rejects.toMatchObject({ status: 413 });
+    const session=await beginSession({ invite: link.token, files: second });
+    expect(verifyCapability(session.sessionToken,"session").files).toHaveLength(150);
     const saved = await readDocument<{ files: FileSpec[] }>(allocationPath(link.id));
-    expect(saved?.value.files).toHaveLength(first.length);
+    expect(saved?.value.files).toHaveLength(first.length + second.length);
   });
 
-  it("counts cumulative bytes even when no original has been uploaded yet", async () => {
-    const link = invite();
-    await beginSession({ invite: link.token, files: Array.from({ length: MAX_TOTAL_BYTES / MAX_FILE_BYTES }, () => file(MAX_FILE_BYTES)) });
-    await expect(beginSession({ invite: link.token, files: [file(1)] })).rejects.toMatchObject({ status: 413 });
+  it("accepts individual originals above 25 MiB and collections above 150 MiB across retries", async () => {
+    const link=invite(), originals=Array.from({length:8},()=>file(32*1024*1024));
+    await beginSession({invite:link.token,files:originals});
+    const next=await beginSession({invite:link.token,files:[file(64*1024*1024)]});
+    expect(next.files[0].size).toBe(64*1024*1024);
+    expect((await readDocument<{files:FileSpec[]}>(allocationPath(link.id)))?.value.files).toHaveLength(9);
   });
 
   it("reuses exact file allocations on retry and rejects metadata changes to an existing ID", async () => {

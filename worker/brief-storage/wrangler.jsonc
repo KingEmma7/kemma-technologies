@@ -10,8 +10,7 @@
   "upload_source_maps": true,
   "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "kemma-private-briefs" }],
   "vars": {
-    "ALLOWED_ORIGINS": "https://www.kemmatechnologies.com,http://127.0.0.1:4190,http://localhost:4190",
-    "MAX_RESERVED_BYTES": "5000000000"
+    "ALLOWED_ORIGINS": "https://www.kemmatechnologies.com,http://127.0.0.1:4190,http://localhost:4190"
   },
   "secrets": { "required": ["BRIEF_STORAGE_SECRET", "BRIEF_SIGNING_SECRET"] },
   "observability": { "enabled": false }

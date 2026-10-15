@@ -374,11 +374,20 @@ describe("direct private R2 uploads", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it.each([0, 26 * 1024 * 1024])("never reads or falls back for an invalid file size (%i)", async size => {
+  it("streams originals above the former 25 MiB limit without whole-file FileReader buffering",async()=>{
+    const original=draft(1,32*1024*1024+3);
+    fetchMock.mockResolvedValueOnce(json(session(original))).mockResolvedValueOnce(json(receipt));
+    expect(await submitBrief("project-invite",original,()=>{})).toEqual(receipt);
+    expect(ReadFile.instances).toHaveLength(0);
+    expect(UploadRequest.instances[0].body?.size).toBe(original.files[0].file.size);
+    expect(Buffer.from(await UploadRequest.instances[0].body!.arrayBuffer()).equals(Buffer.alloc(original.files[0].file.size,1))).toBe(true);
+  });
+
+  it.each([0])("never reads or falls back for an invalid file size (%i)", async size => {
     const original = draft();
     Object.defineProperty(original.files[0].file, "size", { value: size });
     fetchMock.mockResolvedValueOnce(json(session(original)));
-    await expect(submitBrief("project-invite", original, () => {})).rejects.toThrow("up to 25 MB");
+    await expect(submitBrief("project-invite", original, () => {})).rejects.toThrow("non-empty original");
     expect(ReadFile.instances).toHaveLength(0);
     expect(UploadRequest.instances).toHaveLength(0);
     expect(fetchMock).toHaveBeenCalledTimes(1);

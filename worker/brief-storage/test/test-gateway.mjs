@@ -8,7 +8,6 @@ import { Miniflare, convertV4MiniflareOptions } from "miniflare";
 const ORIGIN = "https://www.kemmatechnologies.com";
 const STORAGE_SECRET = "test-storage-secret-".repeat(3);
 const SIGNING_SECRET = "test-signing-secret-".repeat(3);
-const OVERHEAD = 10 * 1024 * 1024;
 const instances = [];
 let bundled;
 before(async () => {
@@ -108,41 +107,21 @@ test("private object responses forbid transformations and retain strong R2 ETags
   assert.equal(readText, JSON.stringify(value));
 });
 
-test("allocation reserves a global budget idempotently and cannot remove or mutate files", async () => {
-  const instance = gateway();
-  const id = randomUUID(), spec = file(id);
-  const created = await allocate(instance, id, [spec]);
-  assert.equal(created.status, 200);
-  const bucket = await instance.getR2Bucket("BUCKET");
-  const first = await bucket.get("system/budget.json");
-  assert.deepEqual(await first.json(), { version: 1, totalBytes: OVERHEAD + 4, projects: { [id]: OVERHEAD + 4 } });
-  assert.equal((await allocate(instance, id, [spec], { "If-Match": created.headers.get("etag") })).status, 200);
-  assert.equal((await bucket.head("system/budget.json")).etag, first.etag);
-  assert.equal((await allocate(instance, id, [], { "If-Match": created.headers.get("etag") })).status, 409);
-  assert.equal((await allocate(instance, id, [{ ...spec, role: "Main product photo" }], { "If-Match": created.headers.get("etag") })).status, 409);
+test("allocation has no file or byte allowance and still cannot remove or mutate originals", async () => {
+  const instance=gateway("1"), id=randomUUID();
+  const files=Array.from({length:90},()=>({...file(id),size:64*1024*1024}));
+  const created=await allocate(instance,id,files);
+  assert.equal(created.status,200);
+  assert.equal((await allocate(instance,id,files,{"If-Match":created.headers.get("etag")})).status,200);
+  assert.equal((await allocate(instance,id,[],{"If-Match":created.headers.get("etag")})).status,409);
+  assert.equal((await allocate(instance,id,[{...files[0],role:"Main product photo"},...files.slice(1)],{"If-Match":created.headers.get("etag")})).status,409);
+  assert.equal(await (await instance.getR2Bucket("BUCKET")).get("system/budget.json"),null);
 });
-
-test("global reservation cap rejects extra projects without removing existing data", async () => {
-  const instance = gateway(String(OVERHEAD + 4));
-  const id = randomUUID(), spec = file(id);
-  assert.equal((await allocate(instance, id, [spec])).status, 200);
-  const secondId = randomUUID();
-  const exhausted = await allocate(instance, secondId, []);
-  assert.equal(exhausted.status, 507);
-  assert.match((await exhausted.json()).error, /storage allowance/);
-  assert.equal((await objectRequest(instance, key(secondId, "allocation.json"))).status, 404);
-  assert.equal((await objectRequest(instance, key(id, "allocation.json"))).status, 200);
-});
-
-test("concurrent allocations retain both project reservations", async () => {
-  const instance = gateway();
-  const ids = [randomUUID(), randomUUID()];
-  const responses = await Promise.all(ids.map(id => allocate(instance, id, [])));
-  assert.deepEqual(responses.map(response => response.status), [200, 200]);
-  const bucket = await instance.getR2Bucket("BUCKET");
-  const budget = await (await bucket.get("system/budget.json")).json();
-  assert.equal(budget.totalBytes, OVERHEAD * 2);
-  assert.deepEqual(Object.keys(budget.projects).sort(), ids.sort());
+test("old global reservation settings do not block new projects", async()=>{
+ const instance=gateway("1"),ids=[randomUUID(),randomUUID()];
+ const responses=await Promise.all(ids.map(id=>allocate(instance,id,[])));
+ assert.deepEqual(responses.map(response=>response.status),[200,200]);
+ for(const id of ids)assert.equal((await objectRequest(instance,key(id,"allocation.json"))).status,200);
 });
 
 test("direct upload preserves original binary bytes and exposes metadata only to the server", async () => {
@@ -263,6 +242,6 @@ test("answer checkpoints and diagnostics are private, conditional and bounded",a
     assert.equal((await objectRequest(instance,path,"PUT",{ok:true})).status,200);
     assert.equal((await objectRequest(instance,path,"PUT",{ok:false})).status,412);
   }
-  assert.equal((await objectRequest(instance,key(id,"answers-checkpoint.json"),"PUT",{value:"x".repeat(256*1024)})).status,413);
+  assert.equal((await objectRequest(instance,key(id,"answers-checkpoint.json"),"PUT",{value:"x".repeat(8*1024*1024)})).status,413);
   assert.equal((await objectRequest(instance,key(id,"upload-status.json"),"PUT",{value:"x".repeat(32*1024)})).status,413);
 });

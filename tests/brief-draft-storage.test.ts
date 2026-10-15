@@ -348,6 +348,26 @@ describe("durable original bytes independent of Safari File handles", () => {
     expect(openMock).toHaveBeenCalledWith(database, 1);
   });
 
+  it("preserves and restores a 32 MiB original in bounded chunks without changing answers",async()=>{
+    const sizes:number[]=[];
+    class Reader{
+      result:ArrayBuffer|null=null;onload?:()=>void;
+      readAsArrayBuffer(part:Blob){sizes.push(part.size);Blob.prototype.arrayBuffer.call(part).then(bytes=>{this.result=bytes;this.onload?.()})}
+    }
+    vi.stubGlobal("FileReader",Reader);
+    const original=savedDraft(),bytes=new Uint8Array(32*1024*1024+17);bytes[0]=7;bytes[8*1024*1024]=19;bytes[bytes.length-1]=233;
+    const file=new File([bytes],"large-original.zip",{type:"application/zip"});
+    const durable=await preserveOriginalFile(file,invite);
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(8*1024*1024);
+    expect(sizes).toHaveLength(5);
+    const persistence=createDraftPersistence(invite);await persistence.restore();
+    await persistence.save({...original,files:[{...original.files[0],...durable}]});
+    const restored=await readDraft(invite);
+    expect(restored.answers).toEqual(original.answers);
+    expect(restored.files[0].needsOriginal).toBe(false);
+    expect(Buffer.from(await restored.files[0].file.arrayBuffer()).equals(Buffer.from(bytes))).toBe(true);
+  });
+
   it("keeps all answers visible and file identities intact if a byte backup is missing", async () => {
     const original = savedDraft();
     const stored = {...original, files: [{...original.files[0], byteKey:"original:missing"}]};
