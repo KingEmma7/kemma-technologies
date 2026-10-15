@@ -8,7 +8,7 @@ export const fileSchema = z.object({
   scope: z.string().regex(/^(logo|brand|catalogue|policies|product:[0-9a-f-]{36}|paid:[0-9a-f-]{36})$/),
   role: z.enum(["Additional file", "Main product photo", "Private paid download"]),
 }).strict();
-export const sessionSchema = z.object({invite:z.string().min(1).max(2000),files:z.array(fileSchema).max(MAX_FILES)}).strict();
+export const sessionSchema = z.object({invite:z.string().min(1).max(2000),files:z.array(fileSchema).max(MAX_FILES),checkpoint:z.object({answers:z.record(z.string(),z.unknown()),products:z.array(z.record(z.string(),z.unknown())).max(60)}).strict().optional()}).strict();
 export function fileSpec(value: z.infer<typeof fileSchema>, id: string): FileSpec {
   const ext = value.name.toLowerCase().split(".").pop() || "";
   if (!types[ext]) throw new BriefError("Use an image, document or video file.");

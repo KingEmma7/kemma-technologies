@@ -14,6 +14,7 @@ export async function beginSession(body:unknown){
   const files=parsed.data.files.map(f=>fileSpec(f,invite.id));
   if(new Set(files.map(f=>f.id)).size!==files.length)throw new BriefError("A file was listed twice.");
   if(files.reduce((s,f)=>s+f.size,0)>MAX_TOTAL_BYTES)throw new BriefError("Use a shared folder link for collections larger than 150 MB.");
+  if(parsed.data.checkpoint)validateAnswers(parsed.data.checkpoint.answers,parsed.data.checkpoint.products,files);
   const finalized=await readDocument<Submission>(recordPath(invite.id));
   for(let attempt=0;attempt<5;attempt++){
     const old=await readDocument<Allocation>(allocationPath(invite.id));
@@ -22,9 +23,19 @@ export async function beginSession(body:unknown){
     if(allocated.length>MAX_FILES||allocated.reduce((s,f)=>s+f.size,0)>MAX_TOTAL_BYTES)throw new BriefError("This project link has reached its file allowance. Use a folder link or contact Kemma.",413);
     if(!old||allocated.length!==old.value.files.length){try{await writeDocument(allocationPath(invite.id),{createdAt:old?.value.createdAt||new Date().toISOString(),files:allocated},old?.etag??null)}catch(e){if(e instanceof Conflict)continue;throw e}}
     const session:Session={kind:"session",id:invite.id,exp:Math.min(invite.exp,Date.now()+30*60*1000),files};
+    // Preserve the first send's answers independently of file reads/transfers. Never
+    // replace this recovery record with an older tab's answers or call it a submission.
+    let answersBackedUp=false;
+    if(parsed.data.checkpoint){
+      const path=`briefs/${invite.id}/answers-checkpoint.json`;
+      if(!await readDocument(path)){
+        try{await writeDocument(path,{schemaVersion:2,savedAt:new Date().toISOString(),...parsed.data.checkpoint,files},null)}catch(error){if(!(error instanceof Conflict))throw error}
+      }
+      answersBackedUp=true;
+    }
     const uploaded=await Promise.all(files.map(async f=>{const existing=await fileHead(f.pathname);return {...f,uploadToken:signCapability({kind:"upload",id:invite.id,exp:session.exp,fileId:f.id}),uploaded:!!existing&&existing.size===f.size&&(storageMode()==="local"||existing.type.split(";")[0]===f.type)}}));
     const mode=storageMode();
-    return {submissionId:invite.id,sessionToken:signCapability(session),uploadMode:mode,...(mode==="r2"?{uploadUrl:r2StorageConfig().url+"/v1/upload"}:{}),files:uploaded,preview:mode==="local"};
+    return {submissionId:invite.id,sessionToken:signCapability(session),uploadMode:mode,answersBackedUp,...(mode==="r2"?{uploadUrl:r2StorageConfig().url+"/v1/upload"}:{}),files:uploaded,preview:mode==="local"};
   }
   throw new BriefError("Another save is in progress. Please try again.",409);
 }

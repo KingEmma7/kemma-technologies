@@ -3,6 +3,7 @@ type BriefFile = {
   scope: string;
   role: string;
   file: File;
+  needsOriginal?: boolean;
 };
 
 type BriefDraft = {
@@ -43,7 +44,24 @@ class TransferError extends Error {
     super(message);
   }
 }
-class FileReadError extends TransferError {}
+class FileReadError extends TransferError {
+  constructor(message: string, readonly readCode = "UnknownError") { super(message); }
+}
+
+function uploadStatus(token: string | undefined, stage: string, error?: unknown) {
+  if (!token || typeof window === "undefined") return;
+  const allowed = ["NotReadableError", "NotFoundError", "SecurityError", "AbortError", "TimeoutError", "InvalidStateError", "SizeMismatch"];
+  const name = error instanceof FileReadError ? error.readCode : error instanceof Error ? error.name : "";
+  const code = error ? allowed.includes(name) ? name : error instanceof TransferError ? error.status ? "http" : "network" : "UnknownError" : undefined;
+  // Diagnostic delivery cannot hold up or fail the client's send.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10_000);
+  try {
+    void fetch("/api/brief/upload-status", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, stage, ...(code ? { code } : {}) }), signal: controller.signal, keepalive: true })
+      .catch(() => {}).finally(() => clearTimeout(timer));
+  } catch { clearTimeout(timer); }
+}
 
 const transientStatus = (status: number) => [408, 425, 429, 500, 502, 503, 504].includes(status);
 const stopped = () => new DOMException("Sending was stopped.", "AbortError");
@@ -99,6 +117,7 @@ function reportReadFailure(stage: "create" | "start" | "read" | "result" | "prep
   const name = typeof candidate === "string" && names.includes(candidate) ? candidate : "UnknownError";
   // Do not log the exception object/message, original file name, contents, or capability.
   console.warn("[brief] File read failed.", { stage, name });
+  return name;
 }
 
 /** Materialize only active uploads with FileReader, including older Safari-restored Files. */
@@ -129,7 +148,7 @@ function uploadBody(file: File, type: string, signal: AbortSignal): Promise<Blob
     const cancel = () => { finish(stopped()); abortRead(); };
     const timer = setTimeout(() => {
       reportReadFailure("read", new DOMException("", "TimeoutError"));
-      finish(new FileReadError("Reading the original file took too long. Keep this page open and try again."));
+      finish(new FileReadError("Reading the original file took too long. Keep this page open and try again.", "TimeoutError"));
       abortRead();
     }, FILE_READ_TIMEOUT);
     signal.addEventListener("abort", cancel, { once: true });
@@ -138,7 +157,7 @@ function uploadBody(file: File, type: string, signal: AbortSignal): Promise<Blob
       const buffer = reader.result;
       if (!(buffer instanceof ArrayBuffer) || buffer.byteLength !== file.size) {
         reportReadFailure("result", new DOMException("", "SizeMismatch"));
-        finish(new FileReadError("This browser couldn’t read the complete original file. Keep this page open and try again."));
+        finish(new FileReadError("This browser couldn’t read the complete original file. Keep this page open and try again.", "SizeMismatch"));
         return;
       }
       try { finish(undefined, new Blob([buffer], { type })); }
@@ -148,10 +167,10 @@ function uploadBody(file: File, type: string, signal: AbortSignal): Promise<Blob
       }
     };
     reader.onerror = () => {
-      reportReadFailure("read", reader.error);
-      finish(new FileReadError("This browser couldn’t read the original file. Keep this page open and try again."));
+      const code = reportReadFailure("read", reader.error);
+      finish(new FileReadError("This browser couldn’t read the original file. Keep this page open and try again.", code));
     };
-    reader.onabort = () => finish(new FileReadError("Reading the original file was interrupted. Keep this page open and try again."));
+    reader.onabort = () => finish(new FileReadError("Reading the original file was interrupted. Keep this page open and try again.", "AbortError"));
     try { reader.readAsArrayBuffer(file); }
     catch (error) {
       reportReadFailure("start", error);
@@ -174,15 +193,18 @@ async function uploadFile(
   if (!local && (session.uploadMode !== "r2" || !session.uploadUrl)) throw new TransferError("The upload link is unavailable. Please try again.");
   // Only the two active uploads are materialized; never buffer the entire collection.
   let body: Blob;
+  uploadStatus(specification.uploadToken, "reading");
   try { body = await uploadBody(entry.file, local ? "application/octet-stream" : specification.type, signal); }
   catch (error) {
     ensureActive(signal);
     if (!(error instanceof FileReadError) || !allowOriginalFile()) throw error;
+    uploadStatus(specification.uploadToken, "read_failed", error);
     // Some restored Safari Files upload correctly even when local readers reject them.
     // Permit one original-body attempt; the server verifies the complete expected size before acknowledgement.
     reportReadFailure("fallback", new DOMException("", "OriginalFileAttempt"));
     body = entry.file;
   }
+  uploadStatus(specification.uploadToken, "uploading");
   return new Promise((resolve, reject) => {
     ensureActive(signal);
     const xhr = new XMLHttpRequest();
@@ -196,7 +218,8 @@ async function uploadFile(
       signal.removeEventListener("abort", cancel);
       xhr.onload = xhr.onerror = xhr.onabort = xhr.ontimeout = null;
       xhr.upload.onprogress = xhr.upload.onload = null;
-      if (error) reject(error); else resolve();
+      if (error) { uploadStatus(specification.uploadToken, "upload_failed", error); reject(error); }
+      else { uploadStatus(specification.uploadToken, "saved"); resolve(); }
     };
     const cancel = () => { finish(stopped()); xhr.abort(); };
     const keepAlive = () => {
@@ -285,6 +308,7 @@ export async function submitBrief(
         try {
           response = await request<BriefSession>("/api/brief/session", {
             invite,
+            checkpoint: { answers: draft.answers, products: draft.products },
             files: draft.files.map(({ id, scope, role, file }) => ({
               id, scope, role, name: file.name,
               type: file.type || "application/octet-stream", size: file.size,
@@ -316,6 +340,7 @@ export async function submitBrief(
       for (;;) {
         const current = await getSession();
         if (uploaded.has(entry.id)) return;
+        if (entry.needsOriginal) throw new FileReadError("This original is no longer available on this device. Choose the original file again.", "NotReadableError");
         const specification = current.files.find(file => file.id === entry.id)!;
         bytes.set(entry.id, 0);
         reportUploads();

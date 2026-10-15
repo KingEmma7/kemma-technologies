@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDraftPersistence, readDraft } from "../components/brief/storage";
+import { createDraftPersistence, readDraft, preserveOriginalFile } from "../components/brief/storage";
 import { replaceOriginalFiles } from "../components/brief/recovery";
 
 const invite = "test-invite-for-saved-client";
@@ -41,11 +41,11 @@ beforeEach(() => {
         const transaction: TransactionHandlers & { objectStore: () => unknown; abort: () => void } = {
           abort: () => { if (done) return; finish(); transaction.onabort?.(); },
           objectStore: () => ({
-            get: () => {
+            get: (key: string) => {
               const request: RequestHandlers = {};
               const complete = () => {
                 if (done) return;
-                request.result = records.get(name);
+                request.result = records.get(key === "current" ? name : name + "/" + key);
                 request.onsuccess?.();
                 if (mode === "readonly") {
                   if (abortRead) { transaction.error = new Error("Safari interrupted the read"); transaction.abort(); }
@@ -65,7 +65,7 @@ beforeEach(() => {
               } else queueMicrotask(start);
               return request;
             },
-            put: (value: unknown) => {
+            put: (value: unknown, key: string) => {
               writes.push(name);
               const commit = () => {
                 if (done) return;
@@ -73,7 +73,7 @@ beforeEach(() => {
                   failedWrites -= 1;
                   transaction.error = new Error("Storage is temporarily unavailable");
                   transaction.abort();
-                } else { records.set(name, value); finish(); transaction.oncomplete?.(); }
+                } else { records.set(key === "current" ? name : name + "/" + key, value); finish(); transaction.oncomplete?.(); }
               };
               if (holdCommit) completeCommit = commit; else queueMicrotask(commit);
             },
@@ -93,7 +93,7 @@ beforeEach(() => {
   });
   vi.stubGlobal("indexedDB", { open: openMock });
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {vi.unstubAllGlobals();vi.useRealTimers()});
 
 function savedDraft() {
   return {
@@ -321,4 +321,67 @@ describe("protecting saved brief drafts", () => {
     expect(candidate.answers.additionalNotes).toBe("Keep the colours warm");
   });
 
+});
+
+
+describe("durable original bytes independent of Safari File handles", () => {
+  it("reopens exact bytes after the native File handle becomes unreadable", async () => {
+    class Reader {
+      result: ArrayBuffer | null = null;
+      onload?: () => void;
+      readAsArrayBuffer(file: Blob) { Blob.prototype.arrayBuffer.call(file).then(bytes => { this.result = bytes; this.onload?.(); }); }
+    }
+    vi.stubGlobal("FileReader", Reader);
+    const original = savedDraft(), entry = original.files[0];
+    const durable = await preserveOriginalFile(entry.file, invite);
+    expect(new Uint8Array(await durable.file.arrayBuffer())).toEqual(new Uint8Array(1024).fill(1));
+    // Model Safari losing the old native backing file after persisting the draft.
+    const broken = Object.assign(new File([new Uint8Array(1024)], entry.file.name, {type:"image/png"}), {
+      arrayBuffer: () => Promise.reject(new DOMException("", "NotReadableError")),
+    });
+    records.set(database, { ...original, files: [{...entry, ...durable, file: broken}] });
+    const restored = await readDraft(invite);
+    expect(restored.answers).toEqual(original.answers);
+    expect(restored.products).toEqual(original.products);
+    expect(restored.files[0].id).toBe(entry.id);
+    expect(new Uint8Array(await restored.files[0].file.arrayBuffer())).toEqual(new Uint8Array(1024).fill(1));
+    expect(openMock).toHaveBeenCalledWith(database, 1);
+  });
+
+  it("keeps all answers visible and file identities intact if a byte backup is missing", async () => {
+    const original = savedDraft();
+    const stored = {...original, files: [{...original.files[0], byteKey:"original:missing"}]};
+    records.set(database, stored);
+    const persistence = createDraftPersistence(invite);
+    const restored = await persistence.restore();
+    expect(restored.answers).toEqual(original.answers);
+    expect(restored.files[0]).toMatchObject({id:original.files[0].id,needsOriginal:true});
+    expect(records.get(database)).toBe(stored);
+    expect(writes).toEqual([]);
+  });
+});
+
+
+describe("bounded browser storage waits",()=>{
+  it("aborts a stalled write without replacing any previous answers",async()=>{
+    vi.useFakeTimers();
+    const original=savedDraft();records.set(database,original);
+    const persistence=createDraftPersistence(invite);await persistence.restore();holdCommit=true;
+    const saving=persistence.save({...original,answers:{...original.answers,additionalNotes:"Pending edit"}}).catch(error=>error);
+    await flush();await vi.advanceTimersByTimeAsync(15001);
+    expect(await saving).toMatchObject({message:expect.stringContaining("took too long")});
+    completeCommit!();
+    expect(records.get(database)).toBe(original);
+  });
+  it("does not authorize saves when a restoration stalls",async()=>{
+    vi.useFakeTimers();
+    const original=savedDraft();records.set(database,original);holdRead=true;
+    const persistence=createDraftPersistence(invite);
+    const restoring=persistence.restore().catch(error=>error);
+    await flush();await vi.advanceTimersByTimeAsync(15001);
+    expect(await restoring).toBeInstanceOf(Error);
+    await expect(persistence.save(freshDraft())).rejects.toThrow();
+    expect(records.get(database)).toBe(original);
+    expect(writes).toEqual([]);
+  });
 });

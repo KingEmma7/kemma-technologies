@@ -5,7 +5,7 @@ type Allocation = { createdAt: string; files: FileSpec[] };
 type Budget = { version: 1; totalBytes: number; projects: Record<string, number> };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const DOCUMENTS = new Set(["allocation.json", "submission.json", "notification.json", "email-payload.json", "email-sender.json", "email-preview.json"]);
+const DOCUMENTS = new Set(["allocation.json", "submission.json", "notification.json", "email-payload.json", "email-sender.json", "email-preview.json", "answers-checkpoint.json", "upload-status.json"]);
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 150 * 1024 * 1024;
 const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
@@ -13,6 +13,8 @@ const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
 const DOCUMENT_LIMITS: Record<string, number> = {
   "allocation.json": 128 * 1024, "submission.json": 1024 * 1024, "notification.json": 16 * 1024,
   "email-payload.json": MAX_DOCUMENT_BYTES, "email-sender.json": 4 * 1024, "email-preview.json": 512 * 1024,
+  "answers-checkpoint.json": 256 * 1024,
+  "upload-status.json": 32 * 1024,
 };
 const PROJECT_OVERHEAD_BYTES = 10 * 1024 * 1024;
 const BUDGET_KEY = "system/budget.json";

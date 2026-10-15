@@ -421,3 +421,20 @@ describe("direct private R2 uploads", () => {
     expect(vi.mocked(console.warn).mock.calls.some(([, detail]) => (detail as { stage: string }).stage === "fallback")).toBe(false);
   });
 });
+
+describe("non-blocking upload diagnostics",()=>{
+  it("still sends original files and answers when every diagnostic request fails",async()=>{
+    vi.stubGlobal("window",{});
+    const original=draft();
+    fetchMock.mockImplementation(async url=>{
+      if(String(url).endsWith("upload-status"))throw new Error("diagnostic unavailable");
+      return json(String(url).endsWith("session")?session(original,{uploadTokens:true}):receipt);
+    });
+    expect(await submitBrief("project-invite",original,()=>{})).toEqual(receipt);
+    const statuses=fetchMock.mock.calls.filter(([url])=>String(url).endsWith("upload-status")).map(([,init])=>JSON.parse(String(init?.body)));
+    expect(statuses.map(status=>status.stage)).toEqual(["reading","uploading","saved"]);
+    expect(statuses.every(status=>Object.keys(status).sort().join(",")==="stage,token")).toBe(true);
+    expect(JSON.stringify(statuses)).not.toContain("logo-0.png");
+    expect(JSON.stringify(statuses)).not.toContain("client@example.com");
+  });
+});
