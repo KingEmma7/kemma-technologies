@@ -199,6 +199,10 @@ async function uploadFile(
   try { body = await uploadBody(entry.file, local ? "application/octet-stream" : specification.type, signal); }
   catch (error) {
     ensureActive(signal);
+    if (error instanceof FileReadError && ["NotFoundError", "SecurityError"].includes(error.readCode)) {
+      uploadStatus(specification.uploadToken, "read_failed", error);
+      throw new FileReadError("Your browser can no longer access this selected original. Your answers are backed up. Choose the original file again; waiting or retrying cannot restore it.", error.readCode);
+    }
     if (!(error instanceof FileReadError) || !allowOriginalFile()) throw error;
     uploadStatus(specification.uploadToken, "read_failed", error);
     // Some restored Safari Files upload correctly even when local readers reject them.

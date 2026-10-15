@@ -311,6 +311,20 @@ describe("direct private R2 uploads", () => {
     expect(original.files).toHaveLength(45);
   });
 
+  it.each(["NotFoundError", "SecurityError"])("stops immediately for %s without an original-body fallback or connection retries",async name=>{
+    ReadFile.automatic=false;
+    const original=draft(),before=original.files[0].file;
+    fetchMock.mockResolvedValueOnce(json(session(original)));
+    const sending=submitBrief("project-invite",original,()=>{}).catch(error=>error);
+    await flush();ReadFile.instances[0].fail(new DOMException("",name));
+    expect(await sending).toMatchObject({name:"BriefUploadError",fileId:"file-0",message:expect.stringContaining("can no longer access")});
+    expect(UploadRequest.instances).toHaveLength(0);
+    expect(ReadFile.instances).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(original.files[0].file).toBe(before);
+    expect(original.answers.businessName).toBe("Example Crochet");
+  });
+
   it("uses one original File when a complete FileReader read fails, with strict acknowledgement", async () => {
     ReadFile.automatic = false;
     const original = draft();
