@@ -1,8 +1,8 @@
 'use client';
-import React,{useCallback,useEffect,useRef,useState} from 'react';
+import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {MorphStatusButton} from './SendBriefButton';
 import {submitBrief} from './submit';
-import {readDraft,saveDraft,fileDataURL,download} from './storage';
+import {createDraftPersistence,DraftConflictError,fileDataURL,download} from './storage';
 import styles from './brief.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,13 +15,17 @@ const formatSize=n=>n>=1048576?`${(n/1048576).toFixed(1)} MB`:`${Math.max(1,Math
 const socials=[['instagram','Instagram'],['facebook','Facebook'],['tiktok','TikTok'],['pinterest','Pinterest'],['x','X / Twitter'],['youtube','YouTube'],['linkedin','LinkedIn'],['threads','Threads'],['snapchat','Snapchat'],['whatsapp','WhatsApp'],['telegram','Telegram']];
 const allowed=/\.(jpe?g|png|webp|heic|svg|pdf|mp4|mov|docx?|xlsx?|csv|txt|zip|ai|eps)$/i;
 
-export default function CrochetBrief({invite,preview=false,contactHref}){
- const [draft,setDraft]=useState(fresh),[loaded,setLoaded]=useState(false),[saveState,setSaveState]=useState(''),[error,setError]=useState(''),[finished,setFinished]=useState(false),[exporting,setExporting]=useState(false),[sending,setSending]=useState(false),[sendProgress,setSendProgress]=useState(''),[receipt,setReceipt]=useState(null);
- const latest=useRef(draft),serial=useRef(Promise.resolve()),revision=useRef(0),section=useRef(null),breadcrumb=useRef(null);
+export default function CrochetBrief(props){return <CrochetBriefForm key={props.invite} {...props}/>}
+
+function CrochetBriefForm({invite,preview=false,contactHref}){
+ const [draft,setDraft]=useState(fresh),[restoreState,setRestoreState]=useState('loading'),[restoreAttempt,setRestoreAttempt]=useState(0),[saveState,setSaveState]=useState(''),[error,setError]=useState(''),[finished,setFinished]=useState(false),[exporting,setExporting]=useState(false),[sending,setSending]=useState(false),[sendProgress,setSendProgress]=useState(''),[receipt,setReceipt]=useState(null);
+ const loaded=restoreState==='ready';
+ const persistence=useMemo(()=>createDraftPersistence(invite),[invite]);
+ const latest=useRef(draft),lastSaved=useRef(null),revision=useRef(0),section=useRef(null),breadcrumb=useRef(null);
  latest.current=draft;
- const persist=useCallback(snapshot=>{const task=serial.current.catch(()=>{}).then(()=>saveDraft(snapshot,invite));serial.current=task;return task},[invite]);
- useEffect(()=>{let alive=true;readDraft(invite).then(saved=>{if(!alive)return;if(saved?.schemaVersion===2){setDraft(saved);if(saved.receipt){setReceipt(saved.receipt);setFinished(true)}}setLoaded(true)}).catch(()=>{if(alive){setLoaded(true);setSaveState('Couldn’t save locally. Download a copy before leaving.')}});return()=>{alive=false}},[invite]);
- useEffect(()=>{if(!loaded)return;const version=++revision.current;setSaveState('Saving…');persist(draft).then(()=>{if(revision.current===version)setSaveState(draft.receipt?'Submission saved':'Saved on this device')}).catch(()=>{if(revision.current===version)setSaveState(draft.receipt?'Submitted. Download a copy to keep it on this device.':'Couldn’t save locally. Download a copy before leaving.')})},[draft,loaded,persist]);
+ const persist=useCallback(snapshot=>persistence.save(snapshot).then(()=>{lastSaved.current=snapshot}),[persistence]);
+ useEffect(()=>{let alive=true;persistence.restore().then(saved=>{if(!alive)return;const restored=saved||fresh();lastSaved.current=restored;setDraft(restored);setReceipt(restored.receipt||null);setFinished(!!restored.receipt);setSaveState(saved?(saved.receipt?'Submission saved':'Saved on this device'):'');setRestoreState('ready')}).catch(()=>{if(alive)setRestoreState('failed')});return()=>{alive=false;persistence.dispose()}},[persistence,restoreAttempt]);
+ useEffect(()=>{if(!loaded||draft===lastSaved.current)return;const version=++revision.current;setSaveState('Saving…');persist(draft).then(()=>{if(revision.current===version)setSaveState(draft.receipt?'Submission saved':'Saved on this device')}).catch(cause=>{if(revision.current!==version)return;if(cause instanceof DraftConflictError){setSaveState('Newer answers saved in another tab');setError(cause.message)}else setSaveState(draft.receipt?'Submitted. Download a copy to keep it on this device.':'Couldn’t save locally. Download a copy before leaving.')})},[draft,loaded,persist]);
  const a=draft.answers;
  const references=a.references?.length?a.references:[{id:'reference-first',url:'',aspects:[],note:a.refNotes||''}];
  const updateReference=(id,key,value)=>answer('references',references.map(r=>r.id===id?{...r,[key]:value}:r));
@@ -101,7 +105,7 @@ export default function CrochetBrief({invite,preview=false,contactHref}){
   if(snap.files.length&&!snap.answers.permission){const message='Please confirm permission to use the files, or go back to edit them.';setError(message);throw new Error(message)}
   setSending(true);setSendProgress('Preparing your brief…');setError('');
   try{
-   try{await persist(snap)}catch{setSaveState('Keep this page open until sending finishes.')}
+   try{await persist(snap)}catch(cause){if(cause instanceof DraftConflictError||cause?.name==='DraftDisposedError')throw cause;setSaveState('Keep this page open until sending finishes.')}
    const result=await submitBrief(invite,snap,setSendProgress);
    const accepted={...snap,receipt:result};
    try{await persist(accepted)}catch{}
@@ -116,7 +120,7 @@ export default function CrochetBrief({invite,preview=false,contactHref}){
  const isFinish=!product&&question.kind==='finish';
  const isChoice=!product&&question.kind==='choice';
 
- if(!loaded)return <div className={styles.shell} data-brief-flow><div className="loading">Opening your brief…</div></div>;
+ if(!loaded)return <div className={styles.shell} data-brief-flow><main><section className="question">{restoreState==='failed'?<><h1>Let’s reopen your saved brief.</h1><p className="question-hint" role="alert">This browser couldn’t read your saved answers yet. We haven’t replaced or cleared them. Keep this page open and try again.</p><div className="actions"><button type="button" className="continue" onClick={()=>{setRestoreState('loading');setRestoreAttempt(attempt=>attempt+1)}}>Try opening again</button></div></>:<p className="loading" role="status">Opening your brief…</p>}</section></main></div>;
  return <div className={styles.shell} data-brief-flow>{preview&&<div className="preview-note">Preview · Test submissions are saved here · No email sent</div>}<header><Link className="brand branded-logo" href="/" aria-label="Kemma Technologies"><Image src="/brief/brand/kemma-logo.png" alt="Kemma Technologies" width={118} height={88}/></Link><span>Crochet website brief</span><span className="save-state" role="status">{saveState}</span></header><div className="progress" role="progressbar" aria-label="Position in the form" aria-valuemin="0" aria-valuemax={questions.length-1} aria-valuenow={index}><div style={{width:`${100*index/(questions.length-1)}%`}}/></div>
  <nav className="question-breadcrumbs" aria-label="Brief questions" ref={breadcrumb}><ol>{questions.map(q=>{const current=q.id===question.id;return <li key={q.id}><button type="button" className={current?'breadcrumb-current':visited.has(q.id)?'breadcrumb-visited':'breadcrumb-upcoming'} aria-current={current?'step':undefined} disabled={finished||sending||(!current&&!visited.has(q.id))} onClick={()=>goto(q.id)}>{questionLabels[q.id]}</button></li>})}</ol></nav>
  <main><div className="question-stage"><div className="question-mascot"><React.Suspense fallback={<span className="mascot-placeholder"/>}><Mascot3D interactive className="form-mascot"/></React.Suspense></div><section key={screenKey} ref={section} className="question"><form aria-busy={sending} onSubmit={e=>{e.preventDefault();if(!sending&&!isFinish&&!isChoice)next()}} onKeyDown={e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&e.target.tagName==='TEXTAREA'&&!isFinish){e.preventDefault();next()}}}><h1 tabIndex="-1">{finished?(receipt?.preview?'Your test brief is saved.':'Your brief is saved.'):title}</h1><p className="question-hint">{finished?(receipt?.preview?'Your answers and original uploads are saved in this preview. No email was sent.':receipt?.notification==='sent'?'Your answers and uploads are saved and sent to Kemma. We’ll follow up on anything missing.':'Your answers and uploads are saved. Kemma’s email notification is pending.'):hint}</p>
