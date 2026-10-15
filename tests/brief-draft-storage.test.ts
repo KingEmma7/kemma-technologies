@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDraftPersistence, readDraft } from "../components/brief/storage";
+import { replaceOriginalFiles } from "../components/brief/recovery";
 
 const invite = "test-invite-for-saved-client";
 const database = "kemma-crochet-brief-v2-1c8647f3";
@@ -285,6 +286,39 @@ describe("protecting saved brief drafts", () => {
     expect(records.get(database)).toBe(original);
     await Promise.all([persistence.save(original), persistence.save({ ...original, answers: { ...original.answers, additionalNotes: "Last rapid edit" } })]);
     expect(records.get(database)).toMatchObject({ answers: { additionalNotes: "Last rapid edit" }, files: original.files, _localRevision: expect.any(String) });
+  });
+
+  it("keeps freshly reselected handles available after a failed save and commits the same candidate on retry", async () => {
+    const original = savedDraft(); records.set(database, original);
+    const persistence = createDraftPersistence(invite); await persistence.restore();
+    const before = original.files[0];
+    const fresh = new File([new Uint8Array(before.file.size)], before.file.name, { type: "application/octet-stream" });
+    const candidate = replaceOriginalFiles(original, [fresh], before.id).draft;
+    failedWrites = 1;
+    await expect(persistence.save(candidate)).rejects.toThrow("temporarily unavailable");
+    expect(records.get(database)).toBe(original);
+    expect(candidate.files[0].file).toBe(fresh);
+    expect(candidate.files.map(entry => entry.id)).toEqual(original.files.map(entry => entry.id));
+    expect(candidate.answers).toBe(original.answers);
+    await persistence.save(candidate);
+    const restored = await readDraft(invite);
+    expect(restored).toMatchObject({ answers: original.answers, files: candidate.files });
+    expect(candidate.files[0].file).toBe(fresh);
+  });
+
+  it("keeps new recovery handles in memory without overwriting another tab's newer saved answers", async () => {
+    const original = savedDraft(); records.set(database, original);
+    const stale = createDraftPersistence(invite), newer = createDraftPersistence(invite);
+    await Promise.all([stale.restore(), newer.restore()]);
+    const fresh = new File([new Uint8Array(original.files[0].file.size)], original.files[0].file.name);
+    const candidate = replaceOriginalFiles(original, [fresh], original.files[0].id).draft;
+    await newer.save({ ...original, answers: { ...original.answers, additionalNotes: "Newer answers" } });
+    const latest = records.get(database);
+    await expect(stale.save(candidate)).rejects.toMatchObject({ name: "DraftConflictError" });
+    await expect(stale.save(candidate)).rejects.toMatchObject({ name: "DraftConflictError" });
+    expect(records.get(database)).toBe(latest);
+    expect(candidate.files[0].file).toBe(fresh);
+    expect(candidate.answers.additionalNotes).toBe("Keep the colours warm");
   });
 
 });
