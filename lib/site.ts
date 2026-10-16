@@ -31,7 +31,7 @@ export const SITE = {
   email: "hello@kemmatechnologies.com",
 
   /** Privacy and support contact published for ARS Pocket. */
-  arsPocketPrivacyEmail: "emmanuel@kemmatechnologies.com",
+  arsPocketPrivacyEmail: "hello@kemmatechnologies.com",
 
   location: "Accra, Ghana",
 
