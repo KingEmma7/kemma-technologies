@@ -41,4 +41,13 @@ export const articles = [{
   image: "/editorial/open-source-week5-cover.png",
   imageAlt: "Open Source Everyday Week 5 cover: How do you fix one case without breaking another? Emmanuel Tagbor's portrait and cumulative totals of 32 submitted pull requests and 25 merged as of 12 October 2026.",
   recordDate: "Record checked 12 October 2026",
+}, {
+  number: "05",
+  title: "Six weeks of open-source contribution: 38 PRs, 31 merged",
+  subtitle: "Six-week review, 7 September–18 October 2026.",
+  description: "A visual record of the six weeks, followed by the tests, decisions and maintainer feedback behind the contributions.",
+  href: "/blog/six-weeks-of-open-source-contribution",
+  image: "/editorial/open-source-six-weeks-cover.png",
+  imageAlt: "Open Source Everyday six-week cover with Emmanuel Tagbor's portrait and totals of 38 submitted pull requests and 31 merged as of 19 October 2026.",
+  recordDate: "Outcomes checked 19 October 2026",
 }];
