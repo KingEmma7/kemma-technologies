@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.kemmatechnologies.com';
-const routes = ['blog', 'blog/series/open-source-everyday', 'blog/two-weeks-of-open-source-everyday', 'blog/testing-the-behaviour-behind-the-fix', 'blog/what-maintainers-noticed-that-i-missed', 'blog/how-do-you-fix-one-case-without-breaking-another'];
+const routes = ['blog', 'blog/series/open-source-everyday', 'blog/two-weeks-of-open-source-everyday', 'blog/testing-the-behaviour-behind-the-fix', 'blog/what-maintainers-noticed-that-i-missed', 'blog/how-do-you-fix-one-case-without-breaking-another', 'blog/six-weeks-of-open-source-contribution'];
 for (const route of routes) {
   const html = await readFile(`.next/server/app/${route}.html`, 'utf8');
   assert.ok(html.includes(new URL(`/${route}`, siteUrl).toString()), `${route}: canonical missing`);
@@ -29,7 +29,12 @@ const weekFiveVisible = weekFive.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '
 for (const text of ['How do you fix one case without breaking another?', '32 submitted pull requests and 25 merged', 'A scanner warning needs the right context', 'Handling an output failure must preserve the original error', 'A check command must leave files alone', 'merged on 12 October, after this recap’s week']) assert.ok(weekFiveVisible.includes(text), `missing Week 5 detail: ${text}`);
 assert.ok(weekFiveVisible.includes('/editorial/open-source-week5-cover.png'), 'Week 5 cover missing');
 assert.ok(!weekFiveVisible.includes('Unpublished draft'), 'Week 5 preview label remains');
+const sixWeeks = await readFile('.next/server/app/blog/six-weeks-of-open-source-contribution.html', 'utf8');
+const sixWeeksVisible = sixWeeks.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+for (const text of ['Six weeks of open-source contribution: 38 PRs, 31 merged', '81.6% merge rate', 'Six-week contribution record as of 19 October 2026', 'Weekly submissions, 7 September–18 October 2026', 'Skill-audit #18', 'Zenix #74 merge', 'What I’m taking forward']) assert.ok(sixWeeksVisible.includes(text), `missing six-week detail: ${text}`);
+assert.equal((sixWeeksVisible.match(/<table>/g) || []).length, 2, 'expected two six-week tables');
+assert.ok(sixWeeksVisible.includes('/editorial/open-source-six-weeks-cover.png'), 'six-week cover missing');
 const sitemap = await readFile('.next/server/app/sitemap.xml.body','utf8');
 for (const route of routes) assert.ok(sitemap.includes(`/${route}`), `sitemap missing ${route}`);
 assert.ok(!sitemap.includes('/drafts/'), 'draft URL in sitemap');
-console.log('Editorial release checks passed: six indexable routes, canonical URLs, contribution records, essential detail, covers and sitemap.');
+console.log('Editorial release checks passed: seven indexable routes, canonical URLs, contribution records, essential detail, covers and sitemap.');
