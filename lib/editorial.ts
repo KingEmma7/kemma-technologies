@@ -50,4 +50,13 @@ export const articles = [{
   image: "/editorial/open-source-six-weeks-cover.png",
   imageAlt: "Open Source Everyday six-week cover with Emmanuel Tagbor's portrait and totals of 38 submitted pull requests and 31 merged as of 19 October 2026.",
   recordDate: "Outcomes checked 19 October 2026",
+}, {
+  number: "06",
+  title: "The best feedback I’ve received so far",
+  subtitle: "Open Source Everyday, Week 8.",
+  description: "Seven maintainers’ feedback on tests, boundaries and honest reporting of validation.",
+  href: "/blog/the-best-feedback-ive-received-so-far",
+  image: "/editorial/open-source-week8-maintainer-feedback.png",
+  imageAlt: "Open Source Everyday, Week 8: The best feedback I’ve received so far. Maintainers valued tests that catch real bugs, clear boundaries around a change, and honest reporting of verification limits. As of 31 October 2026: 48 PRs merged. A MiniSearch maintainer says, “That is the part most pull requests skip, so thank you for getting it right.” The MiniSearch repository had 606 GitHub stars on 31 October 2026. A small original portrait of Emmanuel Tagbor appears at top right. AI-assisted workflow.",
+  recordDate: "Source reviewed 31 October 2026",
 }];

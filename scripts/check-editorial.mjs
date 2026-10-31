@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.kemmatechnologies.com';
-const routes = ['blog', 'blog/series/open-source-everyday', 'blog/two-weeks-of-open-source-everyday', 'blog/testing-the-behaviour-behind-the-fix', 'blog/what-maintainers-noticed-that-i-missed', 'blog/how-do-you-fix-one-case-without-breaking-another', 'blog/six-weeks-of-open-source-contribution'];
+const routes = ['blog', 'blog/series/open-source-everyday', 'blog/two-weeks-of-open-source-everyday', 'blog/testing-the-behaviour-behind-the-fix', 'blog/what-maintainers-noticed-that-i-missed', 'blog/how-do-you-fix-one-case-without-breaking-another', 'blog/six-weeks-of-open-source-contribution', 'blog/the-best-feedback-ive-received-so-far'];
 for (const route of routes) {
   const html = await readFile(`.next/server/app/${route}.html`, 'utf8');
   assert.ok(html.includes(new URL(`/${route}`, siteUrl).toString()), `${route}: canonical missing`);
@@ -38,3 +38,12 @@ const sitemap = await readFile('.next/server/app/sitemap.xml.body','utf8');
 for (const route of routes) assert.ok(sitemap.includes(`/${route}`), `sitemap missing ${route}`);
 assert.ok(!sitemap.includes('/drafts/'), 'draft URL in sitemap');
 console.log('Editorial release checks passed: seven indexable routes, canonical URLs, contribution records, essential detail, covers and sitemap.');
+
+const feedback = await readFile('.next/server/app/blog/the-best-feedback-ive-received-so-far.html', 'utf8');
+const feedbackVisible = feedback.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+for (const text of ['The best feedback', 'Several examples have stayed with me.', 'MiniSearch', 'devReady', 'BarakoCMS', 'Toolism', 'Reviewer', 'Toolbelt', 'csv-faker-generator', 'tied for first', 'tied for fourth', 'Codex assistance', 'What I’m taking forward']) assert.ok(feedbackVisible.includes(text), `missing feedback article detail: ${text}`);
+for (const url of ['felladrin/MiniSearch/pull/2671', 'Evalogical-Inc/devReady/pull/13', 'BaryoDev/barakoCMS/pull/748', 'rakeshnitb23/toolism/pull/78', 'rakeshnitb23/toolism/issues/104', 'dheerajjha/reviewer/pull/118', 'codercops/toolbelt/pull/176', 'manojkken/csv-faker-generator/pull/20']) assert.ok(feedbackVisible.includes(url), `missing source link: ${url}`);
+assert.ok(!feedbackVisible.includes('Unpublished preview'), 'feedback preview label remains');
+assert.ok(feedbackVisible.includes('/editorial/open-source-week8-maintainer-feedback.png'), 'cover missing');
+assert.ok(feedbackVisible.includes('A small original portrait of Emmanuel Tagbor'), 'cover alt text missing');
+console.log('Feedback article route, source links, content and cover passed.');
