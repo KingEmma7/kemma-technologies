@@ -82,12 +82,18 @@ function MobileMenu() {
         aria-label={open ? "Close navigation" : "Open navigation"}
         aria-expanded={open}
         aria-controls="mobile-nav"
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen((wasOpen) => !wasOpen)}
       >
         <span />
         <span />
       </button>
-      <nav id="mobile-nav" aria-label="Mobile navigation" hidden={!open}>
+      <nav
+        id="mobile-nav"
+        aria-label="Mobile navigation"
+        aria-hidden={!open}
+        inert={!open}
+        data-open={open}
+      >
         {links.map((link) => (
           <Link href={link.href} key={link.href} onClick={() => setOpen(false)}>
             {link.label}
