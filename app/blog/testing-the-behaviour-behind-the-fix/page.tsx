@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { pageMetadata } from "@/lib/seo";
+import { ARTICLE_MD_BY_SLUG } from "@/lib/generated/content-manifest";
 import styles from "../two-weeks-of-open-source-everyday/page.module.css";
 
 export const metadata: Metadata = {
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
 const headingId = (text: string) => text.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim().replace(/ +/g, "-");
 
 export default async function WeeklyArticle() {
-  const source = await readFile(path.join(process.cwd(), "content/articles/testing-the-behaviour-behind-the-fix.md"), "utf8");
+  const source = ARTICLE_MD_BY_SLUG["testing-the-behaviour-behind-the-fix"];
   const [titleBlock, byline, ...body] = source.trim().split(/\n\n/);
   const title = titleBlock.replace(/^# /, "");
   const headings = body.filter((block) => block.startsWith("## ")).map((block) => block.slice(3));

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { pageMetadata } from "@/lib/seo";
+import { ARTICLE_MD_BY_SLUG } from "@/lib/generated/content-manifest";
 import styles from "./page.module.css";
 
 const title = "Six weeks of open-source contribution: 38 PRs, 31 merged";
@@ -50,10 +49,7 @@ function ArticleTable({ block, caption }: { block: string; caption: string }) {
 }
 
 export default async function SixWeeksArticle() {
-  const source = await readFile(
-    path.join(process.cwd(), "content/articles/six-weeks-of-open-source-contribution.md"),
-    "utf8",
-  );
+  const source = ARTICLE_MD_BY_SLUG["six-weeks-of-open-source-contribution"];
   const [titleBlock, byline, ...body] = source.trim().split(/\n\n/);
   const headings = body.filter((block) => block.startsWith("## ")).map((block) => block.slice(3));
   let tableIndex = 0;

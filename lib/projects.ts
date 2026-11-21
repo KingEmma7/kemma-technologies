@@ -1,8 +1,7 @@
-import fs from "fs";
-import path from "path";
 import { z } from "zod";
 import { parse as parseYaml } from "yaml";
 import { PRODUCTS, type Product } from "./products";
+import { PROJECT_MDX_BY_SLUG } from "./generated/content-manifest";
 
 /**
  * What kind of work a project is. A project can be more than one — ISGM is both
@@ -49,8 +48,6 @@ const projectSchema = z.object({
 // client before publishing. Do not invent or round up numbers.
 export type ProjectMeta = z.infer<typeof projectSchema> & { slug: string };
 
-const PROJECTS_DIR = path.join(process.cwd(), "content/projects");
-
 function parseProjectFile(raw: string, filename: string): { data: unknown; content: string } | null {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw);
   if (!match) {
@@ -70,19 +67,14 @@ function parseProjectFile(raw: string, filename: string): { data: unknown; conte
 }
 
 export function getAllProjects(): ProjectMeta[] {
-  if (!fs.existsSync(PROJECTS_DIR)) return [];
-
-  const files = fs.readdirSync(PROJECTS_DIR).filter((f) => f.endsWith(".mdx"));
-
-  return files
-    .map((file) => {
-      const slug = file.replace(".mdx", "");
-      const raw = fs.readFileSync(path.join(PROJECTS_DIR, file), "utf-8");
-      const projectFile = parseProjectFile(raw, file);
+  return Object.entries(PROJECT_MDX_BY_SLUG)
+    .map(([slug, raw]) => {
+      const filename = `${slug}.mdx`;
+      const projectFile = parseProjectFile(raw, filename);
       if (!projectFile) return null;
       const parsed = projectSchema.safeParse(projectFile.data);
       if (!parsed.success) {
-        console.warn(`[projects] Invalid frontmatter in ${file}:`, parsed.error.flatten());
+        console.warn(`[projects] Invalid frontmatter in ${filename}:`, parsed.error.flatten());
         return null;
       }
       return { slug, ...parsed.data } satisfies ProjectMeta;
@@ -92,10 +84,8 @@ export function getAllProjects(): ProjectMeta[] {
 }
 
 export function getProjectBySlug(slug: string): { meta: ProjectMeta; content: string } | null {
-  const filePath = path.join(PROJECTS_DIR, `${slug}.mdx`);
-  if (!fs.existsSync(filePath)) return null;
-
-  const raw = fs.readFileSync(filePath, "utf-8");
+  const raw = PROJECT_MDX_BY_SLUG[slug as keyof typeof PROJECT_MDX_BY_SLUG];
+  if (!raw) return null;
   const projectFile = parseProjectFile(raw, `${slug}.mdx`);
   if (!projectFile) return null;
   const parsed = projectSchema.safeParse(projectFile.data);

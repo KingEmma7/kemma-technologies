@@ -1,6 +1,5 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
+import { PUBLIC_BASE64_BY_PATH } from "@/lib/generated/content-manifest";
 
 export const alt =
   "Kemma Technologies — digital platforms, web products and business systems";
@@ -8,7 +7,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function OpenGraphImage() {
-  const logo = await readFile(join(process.cwd(), "public", "design", "kemma-original.png"), "base64");
+  const logo = PUBLIC_BASE64_BY_PATH["design/kemma-original.png"];
 
   return new ImageResponse(
     (

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { pageMetadata } from "@/lib/seo";
+import { ARTICLE_MD_BY_SLUG } from "@/lib/generated/content-manifest";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -21,7 +20,7 @@ export const metadata: Metadata = {
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim().replace(/ +/g, "-");
 
 export default async function WeekFourDraft() {
-  const source = await readFile(path.join(process.cwd(), "content/articles/what-maintainers-noticed-that-i-missed.md"), "utf8");
+  const source = ARTICLE_MD_BY_SLUG["what-maintainers-noticed-that-i-missed"];
   const [titleBlock, byline, ...body] = source.trim().split(/\n\n/);
   const headings = body.filter((block) => block.startsWith("## ")).map((block) => block.slice(3));
 
