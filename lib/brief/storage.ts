@@ -1,7 +1,14 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile, open, unlink, rename, stat, readdir } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { BriefError, r2StorageConfig, storageMode } from "./config";
+
+let fsPromises: typeof import("node:fs/promises") | null = null;
+async function nodeFs() {
+  // Cloudflare Workers don't provide a filesystem. This stays behind a dynamic
+  // import so the Worker bundle can load, while local previews can still use it.
+  fsPromises ??= await import("node:fs/promises");
+  return fsPromises;
+}
 
 export class Conflict extends Error {}
 export const digest = (data: Uint8Array | string) => createHash("sha256").update(data).digest("hex");
@@ -55,6 +62,7 @@ async function documentText(response: Response): Promise<string> {
 export async function readDocument<T>(key: string): Promise<{ value: T; etag: string } | null> {
   checkKey(key);
   if (storageMode() === "local") {
+    const { readFile } = await nodeFs();
     try { const bytes = await readFile(localPath(key)); if (bytes.byteLength > MAX_DOCUMENT_BYTES) throw unavailable(); return { value: JSON.parse(bytes.toString()), etag: digest(bytes) }; }
     catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return null; throw error; }
   }
@@ -80,6 +88,7 @@ export async function writeBytes(key: string, bytes: Uint8Array, type: string, e
     if (!response.ok) throw unavailable();
     return etag(response);
   }
+  const { mkdir, open, unlink, rename, writeFile, readFile } = await nodeFs();
   const path = localPath(key); await mkdir(dirname(path), { recursive: true });
   // This lock is shared between route bundles in the local preview only.
   const lock = path + ".lock"; let handle;
@@ -99,6 +108,7 @@ export async function writeBytes(key: string, bytes: Uint8Array, type: string, e
 export async function fileHead(key: string): Promise<{ size: number; type: string; etag?: string } | null> {
   checkKey(key);
   if (storageMode() === "local") {
+    const { stat } = await nodeFs();
     try { return { size: (await stat(localPath(key))).size, type: "application/octet-stream" }; }
     catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return null; throw error; }
   }
@@ -111,6 +121,7 @@ export async function fileHead(key: string): Promise<{ size: number; type: strin
 export async function fileStream(key: string): Promise<ReadableStream<Uint8Array> | null> {
   checkKey(key);
   if (storageMode() === "local") {
+    const { readFile } = await nodeFs();
     try { return new Blob([await readFile(localPath(key))]).stream(); }
     catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return null; throw error; }
   }
@@ -121,6 +132,7 @@ export async function fileStream(key: string): Promise<ReadableStream<Uint8Array
 }
 export async function submissionKeys(): Promise<string[]> {
   if (storageMode() === "local") {
+    const { readdir } = await nodeFs();
     try { return (await readdir(resolve(localRoot(), "briefs"))).filter(id => /^[0-9a-f-]{36}$/.test(id)).map(id => "briefs/" + id + "/submission.json"); }
     catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return []; throw error; }
   }

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { pageMetadata } from "@/lib/seo";
+import { ARTICLE_MD_BY_SLUG } from "@/lib/generated/content-manifest";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -29,10 +28,7 @@ const examples = [
 ] as const;
 
 export default async function MaintainerFeedbackArticle() {
-  const source = await readFile(
-    path.join(process.cwd(), "content/articles/the-best-feedback-ive-received-so-far.md"),
-    "utf8",
-  );
+  const source = ARTICLE_MD_BY_SLUG["the-best-feedback-ive-received-so-far"];
   const blocks = source.trim().split(/\n\n/);
   if (blocks.length !== 37) throw new Error("Maintainer feedback draft structure changed");
 
