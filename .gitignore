@@ -45,3 +45,7 @@ next-env.d.ts
 /.brief-preview/
 /.brief-private-invites/
 /qa/
+/dist/
+.vinext/
+.cloudflare/
+.wrangler/
