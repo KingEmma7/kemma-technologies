@@ -11,6 +11,11 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    // vinext / Workers build output
+    "dist/**",
+    ".vinext/**",
+    ".wrangler/**",
+    ".cloudflare/**",
     "next-env.d.ts",
     "public/demo-sites/**",
     // Local verification artifacts are ignored by Git and never deployed.

@@ -7,7 +7,7 @@ const fetchHandler: FetchHandler =
     ? (vinextHandler as unknown as FetchHandler)
     : ((vinextHandler as unknown as { fetch?: FetchHandler }).fetch as FetchHandler);
 
-export default {
+const worker = {
   fetch: fetchHandler,
   async scheduled(_event: unknown, env: Record<string, unknown>, ctx: unknown) {
     const secret = typeof env.CRON_SECRET === "string" ? env.CRON_SECRET : "";
@@ -23,4 +23,6 @@ export default {
     );
   },
 };
+
+export default worker;
 
