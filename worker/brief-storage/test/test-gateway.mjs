@@ -11,15 +11,16 @@ const SIGNING_SECRET = "test-signing-secret-".repeat(3);
 const instances = [];
 let bundled;
 before(async () => {
-  // HTTP clients correctly refuse malformed Content-Length before dispatch. A
-  // test-only Worker wrapper injects those streams inside workerd to exercise
-  // the real gateway's FixedLengthStream and the real R2 commit behavior.
+  // Inject upload length mismatches and oversized JSON bodies inside workerd.
+  // The HTTP client can reject invalid lengths or reset an early response
+  // before the test receives the gateway's status.
   const contents = `import gateway from "./src/index.ts";
     export { BriefInternal } from "./src/index.ts";
     export default { async fetch(request, env) {
       const fixtureLength = request.headers.get("x-test-body-bytes");
       if (fixtureLength !== null) {
         const headers = new Headers(request.headers); headers.delete("x-test-body-bytes");
+        if (headers.get("content-type") === "application/json") headers.set("content-length", fixtureLength);
         const body = new ReadableStream({ start(controller) { controller.enqueue(new Uint8Array(Number(fixtureLength))); controller.close(); } });
         request = new Request(request.url, { method: request.method, headers, body });
       }
@@ -308,6 +309,6 @@ test("answer checkpoints and diagnostics are private, conditional and bounded",a
     assert.equal((await objectRequest(instance,path,"PUT",{ok:true})).status,200);
     assert.equal((await objectRequest(instance,path,"PUT",{ok:false})).status,412);
   }
-  assert.equal((await objectRequest(instance,key(id,"answers-checkpoint.json"),"PUT",{value:"x".repeat(8*1024*1024)})).status,413);
-  assert.equal((await objectRequest(instance,key(id,"upload-status.json"),"PUT",{value:"x".repeat(32*1024)})).status,413);
+  assert.equal((await objectRequest(instance,key(id,"answers-checkpoint.json"),"PUT",{},{ "x-test-body-bytes": String(8 * 1024 * 1024 + 1) })).status,413);
+  assert.equal((await objectRequest(instance,key(id,"upload-status.json"),"PUT",{},{ "x-test-body-bytes": String(32 * 1024 + 1) })).status,413);
 });
