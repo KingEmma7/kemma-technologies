@@ -1,5 +1,5 @@
 import { sessionSchema, fileSpec, validateAnswers } from "./schema";
-import { BriefError, signCapability, verifyCapability, publicBase, r2StorageConfig, storageMode, type FileSpec, type Session, type Upload } from "./config";
+import { BriefError, authenticateCapability, issueCapability, publicBase, r2StorageOrigin, storageMode, type FileSpec, type Session, type Upload } from "./config";
 import { Conflict, digest, readDocument, writeDocument, fileHead } from "./storage";
 import { sendNotification } from "./email";
 
@@ -10,7 +10,7 @@ export const allocationPath=(id:string)=>`briefs/${id}/allocation.json`;
 function canonical(value:unknown):string {if(Array.isArray(value))return "["+value.map(canonical).join(",")+"]";if(value&&typeof value==="object")return "{"+Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>JSON.stringify(k)+":"+canonical(v)).join(",")+"}";return JSON.stringify(value)}
 export async function beginSession(body:unknown){
   storageMode();const parsed=sessionSchema.safeParse(body);if(!parsed.success)throw new BriefError("Check the selected files and reopen your project link.");
-  const invite=verifyCapability(parsed.data.invite,"invite");
+  const invite=await authenticateCapability(parsed.data.invite,"invite");
   const files=parsed.data.files.map(f=>fileSpec(f,invite.id));
   if(new Set(files.map(f=>f.id)).size!==files.length)throw new BriefError("A file was listed twice.");
   if(parsed.data.checkpoint)validateAnswers(parsed.data.checkpoint.answers,parsed.data.checkpoint.products,files);
@@ -31,9 +31,22 @@ export async function beginSession(body:unknown){
       }
       answersBackedUp=true;
     }
-    const uploaded=await Promise.all(files.map(async f=>{const existing=await fileHead(f.pathname);return {...f,uploadToken:signCapability({kind:"upload",id:invite.id,exp:session.exp,fileId:f.id}),uploaded:!!existing&&existing.size===f.size&&(storageMode()==="local"||existing.type.split(";")[0]===f.type)}}));
     const mode=storageMode();
-    return {submissionId:invite.id,sessionToken:signCapability(session),uploadMode:mode,answersBackedUp,...(mode==="r2"?{uploadUrl:r2StorageConfig().url+"/v1/upload"}:{}),files:uploaded,preview:mode==="local"};
+    const [uploaded, sessionToken] = await Promise.all([
+      Promise.all(files.map(async file => {
+        const [existing, uploadToken] = await Promise.all([
+          fileHead(file.pathname),
+          issueCapability({ kind: "upload", id: invite.id, exp: session.exp, fileId: file.id }),
+        ]);
+        return {
+          ...file,
+          uploadToken,
+          uploaded: !!existing && existing.size === file.size && (mode === "local" || existing.type.split(";")[0] === file.type),
+        };
+      })),
+      issueCapability(session),
+    ]);
+    return {submissionId:invite.id,sessionToken,uploadMode:mode,answersBackedUp,...(mode==="r2"?{uploadUrl:r2StorageOrigin()+"/v1/upload"}:{}),files:uploaded,preview:mode==="local"};
   }
   throw new BriefError("Another save is in progress. Please try again.",409);
 }
@@ -41,14 +54,14 @@ export async function getSubmission(id:string){return (await readDocument<Submis
 /** Resolve immutable file metadata from storage; upload headers contain no manifest. */
 export async function authorizedUploadFile(token:string,fileId:string|null){
   let capability:Upload|Session;
-  try{capability=verifyCapability(token,"upload")}catch(error){if(!(error instanceof BriefError)||error.status!==401)throw error;capability=verifyCapability(token,"session")}
+  try{capability=await authenticateCapability(token,"upload")}catch(error){if(!(error instanceof BriefError)||error.status!==401)throw error;capability=await authenticateCapability(token,"session")}
   const allocation=await readDocument<Allocation>(allocationPath(capability.id));
   const file=allocation?.value.files.find(candidate=>candidate.id===fileId);
   if(!file||(capability.kind==="upload"?capability.fileId!==fileId:!capability.files.some(candidate=>canonical(candidate)===canonical(file))))throw new BriefError("This file is not part of your project.",403);
   return {projectId:capability.id,file};
 }
 export async function acceptSubmission(sessionToken:string,answers:Record<string,unknown>,products:Record<string,unknown>[],request:Request){
-  const session=verifyCapability(sessionToken,"session");validateAnswers(answers,products,session.files);
+  const session=await authenticateCapability(sessionToken,"session");validateAnswers(answers,products,session.files);
   const allocation=await readDocument<Allocation>(allocationPath(session.id));
   if(!allocation||session.files.some(f=>!allocation.value.files.some(x=>canonical(x)===canonical(f))))throw new BriefError("Reopen your project link and try sending again.",401);
   const hash=digest(canonical({schemaVersion:2,answers,products,files:session.files}));
@@ -56,7 +69,8 @@ export async function acceptSubmission(sessionToken:string,answers:Record<string
   if(record&&record.hash!==hash)throw new BriefError("This brief is already saved. Contact Kemma to make changes.",409);
   if(!record){
     for(const f of session.files){const h=await fileHead(f.pathname);if(!h||h.size!==f.size||(storageMode()==="r2"&&h.type.split(";")[0]!==f.type))throw new BriefError(`The upload for ${f.name} is incomplete. Please try sending again.`,409)}
-    const candidate:Submission={id:session.id,reference:`KEM-${session.id.slice(0,8).toUpperCase()}`,schemaVersion:2,savedAt:new Date().toISOString(),answers,products,files:session.files,hash,reviewToken:signCapability({kind:"review",id:session.id,exp:Date.now()+365*24*60*60*1000}),baseUrl:publicBase(request)};
+    const reviewToken = await issueCapability({ kind: "review", id: session.id, exp: Date.now() + 365 * 24 * 60 * 60 * 1000 });
+    const candidate:Submission={id:session.id,reference:`KEM-${session.id.slice(0,8).toUpperCase()}`,schemaVersion:2,savedAt:new Date().toISOString(),answers,products,files:session.files,hash,reviewToken,baseUrl:publicBase(request)};
     try{await writeDocument(recordPath(session.id),candidate,null);record=candidate}catch(e){if(!(e instanceof Conflict))throw e;record=await getSubmission(session.id);if(!record||record.hash!==hash)throw new BriefError("This brief was already saved with different answers.",409)}
   }
   // A notification failure never removes the accepted submission.

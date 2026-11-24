@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { resolve, dirname } from "node:path";
-import { BriefError, r2StorageConfig, storageMode } from "./config";
+import { BriefError, r2StorageConfig, r2StorageOrigin, storageMode } from "./config";
+import { getBriefWorker } from "@/lib/brief/worker-binding";
 
 let fsPromises: typeof import("node:fs/promises") | null = null;
 async function nodeFs() {
@@ -27,13 +28,18 @@ function etag(response: Response): string {
   throw unavailable();
 }
 async function gateway(path: string, query: Record<string, string>, init: RequestInit = {}): Promise<Response> {
-  const config = r2StorageConfig(), url = new URL(path, config.url);
+  const worker = getBriefWorker();
+  const config = worker ? null : r2StorageConfig();
+  const url = new URL(path, config?.url ?? r2StorageOrigin());
   for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
   const headers = new Headers(init.headers);
-  headers.set("Authorization", "Bearer " + config.secret);
+  if (config) headers.set("Authorization", "Bearer " + config.secret);
   let response: Response;
-  try { response = await fetch(url, { ...init, headers, cache: "no-store", redirect: "error" }); }
-  catch { throw unavailable(); }
+  try {
+    response = worker
+      ? await worker.fetch(new Request(url, { ...init, headers }))
+      : await fetch(url, { ...init, headers, cache: "no-store", redirect: "error" });
+  } catch { throw unavailable(); }
   if (response.status === 507) throw new BriefError("This form has reached its storage allowance. Contact Kemma to share a folder link.", 507);
   if (response.status === 413) throw new BriefError("This file or brief is larger than the storage limit. Use a folder link or contact Kemma.", 413);
   if (!response.ok && response.status !== 404 && response.status !== 412) throw unavailable();

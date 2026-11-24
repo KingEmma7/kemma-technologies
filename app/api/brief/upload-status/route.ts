@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BriefError, verifyCapability } from "@/lib/brief/config";
+import { BriefError, authenticateCapability } from "@/lib/brief/config";
 import { assertSameOrigin, readJson } from "@/lib/brief/schema";
 import { briefFailure, briefResponse } from "@/lib/brief/http";
 import { allocationPath } from "@/lib/brief/service";
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     const parsed = schema.safeParse(await readJson(request, 2048));
     if (!parsed.success) throw new BriefError("Invalid upload status.");
-    const capability = verifyCapability(parsed.data.token, "upload");
+    const capability = await authenticateCapability(parsed.data.token, "upload");
     const allocation = await readDocument<{ files: { id: string }[] }>(allocationPath(capability.id));
     if (!allocation?.value.files.some(file => file.id === capability.fileId)) throw new BriefError("Invalid upload status.", 403);
     const path = `briefs/${capability.id}/upload-status.json`;

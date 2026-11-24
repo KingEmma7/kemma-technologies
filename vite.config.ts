@@ -19,6 +19,11 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    alias: {
+      "@/lib/brief/worker-binding": path.resolve(import.meta.dirname, "worker/website/brief-binding.ts"),
+    },
+  },
   css: {
     modules: {
       generateScopedName(name: string, filename: string) {

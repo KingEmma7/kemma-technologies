@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function ShortBriefPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const invite = inviteForShortCode(code);
+  const invite = await inviteForShortCode(code);
   if (!invite) notFound();
   return <CrochetBrief key={invite} invite={invite} preview={getBriefPageConfig().preview} contactHref={`https://wa.me/${SITE.whatsapp}`}/>;
 }

@@ -15,6 +15,7 @@ before(async () => {
   // test-only Worker wrapper injects those streams inside workerd to exercise
   // the real gateway's FixedLengthStream and the real R2 commit behavior.
   const contents = `import gateway from "./src/index.ts";
+    export { BriefInternal } from "./src/index.ts";
     export default { async fetch(request, env) {
       const fixtureLength = request.headers.get("x-test-body-bytes");
       if (fixtureLength !== null) {
@@ -24,14 +25,17 @@ before(async () => {
       }
       return gateway.fetch(request, env);
     } };`;
-  const output = await build({ stdin: { contents, resolveDir: fileURLToPath(new URL("../", import.meta.url)), loader: "js" }, bundle: true, write: false, format: "esm", platform: "browser", target: "es2022" });
+  const output = await build({ stdin: { contents, resolveDir: fileURLToPath(new URL("../", import.meta.url)), loader: "js" }, bundle: true, write: false, format: "esm", platform: "browser", target: "es2022", external: ["cloudflare:workers"] });
   bundled = output.outputFiles[0].text;
 });
 after(async () => { await Promise.all(instances.map(instance => instance.dispose())); });
-function gateway(cap = "5000000000") {
+function gatewayOptions(cap = "5000000000") {
   // The installed simulator supports October 13; production stays on October 14.
   // The gateway uses no October 14-specific API. Deployment gets a separate live smoke test.
-  const instance = new Miniflare(convertV4MiniflareOptions({ modules: true, script: bundled, compatibilityDate: "2026-10-13", compatibilityFlags: ["nodejs_compat"], r2Buckets: ["BUCKET"], bindings: { ALLOWED_ORIGINS: ORIGIN + ",http://127.0.0.1:4190", MAX_RESERVED_BYTES: cap, BRIEF_STORAGE_SECRET: STORAGE_SECRET, BRIEF_SIGNING_SECRET: SIGNING_SECRET } }));
+  return { modules: true, script: bundled, compatibilityDate: "2026-10-13", compatibilityFlags: ["nodejs_compat"], r2Buckets: ["BUCKET"], bindings: { ALLOWED_ORIGINS: ORIGIN + ",http://127.0.0.1:4190", MAX_RESERVED_BYTES: cap, BRIEF_STORAGE_SECRET: STORAGE_SECRET, BRIEF_SIGNING_SECRET: SIGNING_SECRET } };
+}
+function gateway(cap) {
+  const instance = new Miniflare(convertV4MiniflareOptions(gatewayOptions(cap)));
   instances.push(instance);
   return instance;
 }
@@ -66,6 +70,68 @@ test("private object routes require a server credential and reject paths outside
   assert.deepEqual(await denied.json(), { error: "Use your project link from Kemma." });
   for (const bad of ["system/budget.json", `briefs/${id}/../submission.json`, `briefs/${id}/unrecognized.json`, `briefs/${id}/files/${randomUUID()}/../logo.png`, `briefs/${id}/files/${randomUUID()}/%2e%2e`]) assert.equal((await objectRequest(instance, bad)).status, 400);
   assert.equal((await objectRequest(instance, key(id, "submission.json"))).status, 404);
+});
+
+test("the named service can mint legacy-compatible signatures and use the private storage routes", async () => {
+  const instance = new Miniflare(convertV4MiniflareOptions({
+    workers: [
+      { name: "storage", ...gatewayOptions() },
+      {
+        name: "website",
+        modules: true,
+        compatibilityDate: "2026-10-13",
+        serviceBindings: { BRIEF_INTERNAL: { name: "storage", entrypoint: "BriefInternal" } },
+        script: `export default {
+          async fetch(request, env) {
+            if (new URL(request.url).pathname === "/test-signature") {
+              const { body, signature } = await request.json();
+              return Response.json({
+                signed: await env.BRIEF_INTERNAL.sign(body),
+                verified: await env.BRIEF_INTERNAL.verify(body, signature),
+                modified: await env.BRIEF_INTERNAL.verify(body + "A", signature),
+              });
+            }
+            return env.BRIEF_INTERNAL.fetch(request);
+          }
+        };`,
+      },
+    ],
+  }));
+  instances.push(instance);
+  const website = await instance.getWorker("website");
+  const storage = await instance.getWorker("storage");
+  const id = randomUUID();
+  const exp = Date.now() + 60_000;
+  const files = Array.from({ length: 150 }, () => {
+    const spec = file(id);
+    const basename = "-".repeat(176) + ".png";
+    return { ...spec, name: "é".repeat(176) + ".png", pathname: key(id, `files/${spec.id}/${basename}`) };
+  });
+  for (const payload of [{ kind: "invite", id, exp }, { kind: "session", id, exp, files }]) {
+    const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
+    if (payload.kind === "session") assert.ok(body.length > 48_000);
+    const signature = createHmac("sha256", SIGNING_SECRET).update(body).digest("base64url");
+    const signatures = await website.fetch("https://website.test/test-signature", { method: "POST", body: JSON.stringify({ body, signature }) });
+    assert.deepEqual(await signatures.json(), { signed: signature, verified: true, modified: false });
+  }
+
+  const objectUrl = `https://website.test/v1/object?key=${encodeURIComponent(key(id, "submission.json"))}`;
+  const document = { fixture: true };
+  const saved = await website.fetch(objectUrl, {
+    method: "PUT",
+    headers: { "content-type": "application/json", "if-none-match": "*" },
+    body: JSON.stringify(document),
+  });
+  assert.equal(saved.status, 200);
+  assert.equal((await storage.fetch(objectUrl)).status, 401);
+  const legacyRead = await storage.fetch(objectUrl, { headers: { authorization: "Bearer " + STORAGE_SECRET } });
+  assert.deepEqual(await legacyRead.json(), document);
+  const privateRead = await website.fetch(objectUrl);
+  assert.deepEqual(await privateRead.json(), document);
+  const list = await website.fetch("https://website.test/v1/list");
+  assert.deepEqual(await list.json(), { objects: [{ key: key(id, "submission.json") }], truncated: false });
+  assert.equal((await website.fetch("https://website.test/v1/upload", { method: "PUT" })).status, 404);
+  assert.equal((await storage.fetch("https://storage.test/test-signature", { headers: { authorization: "Bearer " + STORAGE_SECRET } })).status, 404);
 });
 
 test("JSON records use immutable creation and atomic ETag conditional updates", async () => {

@@ -1,3 +1,5 @@
+import { WorkerEntrypoint } from "cloudflare:workers";
+
 type FileSpec = { id: string; name: string; type: string; size: number; scope: string; role: string; pathname: string };
 type Session = { kind: "session"; id: string; exp: number; files: FileSpec[] };
 type Upload = { kind: "upload"; id: string; exp: number; fileId: string };
@@ -6,6 +8,8 @@ type Allocation = { createdAt: string; files: FileSpec[] };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const DOCUMENTS = new Set(["allocation.json", "submission.json", "notification.json", "email-payload.json", "email-sender.json", "email-preview.json", "answers-checkpoint.json", "upload-status.json"]);
 const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
+const MAX_CAPABILITY_BODY = Math.ceil(MAX_DOCUMENT_BYTES * 4 / 3);
+const BASE64URL = /^[A-Za-z0-9_-]+$/;
 const DOCUMENT_LIMITS: Record<string, number> = {
   "allocation.json": MAX_DOCUMENT_BYTES, "submission.json": MAX_DOCUMENT_BYTES, "notification.json": 16 * 1024,
   "email-payload.json": MAX_DOCUMENT_BYTES, "email-sender.json": 4 * 1024, "email-preview.json": 512 * 1024,
@@ -69,17 +73,58 @@ function validateFiles(value: unknown, projectId: string): FileSpec[] {
   return files;
 }
 function decodeBase64Url(value: string) {
-  if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new GatewayError(401, "Use your project link from Kemma.");
+  if (!BASE64URL.test(value)) throw new GatewayError(401, "Use your project link from Kemma.");
   try { return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), char => char.charCodeAt(0)); }
   catch { throw new GatewayError(401, "Use your project link from Kemma."); }
+}
+function signingKey(env: Env, usage: "sign" | "verify") {
+  return crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret(env.BRIEF_SIGNING_SECRET)),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    [usage],
+  );
+}
+async function verifySignature(env: Env, body: string, signature: Uint8Array<ArrayBuffer>): Promise<boolean> {
+  if (signature.byteLength !== 32) return false;
+  const key = await signingKey(env, "verify");
+  return crypto.subtle.verify("HMAC", key, signature, new TextEncoder().encode(body));
+}
+function isCapabilityBody(body: unknown): body is string {
+  return typeof body === "string" && body.length <= MAX_CAPABILITY_BODY && BASE64URL.test(body);
+}
+function validateSigningBody(body: string) {
+  const invalid = new GatewayError(400, "Invalid project capability.");
+  if (!isCapabilityBody(body)) throw invalid;
+  let payload: unknown;
+  try {
+    payload = JSON.parse(new TextDecoder("utf-8", { fatal: true, ignoreBOM: false }).decode(decodeBase64Url(body)));
+  } catch {
+    throw invalid;
+  }
+  if (!object(payload) || typeof payload.id !== "string" || !UUID.test(payload.id) ||
+      typeof payload.exp !== "number" || !Number.isSafeInteger(payload.exp) || payload.exp <= Date.now()) {
+    throw invalid;
+  }
+  if (payload.kind === "invite" || payload.kind === "review") {
+    if (!exactKeys(payload, ["kind", "id", "exp"])) throw invalid;
+  } else if (payload.kind === "upload") {
+    if (!exactKeys(payload, ["kind", "id", "exp", "fileId"]) ||
+        typeof payload.fileId !== "string" || !UUID.test(payload.fileId)) throw invalid;
+  } else if (payload.kind === "session") {
+    if (!exactKeys(payload, ["kind", "id", "exp", "files"])) throw invalid;
+    validateFiles(payload.files, payload.id);
+  } else {
+    throw invalid;
+  }
 }
 async function authorizeUpload(request: Request, env: Env): Promise<Session | Upload> {
   const token = bearer(request, 48_000);
   const parts = token.split(".");
   if (parts.length !== 2) throw new GatewayError(401, "Use your project link from Kemma.");
   const signature = decodeBase64Url(parts[1]);
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret(env.BRIEF_SIGNING_SECRET)), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
-  if (signature.byteLength !== 32 || !await crypto.subtle.verify("HMAC", key, signature, new TextEncoder().encode(parts[0]))) throw new GatewayError(401, "Use your project link from Kemma.");
+  if (!await verifySignature(env, parts[0], signature)) throw new GatewayError(401, "Use your project link from Kemma.");
   let payload: unknown;
   try { payload = JSON.parse(new TextDecoder("utf-8", { fatal: true, ignoreBOM: false }).decode(decodeBase64Url(parts[0]))); }
   catch { throw new GatewayError(401, "Use your project link from Kemma."); }
@@ -228,6 +273,41 @@ function secureResponse(response: Response, origin: string | null, cors: boolean
   return new Response(response.body, { status: response.status, headers });
 }
 
+async function handleServerRequest(request: Request, env: Env, url: URL) {
+  if (url.pathname === "/v1/object") return handleObject(request, env, url);
+  if (url.pathname === "/v1/list" && request.method === "GET") return handleList(env, url);
+  throw new GatewayError(404, "Not found.");
+}
+
+function failureResponse(error: unknown, origin: string | null, cors: boolean) {
+  const failure = error instanceof GatewayError ? error : new GatewayError(503, "The form is temporarily unavailable. Please try again or contact Kemma.");
+  return secureResponse(Response.json({ error: failure.message }, { status: failure.status }), origin, cors);
+}
+
+// Only a service binding can select this named entrypoint. The public Worker
+// continues to require the Vercel credential and browser upload capabilities.
+export class BriefInternal extends WorkerEntrypoint<Env> {
+  async sign(body: string): Promise<string> {
+    validateSigningBody(body);
+    const key = await signingKey(this.env, "sign");
+    const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body)));
+    return btoa(String.fromCharCode(...signature)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  async verify(body: string, signature: string): Promise<boolean> {
+    if (!isCapabilityBody(body) || typeof signature !== "string" || signature.length !== 43 || !BASE64URL.test(signature)) return false;
+    return verifySignature(this.env, body, decodeBase64Url(signature));
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    try {
+      return secureResponse(await handleServerRequest(request, this.env, new URL(request.url)), null, false);
+    } catch (error) {
+      return failureResponse(error, null, false);
+    }
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -253,14 +333,9 @@ export default {
         return secureResponse(await saveFile(request, env, session.id, file), origin, true);
       }
       await authorizeServer(request, env);
-      let response: Response;
-      if (url.pathname === "/v1/object") response = await handleObject(request, env, url);
-      else if (url.pathname === "/v1/list" && request.method === "GET") response = await handleList(env, url);
-      else throw new GatewayError(404, "Not found.");
-      return secureResponse(response, origin, false);
+      return secureResponse(await handleServerRequest(request, env, url), origin, false);
     } catch (error) {
-      const failure = error instanceof GatewayError ? error : new GatewayError(503, "The form is temporarily unavailable. Please try again or contact Kemma.");
-      return secureResponse(Response.json({ error: failure.message }, { status: failure.status }), origin, cors);
+      return failureResponse(error, origin, cors);
     }
   },
 } satisfies ExportedHandler<Env>;

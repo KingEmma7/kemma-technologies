@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { signCapability } from "./config";
+import { issueCapability } from "./config";
 
 const linksSchema = z.record(
   z.string().regex(/^[a-f0-9]{64}$/),
@@ -8,7 +8,7 @@ const linksSchema = z.record(
 );
 
 // The short code is a private bearer link. Keep only its hash in server config.
-export function inviteForShortCode(code: string): string | null {
+export async function inviteForShortCode(code: string): Promise<string | null> {
   if (!/^[A-Za-z0-9_-]{22}$/.test(code)) return null;
   const configured = process.env.BRIEF_SHORT_LINKS;
   if (!configured || configured.length > 32_000) return null;
@@ -19,7 +19,7 @@ export function inviteForShortCode(code: string): string | null {
     const invite = links[hash];
     if (invite.exp <= Date.now()) return null;
     // Identical payload and signature preserve existing drafts and submissions.
-    return signCapability({ kind: "invite", id: invite.id, exp: invite.exp });
+    return await issueCapability({ kind: "invite", id: invite.id, exp: invite.exp });
   } catch {
     return null;
   }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { verifyCapability, storageMode } from "@/lib/brief/config";
+import { authenticateCapability, storageMode } from "@/lib/brief/config";
 import { getSubmission } from "@/lib/brief/service";
 import { answerLabels, displayValue, downloadUrl } from "@/lib/brief/email";
 import { readDocument } from "@/lib/brief/storage";
@@ -11,7 +11,7 @@ export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"Saved website brief",robots:{index:false,follow:false},referrer:"no-referrer"};
 export default async function SavedBrief({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{key?:string}>}){
   const {id}=await params,{key}=await searchParams;
-  try{if(verifyCapability(key||"","review").id!==id)notFound()}catch{notFound()}
+  try{if((await authenticateCapability(key||"","review")).id!==id)notFound()}catch{notFound()}
   const record=await getSubmission(id);if(!record)notFound();
   const notification=await readDocument<{state:string}>(`briefs/${id}/notification.json`);
   const preview=storageMode()==="local";
